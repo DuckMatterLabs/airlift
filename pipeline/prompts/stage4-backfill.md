@@ -33,17 +33,20 @@ Rules:
 4. Behaviors with observability `indirect` or `internal`: do not force a test; record them
    under `untestable` with a reason.
 5. Write the test class(es) at the location the harness contract specifies for backfill
-   tests. Compile and run them with the harness contract's run command. Iterate until the
-   suite is green. If a test fails because the CODE contradicts the catalog (the behavior
-   statement is wrong), fix the catalog entry (note it in the report), not the code. Never
-   modify production source.
+   tests. **Do NOT compile or run anything yourself** — the pipeline runner compiles the
+   code and executes the suite deterministically after you finish, and feeds compiler
+   errors or failing tests back to you in a repair round (these are code-in-hand tests;
+   unlike the blind stage, test failures may be fed back). If a test fails because the
+   CODE contradicts the catalog (the behavior statement is wrong), fix the catalog entry
+   (note it in the report), not the code. Never modify production source.
 
 ## Output
 
-* Test class(es) at the harness-contract location, compiling and green.
+* Test class(es) at the harness-contract location.
 * `{{OUT_DIR}}/backfill-report.yaml`:
 
 ```yaml
+schema_version: "{{SCHEMA_VERSION}}"   # required top-level key, exactly this value
 pinned:
   - claim: <ID>
     tests: [<ClassName#methodName>]
@@ -58,8 +61,6 @@ catalog_corrections:
     was: ...
     now: ...
     evidence: <code observation>
-run:
-  command: <what you ran>
-  result: green | red
-  notes: ...
+# Do NOT write a `run:` block — the pipeline's external runner executes the suite and
+# stamps `run:` (command, result, results_file, sha, timestamp) deterministically.
 ```

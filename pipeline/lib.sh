@@ -4,7 +4,6 @@
 set -euo pipefail
 
 AIRLIFT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OFBIZ_ROOT="$(cd "$AIRLIFT_ROOT/../ofbiz-framework" && pwd)"
 RUNS_DIR="$AIRLIFT_ROOT/tests/runs"
 
 airlift_env() {

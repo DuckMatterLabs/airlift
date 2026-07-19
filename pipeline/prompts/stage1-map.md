@@ -51,6 +51,7 @@ Classification per fragment (`role`):
 Write exactly one file: `{{OUT_DIR}}/fragment-map.yaml`
 
 ```yaml
+schema_version: "{{SCHEMA_VERSION}}"   # required top-level key, exactly this value
 source_binding:
   repo: <repo directory name>
   commit: <run `git rev-parse HEAD` in the repo>

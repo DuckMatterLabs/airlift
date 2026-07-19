@@ -38,6 +38,7 @@ Rules:
 Write exactly one file: `{{OUT_DIR}}/behavior-catalog.yaml`
 
 ```yaml
+schema_version: "{{SCHEMA_VERSION}}"   # required top-level key, exactly this value
 areas:
   - area: <AREA>
     meaning: one line

@@ -31,6 +31,7 @@ seam (the fragments in the map) are actually covered by executable checks, and w
 Write exactly one file: `{{OUT_DIR}}/coverage-gaps.yaml`
 
 ```yaml
+schema_version: "{{SCHEMA_VERSION}}"   # required top-level key, exactly this value
 search_log:            # the searches you ran, so absence claims are auditable
   - pattern: ...
     scope: ...

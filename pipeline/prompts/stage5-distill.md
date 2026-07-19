@@ -53,9 +53,11 @@ Emit the complete Airlift IR for the seam into `{{OUT_DIR}}/ir/`, per the schema
    persistence pattern, (c) the integration-test harness pattern — each referencing a
    mustache-parameterized pattern snippet in `architecture/patterns/`. Keep it a stub: enough
    to show where architecture knowledge lives so claims don't have to carry it.
-9. **Manifest** (`ir-manifest.yaml`): claim index (id, kind, title, status, priority),
+9. **Manifest** (`ir-manifest.yaml`): top-level `schema_version: "{{SCHEMA_VERSION}}"`
+   (required, exactly this value), claim index (id, kind, title, status, priority),
    `pinned_claims` (claims with a green backfill test, from the backfill report),
-   `unpinned_claims`, `descoped`, `catalog_deltas`, source binding commit.
+   `unpinned_claims`, `descoped`, `catalog_deltas`, source binding commit. Every claim's
+   `status` is `extracted` — status promotion is a later, deterministic step, never yours.
 
 ## Discipline
 
