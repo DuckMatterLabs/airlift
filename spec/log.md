@@ -17,6 +17,32 @@ this log holds pointers, not content. A session that only reads appends nothing.
 
 ---
 
+## 2026-07-19 (f) — Claude session: Copilot takeover briefing
+
+**Done**
+
+* `Goal1-handoff.md` expanded with §8 (M2 addendum + takeover protocol for Copilot
+  sessions assuming both roles per AADR-007): session protocol, frozen-schema/promotion
+  discipline, stage-4/drill mechanics, M2 gotchas, M3 notes. Stale §2/§6 entries
+  patched (threads 4–6 marked done); frontmatter backfilled.
+* Root `AGENTS.md` created: Copilot CLI does not read `CLAUDE.md`, so interactive
+  Copilot dev sessions need this pointer to the constitution + orientation order.
+  Pipeline stage agents are unaffected (`--no-custom-instructions`).
+
+**Decisions**
+
+* **Copilot+Opus 4.8 is the development harness going forward** (user directive), both
+  author and executor roles — the AADR-007 corp-deployment scenario is now the actual
+  configuration. Consequence noted in handoff §8.5: R2 (double-LLM prior leakage) is
+  live; M3's cross-model E1 gains importance.
+* M3 target: **real production code** (user directive) — supersedes the M3 spec's
+  Fineract recommendation; record the concrete target in the spec when chosen.
+
+**Open**
+
+* M3 unstarted; next session starts at `spec/planning/Airlift-m3-second-target.md` +
+  handoff §8.5.
+
 ## 2026-07-19 (e) — Claude session: M2 EXECUTED — freeze & harden, all exits met
 
 **Done**

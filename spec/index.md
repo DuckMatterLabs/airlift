@@ -31,7 +31,7 @@ Evidence lives outside spec/: `tests/out/<target>/` (run products + RUN-REPORT),
 |---|---|
 | `MILESTONES.md` | The roadmap M1–M9: dependency shape, standing invariants, per-milestone exits |
 | `goals.md` | The seven goals, one paragraph each, with spec pointers |
-| `Goal1-handoff.md` | Goal 1 handoff: state at M1 completion, how to run everything, gotchas §4 (operational bible). Convention: each completed goal produces a `Goal<N>-handoff.md` here |
+| `Goal1-handoff.md` | The operational bible: state at M1 completion, how to run everything, gotchas §4; **§8 = M2 addendum + Copilot takeover briefing** (promotion workflow, frozen-schema discipline, M3 notes). Convention: each completed goal produces a `Goal<N>-handoff.md` here |
 | `Airlift-goal.md` | Goal 1 spec (COMPLETE — evidence: `tests/out/ofbiz-tax/RUN-REPORT.md`) |
 | `Airlift-m2-freeze.md` | M2: schema v1.0 freeze + self-ADR register + promotion tool + debt (COMPLETE 2026-07-19 — evidence: `tests/runs/m2-freeze-report.md`) |
 | `Airlift-m3-second-target.md` | M3: generality proof (Fineract recommended) + the measurement milestone (friction log, cost, cross-model E1, mutation sweep) |
