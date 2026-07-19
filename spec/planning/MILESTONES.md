@@ -1,3 +1,12 @@
+---
+confidence: analyzed
+related: [spec/planning/goals.md, spec/analysis/Airlift-reflexive.md, spec/index.md]
+sources: [spec/planning/goals.md, spec/planning/Goal1-handoff.md, spec/drafts/Airlift-article.md]
+trajectory: >
+  The roadmap M1-M9; each milestone's section gains its verdict + evidence
+  pointer at completion. Consumed by every planning session.
+---
+
 # Airlift — Milestones
 
 Roadmap from the proven Goal 1 spike to full Airlift as envisioned in
@@ -55,11 +64,20 @@ end-to-end on Copilot CLI + Opus 4.8 BYOK.
 
 ---
 
-## M2 — Freeze & harden the contract
+## M2 — Freeze & harden the contract ✅ COMPLETE (2026-07-19)
 
 Goal 2 consumes the claim schema as a fixed input, so the schema must become a
 versioned, shipped artifact before anything builds on it. Also pays down known debt
 from the spike.
+
+**Executed 2026-07-19 — all exit criteria met** (evidence: `tests/runs/m2-freeze-report.md`):
+schema v1.0 tagged + version-checked validators; `promote.py` promoted 27 claims to
+`verified` / 3 `pinned` / 4 `extracted` with zero manual edits, idempotent (the "35
+verified" below was a spec arithmetic error — 35 is the blind test-method count, the IR
+has 34 claims of which the blind suite binds 27); AADR-012 added by the traceability
+pass; distill repair loop demonstrated end-to-end (organic structural failure + seeded
+version mismatch, repaired, green); `fidelity:` deferred per AADR-010; stage-4 external
+runner shipped and demonstrated.
 
 **Deliverables**
 

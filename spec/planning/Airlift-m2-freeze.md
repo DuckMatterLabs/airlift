@@ -9,7 +9,8 @@ trajectory: >
 
 # Airlift M2 spec — Freeze & harden the contract
 
-Status: NOT STARTED. Date: 2026-07-19.
+Status: **COMPLETE** (executed 2026-07-19; evidence: `tests/runs/m2-freeze-report.md`).
+Date: 2026-07-19.
 Prerequisite: M1 complete (it is). Everything downstream (M3–M7) consumes this
 milestone's outputs as fixed contracts.
 Background: `MILESTONES.md` §M2, `spec/planning/Goal1-handoff.md` §6 (threads 4–6), `ir-spec/IR-SCHEMA.md`,
@@ -96,6 +97,11 @@ A small deterministic tool (`pipeline/promote.py`), no LLM:
    version-checked).
 2. `promote.py` run on the existing E1/E2 reports yields **35 `verified` claims with
    zero manual edits**; second run is a no-op.
+   *[Corrected at execution, 2026-07-19: "35" conflated the blind test-method count
+   with the claim count — the IR has 34 claims, of which the blind suite binds 27
+   distinct (35 methods). Actual, correct result: 27 `verified` + 3 `pinned`
+   (backfill-bound only: the TAX.DISPLAY claims) + 4 `extracted` (no bound test in
+   either suite), zero manual edits, second run a byte-level no-op.]*
 3. All 11 seed AADRs exist and every load-bearing schema element traces to one.
 4. Distill-stage repair loop demonstrated end-to-end through `run-pipeline.sh` itself.
 5. The `fidelity:` decision is made and recorded (shipped or AADR-deferred).

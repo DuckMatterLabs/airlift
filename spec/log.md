@@ -17,6 +17,148 @@ this log holds pointers, not content. A session that only reads appends nothing.
 
 ---
 
+## 2026-07-19 (e) — Claude session: M2 EXECUTED — freeze & harden, all exits met
+
+**Done**
+
+* **M2 complete** (spec: `planning/Airlift-m2-freeze.md`; full evidence:
+  `tests/runs/m2-freeze-report.md`). Schema frozen at **v1.0**: `ir-spec/VERSION`,
+  `ir-spec/CHANGELOG.md`, `ir-spec/IR-SCHEMA.md` rewritten (§0 version declaration,
+  §11 change process, §12 statuses/attestations/promotion, §13 frozen-vs-open,
+  §14 AADR traceability). All five validators version-check `schema_version`; the five
+  ofbiz-tax stage artifacts stamped `"1.0"`; all validate clean.
+* `pipeline/promote.py` (+ junitxml.py, stamp-backfill.py, 29 unit tests): 27 claims
+  → `verified`, 3 `pinned`, 4 `extracted`, zero manual edits, second run byte-level
+  no-op; sha-stamped attestations on every promoted claim. Evidence chain archived in
+  `tests/runs/m2-promotion/` (fresh green suite reruns: backfill 19/19, blind 35/35).
+  Target-neutral spine files via `report-claims.py --spine-out` (AADR-011 upheld).
+* Stage-4 external runner in `run-pipeline.sh` (runner compiles/runs/stamps `run:`;
+  agent never runs gradle); demonstrated green with the real committed suite
+  (`tests/runs/m2-ext-runner-demo.log`). Full agent-driven stage-4 rerun deliberately
+  deferred to M3 (would overwrite the proven M1 backfill suite for a mechanism test).
+* Distill repair loop demonstrated end-to-end through `run-pipeline.sh` (drill on a
+  scratch target, `AIRLIFT_SEED_SCHEMA_VERSION=0.9` seam): a1 organic structural
+  failure (traceability claims emitted as dict), a2 the seeded 0.9 rejection, a3
+  repaired → green. `tests/runs/m2-repair-drill.log`, output in
+  `tests/runs/m2-repair-drill-out/`. OFBiz tree stayed clean.
+* Validator hardening beyond the spec (18 confirmed findings from a pre-execution
+  adversarial review, all fixed): at-commit line coverage via `git show` with NO
+  working-tree fallback (this also fixed the latent map-validator failure caused by
+  stage-5's 30 annotation lines); `<skipped>` ≠ green; `pinned`/`verified` statuses
+  require supporting attestations; manifest↔claim-file status consistency;
+  observability enum enforced (schema erratum: `internal`, not
+  `unobservable-via-contract`); YAML injection closed in spine/stamp writers;
+  target-specific `OFBIZ_ROOT` removed from `pipeline/lib.sh`.
+* Register: **AADR-012 added** (stable claim IDs; fragment lines = evidence-at-commit
+  — surfaced by the §14 tracing pass); AADR-006 expired (freeze executed); AADR-010
+  records the decision; AADR-011 observation appended.
+
+**Decisions**
+
+* **`fidelity:` deferred from v1.0** (M2 spec required decide-not-defer; the decision
+  IS deferral): no consumer has tripped AADR-010's falsifier; reflexive §3 forbids
+  speculative fields; the quirk is sub-claim-level so the marker would have nothing
+  truthful to mark; an optional field is a cheap minor delta later. v1.1 candidate,
+  recorded in `ir-spec/CHANGELOG.md` + AADR-010.
+* Spec correction recorded (not silently edited): exit criterion 2's "35 verified"
+  conflated blind test methods (35) with claims (34 total, 27 blind-bound). Also:
+  criterion 1's "full pipeline rerun" read as validator rerun over the proven
+  artifacts — regenerating the IR would destroy the artifacts criterion 2 depends on.
+* Extraction stages now always emit `status: extracted` (stage-5 prompt); statuses
+  move only via `promote.py` (schema §12). Promotion is forward-only; demotion is
+  M7's, reading the same attestation records.
+
+**Open**
+
+* 4 claims remain `extracted` (TAX.CONTRACT.CALC-TAX, TAX.CONTRACT.CALC-TAX-FOR-DISPLAY,
+  TAX.ORDER.VALUE-WEIGHT, TAX.VAT.PRICE-GROUP-SCOPE) and 3 `pinned` (TAX.DISPLAY.\*)
+  — honest gaps: no blind binding. A blind-suite extension pass could close them (M3-adjacent).
+* Repo uncommitted for this session's M2 work — user go-ahead pending (asked at
+  session end). Proposed: conventional commits per workstream.
+* v_ir's attempt-1 drill failure surfaced as a raw TypeError message (structural
+  failure path) — functional but opaque; a friendlier structural-shape message would
+  save a repair round's diagnosis time. Minor validator UX debt.
+
+## 2026-07-19 (d) — Claude session: AADR register materialized as spec/adr/
+
+**Done**
+
+* Materialized the self-ADR register (seed: `analysis/Airlift-reflexive.md` §5) as
+  `spec/adr/`: `README.md` (register table, rules, status legend, out-of-band signal →
+  falsifier map) + `AADR-001…011-*.md`, one decision per file, each with decision, tag,
+  alternatives actually considered, evidence (pulled from `Goal1-handoff.md`,
+  `RUN-REPORT.md` pointers, `IR-analysis.md`), falsifier, and a dated
+  falsifier-observations log. Done ahead of the M2 schedule (user request); M2's
+  freeze work now updates the register rather than creating it.
+* Enrichments beyond the seed table: AADR-003/010 record the CDT borrowings (typed
+  edge vocabulary; `constrained-by` constraint node as the queryable fidelity home);
+  AADR-004 records CDT Challenge XI as external validation and carries R1/R2 as known
+  measurement gaps; AADR-011 separates the spine *principle* (load-bearing, lives with
+  AADR-004) from the JUnit-3 binding *mechanism* (incidental).
+* Cross-references updated: `spec/index.md` (new adr/ section), reflexive doc
+  (frontmatter + §5 header: spec/adr/ now authoritative, §5 table is historical seed),
+  `CLAUDE.md` (register location no longer conditional on M2).
+
+**Decisions**
+
+* Register materialization is early, not a scope change: register rules are verbatim
+  from reflexive §5 (AADR at merge for load-bearing decisions; observations recorded
+  whether or not tripped; tripped falsifier ⇒ review, not reversal).
+
+* AADR-007 softened (user directive, same session): the load-bearing decision is the
+  ROLE split — agent working on Airlift itself (authoring) vs. agent harness Airlift
+  runs under (execution, defined by guarantees: fresh contexts, sandboxed blindness,
+  batch prompt-in/artifact-out) — with the Claude/Copilot product binding demoted to
+  incidental deployment detail. Rationale: corp deployment has no Claude, so Copilot
+  assumes both roles; conversely Airlift may itself become the harness (Goals 4/7).
+  Blindness/freshness are enforced by process, never by vendor split. R2 note: corp
+  same-model-everywhere makes cross-model probes where-available insurance.
+
+**Decisions (addendum)**
+
+* Corp target environment: **Claude unavailable; Copilot fills both author and
+  executor roles.** Constitution invariant 2's phrasing ("Copilot+Opus executes;
+  Claude authors") now reads as the current engagement's binding, not the design —
+  AADR-007 is the nuanced statement; constitution text left untouched pending user's
+  call on rewording an invariant.
+
+**Open**
+
+* AADR files carry `status: active` prose only — no machine-readable status field
+  beyond frontmatter confidence; fine until the promotion tool (handoff thread 4)
+  wants to read them.
+
+## 2026-07-19 (c) — Claude session: Code Digital Twin comparison
+
+**Done**
+
+* Read `spec/sources/DigitalTwin.pdf` (Peng & Wang, arXiv:2503.07967v4 — the
+  whitepaper's sole reference) in full; compared against `drafts/Airlift-article.md`.
+  Framing agreed with user: **CDT is the genus, Airlift a species** — same diagnosis
+  and anatomy; Airlift adds three bets CDT lacks: provability (executable claims vs.
+  traceable-only), source-of-truth inversion (vs. permanent mirror), and the
+  fact/intent split (vs. one twin, one confidence economy). CDT's Challenge XI
+  (realistic evaluation) independently calls for what the E1–E4 proving ground already
+  does — citable validation of the methodology.
+* `analysis/IR-analysis.md` gained a "Comparison with Code Digital Twin" section:
+  component mapping table, divergences, and six borrowings — typed edge vocabulary
+  (`justified-by`, `constrained-by` → Ledger/graph; constraint node as queryable home
+  for `fidelity: bug-compatible`, AADR-010), structured context packages with token
+  budgets (→ Goal 4 MCP/Maestro grounding), Twin-RAG graph-first retrieval, implicit
+  feedback signals as curation input, the 11-challenge table as a MILESTONES audit
+  rubric, and explicit per-claim version anchoring (needed for the indemnity tier-2
+  promise). Explicit non-borrowings: single-twin unification, curation-only validation.
+
+**Decisions**
+
+* None normative; borrowings are recorded as analysis feeding M2 schema decisions and
+  Goals 2/4 — not yet ratified into `ir-spec/`.
+
+**Open**
+
+* Non-functional constraints are absent from the IR schema entirely (surfaced by the
+  CDT challenge checklist) — needs a deliberate include/delegate/reject decision at M2.
+
 ## 2026-07-19 (b) — Claude session: specs, reflexivity, reorganization
 
 **Done**

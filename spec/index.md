@@ -33,7 +33,7 @@ Evidence lives outside spec/: `tests/out/<target>/` (run products + RUN-REPORT),
 | `goals.md` | The seven goals, one paragraph each, with spec pointers |
 | `Goal1-handoff.md` | Goal 1 handoff: state at M1 completion, how to run everything, gotchas §4 (operational bible). Convention: each completed goal produces a `Goal<N>-handoff.md` here |
 | `Airlift-goal.md` | Goal 1 spec (COMPLETE — evidence: `tests/out/ofbiz-tax/RUN-REPORT.md`) |
-| `Airlift-m2-freeze.md` | M2: schema v1.0 freeze + self-ADR register + promotion tool + debt |
+| `Airlift-m2-freeze.md` | M2: schema v1.0 freeze + self-ADR register + promotion tool + debt (COMPLETE 2026-07-19 — evidence: `tests/runs/m2-freeze-report.md`) |
 | `Airlift-m3-second-target.md` | M3: generality proof (Fineract recommended) + the measurement milestone (friction log, cost, cross-model E1, mutation sweep) |
 | `Airlift-goal-2-pr-history.md` | Goal 2 / M4: the Ledger + claim-driven mining + heat prioritization |
 | `Airlift-goal-3-architecture.md` | Goal 3 / M5: pattern library + ADRs + conformance + the swap test |
@@ -52,6 +52,13 @@ Reading order for a new contributor: `goals.md` → `MILESTONES.md` → the late
 | `IR-analysis.md` | Critical analysis of Airlift's IR + comparison with Understand-Anything (borrow: structure, fingerprints, reviewer-gates; refuse: unverified narration). Also the MCP progressive-disclosure design |
 | `socraticode-analysis.md` | Comparison with SocratiCode (borrow: MCP ergonomics, distribution, project identity; refuse: embedding search on the truth path). The three-way design-space map |
 | `Airlift-reflexive.md` | Airlift on Airlift: the WHY record (D1–D7), evolution mechanisms, local-optimum risks R1–R5 + countermeasures C1–C5, seed self-ADR register AADR-001…011. **Normative for M2/M3** |
+
+## adr/ — the self-ADR (AADR) register (decisions with falsifiers)
+
+| Doc | What it is |
+|---|---|
+| `adr/README.md` | Register index + rules (new load-bearing decision ⇒ AADR at merge; falsifier observations appended in place; tripped falsifier ⇒ review, not auto-reversal) |
+| `adr/AADR-001…012-*.md` | One decision each: 001–011 seeded from `analysis/Airlift-reflexive.md` §5 (materialized 2026-07-19, ahead of the M2 schedule); 012 added at the M2 freeze (identity scheme, register rule 1). Each: decision, tag (load-bearing/incidental), alternatives, evidence, falsifier, observations log |
 
 ## Cross-cutting threads (where to look for a topic)
 
