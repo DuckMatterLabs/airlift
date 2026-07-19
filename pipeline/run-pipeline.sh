@@ -17,7 +17,7 @@ TARGET_DIR="$(cd "$1" && pwd)"
 shift
 source "$TARGET_DIR/target.env"
 
-OUT_DIR="$AIRLIFT_ROOT/out/$TARGET_NAME"
+OUT_DIR="$AIRLIFT_ROOT/tests/out/$TARGET_NAME"
 IR_SPEC="$AIRLIFT_ROOT/ir-spec"
 PY="$AIRLIFT_ROOT/.venv/bin/python"
 mkdir -p "$OUT_DIR" "$RUNS_DIR/rendered"

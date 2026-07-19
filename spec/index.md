@@ -12,7 +12,7 @@ trajectory: >
 How the documents relate. Convention: `drafts/` holds the WHY (original human prose —
 protected, never regenerated); `planning/` holds the WHAT-NEXT (goals, milestones,
 state); `analysis/` holds the CRITIQUE (earned assessments, including of ourselves).
-Evidence lives outside spec/: `out/<target>/` (run products + RUN-REPORT), `runs/`
+Evidence lives outside spec/: `tests/out/<target>/` (run products + RUN-REPORT), `tests/runs/`
 (logs), `ir-spec/` (normative schema).
 
 ## drafts/ — original prose (tier-3-human: source material, guard it)
@@ -32,7 +32,7 @@ Evidence lives outside spec/: `out/<target>/` (run products + RUN-REPORT), `runs
 | `MILESTONES.md` | The roadmap M1–M9: dependency shape, standing invariants, per-milestone exits |
 | `goals.md` | The seven goals, one paragraph each, with spec pointers |
 | `Goal1-handoff.md` | Goal 1 handoff: state at M1 completion, how to run everything, gotchas §4 (operational bible). Convention: each completed goal produces a `Goal<N>-handoff.md` here |
-| `Airlift-goal.md` | Goal 1 spec (COMPLETE — evidence: `out/ofbiz-tax/RUN-REPORT.md`) |
+| `Airlift-goal.md` | Goal 1 spec (COMPLETE — evidence: `tests/out/ofbiz-tax/RUN-REPORT.md`) |
 | `Airlift-m2-freeze.md` | M2: schema v1.0 freeze + self-ADR register + promotion tool + debt |
 | `Airlift-m3-second-target.md` | M3: generality proof (Fineract recommended) + the measurement milestone (friction log, cost, cross-model E1, mutation sweep) |
 | `Airlift-goal-2-pr-history.md` | Goal 2 / M4: the Ledger + claim-driven mining + heat prioritization |

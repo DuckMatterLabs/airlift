@@ -6,13 +6,13 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-AIRLIFT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+AIRLIFT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$AIRLIFT_ROOT/pipeline/lib.sh"
-TARGET_DIR="$AIRLIFT_ROOT/targets/ofbiz-tax"
+TARGET_DIR="$AIRLIFT_ROOT/tests/targets/ofbiz-tax"
 source "$TARGET_DIR/target.env"
-OUT_DIR="$AIRLIFT_ROOT/out/$TARGET_NAME"
+OUT_DIR="$AIRLIFT_ROOT/tests/out/$TARGET_NAME"
 
-SANDBOX="$AIRLIFT_ROOT/runs/blind-sandbox"
+SANDBOX="$AIRLIFT_ROOT/tests/runs/blind-sandbox"
 rm -rf "$SANDBOX"
 mkdir -p "$SANDBOX/generated"
 cp -R "$OUT_DIR/ir" "$SANDBOX/ir"
@@ -61,7 +61,7 @@ RUN_EXIT=$?
 set -e
 "$AIRLIFT_ROOT/.venv/bin/python" "$TARGET_DIR/harness/report-claims.py" \
   --results "$TEST_RESULTS_DIR/airliftblind.xml" \
-  --tests-dir "$BLIND_TEST_DIR" --ir "$OUT_DIR/ir" | tee "$AIRLIFT_ROOT/runs/e1-spine.txt"
+  --tests-dir "$BLIND_TEST_DIR" --ir "$OUT_DIR/ir" | tee "$AIRLIFT_ROOT/tests/runs/e1-spine.txt"
 if [ "$RUN_EXIT" -ne 0 ]; then
   echo "E1 RESULT: RED — blind tests do not pass against real code (IR or testgen defect)" >&2
   exit 1

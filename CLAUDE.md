@@ -17,7 +17,7 @@ violated claims. Goal 1 (M1) is complete; roadmap in `spec/planning/MILESTONES.m
 ## Standing invariants (do not relax — rationale in spec/planning/MILESTONES.md)
 
 1. **Target-agnostic core.** Nothing target-specific ever lands in `pipeline/` or
-   `ir-spec/`; targets are plugins under `targets/<name>/`.
+   `ir-spec/`; targets are plugins under `tests/targets/<name>/`.
 2. **Copilot+Opus executes; Claude authors.** Delivered artifacts must run under the
    `copilot -p` BYOK harness (key in `.env`).
 3. **Blind means blind.** IR-only test generation never sees code; repair feedback is
@@ -48,7 +48,7 @@ confidence: proven | analyzed | proposed | speculative   # proven = backed by a 
                                                           # proposed = plan, not yet executed;
                                                           # speculative = idea, unvetted
 related: [spec/analysis/IR-analysis.md, TAX.EXEMPT.ZEROING]   # concepts/docs/claim IDs this touches
-sources: [out/ofbiz-tax/RUN-REPORT.md, spec/drafts/Airlift-IR.md]  # what this was derived FROM
+sources: [tests/out/ofbiz-tax/RUN-REPORT.md, spec/drafts/Airlift-IR.md]  # what this was derived FROM
 trajectory: >   # a doc is a position; this states its motion — what it feeds,
   Feeds M2 freeze; superseded by spec/adr/ once materialized.   # what supersedes it, when it expires
 ---
@@ -66,7 +66,7 @@ lacks frontmatter, add it. Existing files are backfilled opportunistically (touc
   branch (outside this repo) is the mutation-revert baseline — keep its tree clean.
 * Repo-relative paths in docs (e.g. `spec/drafts/Airlift-IR.md`), regardless of the
   referencing file's location.
-* Evidence stays with its run (`out/<target>/`, `runs/`); specs stay in `spec/`;
+* Evidence stays with its run (`tests/out/<target>/`, `tests/runs/`); specs stay in `spec/`;
   normative schema in `ir-spec/`.
 * Python via `./.venv/bin/python`. `pipeline/lib.sh` is bash-only. Long Copilot runs:
   launch detached, watch the log (Claude background tasks die at 10 min).

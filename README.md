@@ -12,12 +12,12 @@ This repository contains three separable things:
 1. the **Airlift IR schema** — target-agnostic;
 2. the **distillation pipeline** — target-agnostic, executed by GitHub Copilot CLI
    (`copilot -p`) with Anthropic **Opus 4.8** via BYOK (key in `.env`);
-3. the first **target plugin** (`targets/ofbiz-tax/`) — Apache OFBiz sales-tax seam —
+3. the first **target plugin** (`tests/targets/ofbiz-tax/`) — Apache OFBiz sales-tax seam —
    plus the completed proof run against it.
 
 > Continuing this work in a new session? Start at **`CLAUDE.md`** (constitution) →
 > `spec/index.md` (map) → `spec/log.md` (session memory) → **`spec/planning/Goal1-handoff.md`**.
-> Full narrative of the completed proof run: **`out/ofbiz-tax/RUN-REPORT.md`**.
+> Full narrative of the completed proof run: **`tests/out/ofbiz-tax/RUN-REPORT.md`**.
 
 ## Components
 
@@ -48,7 +48,7 @@ the same claims must survive an architecture swap.
 
 Prompts contain **zero** target specifics. A target supplies them via its descriptor.
 
-### `targets/ofbiz-tax/` — the first target plugin
+### `tests/targets/ofbiz-tax/` — the first target plugin
 
 | Piece | Role |
 |---|---|
@@ -60,7 +60,7 @@ Prompts contain **zero** target specifics. A target supplies them via its descri
 | `harness/report-claims.py` | The **verification spine**: failing test → `@AirliftClaim` → claim ID + title ("which claim was violated") |
 | `mutations/mutations.py` | 7 planted, realistic bugs (exemption flip, threshold boundary `≤`→`<`, base-drop, shipping-drop, rollup direction, inheritance cut, audit-trail zeroing); apply/revert against the committed git baseline |
 
-### `exit/` — the proof runners
+### `tests/exit/` — the proof runners
 
 * `run-e1-blind.sh` — sandboxed Copilot agent (no shell, no web, no repo file access —
   empirically verified) writes tests from `ir/` + contract; compile-error-only repair loop
@@ -68,11 +68,11 @@ Prompts contain **zero** target specifics. A target supplies them via its descri
 * `run-e2-mutations.sh` — apply each bug → run blind suite → spine report → revert;
   passes when >half are caught.
 * `run-e3-refactor.sh` — Copilot refactors the seam behavior-preservingly; blind suite must
-  stay green; refactored file + diff archived to `out/ofbiz-tax/e3/`, working copy restored.
+  stay green; refactored file + diff archived to `tests/out/ofbiz-tax/e3/`, working copy restored.
 * `run-e4-flip.sh` — flips the tax-exemption rule; passes only if the suite goes red AND
   the spine names a `TAX.EXEMPT` claim.
 
-### `out/ofbiz-tax/` — products of the completed run
+### `tests/out/ofbiz-tax/` — products of the completed run
 
 `fragment-map.yaml` (79 fragments, 20 fused seams), `coverage-gaps.yaml` (zero native tests
 touch the seam), `behavior-catalog.yaml` (30 behaviors / 7 areas), `backfill-report.yaml`
@@ -101,14 +101,14 @@ IR earn its shape.
 ## Running
 
 ```bash
-./pipeline/run-pipeline.sh targets/ofbiz-tax all      # stages: map testscape catalog backfill distill
-./exit/run-e1-blind.sh && ./exit/run-e2-mutations.sh && ./exit/run-e4-flip.sh && ./exit/run-e3-refactor.sh
+./pipeline/run-pipeline.sh tests/targets/ofbiz-tax all      # stages: map testscape catalog backfill distill
+./tests/exit/run-e1-blind.sh && ./tests/exit/run-e2-mutations.sh && ./tests/exit/run-e4-flip.sh && ./tests/exit/run-e3-refactor.sh
 ```
 
 Prerequisites, one-time OFBiz setup, and operational gotchas: see `spec/planning/Goal1-handoff.md` §3–4.
 
 ## Adding a target
 
-Create `targets/<name>/` with `target.env`, `seam.md`, a harness honoring the
+Create `tests/targets/<name>/` with `target.env`, `seam.md`, a harness honoring the
 harness-contract pattern (fixture DSL + claim binding + suite runner + claim reporter), and
 a mutation kit. No pipeline changes required.

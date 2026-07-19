@@ -59,7 +59,7 @@ this log holds pointers, not content. A session that only reads appends nothing.
 * M3 target recommendation: Fineract (opposite pathology) before InvoiceServices.
 * M2 freeze must include the self-ADR register and the escape hatches (reflexive C1–C5);
   v1.0 framed as commitment device, not final correctness.
-* Doc placement: README stays at repo root; RUN-REPORT stays in `out/ofbiz-tax/`
+* Doc placement: README stays at repo root; RUN-REPORT stays in `tests/out/ofbiz-tax/`
   (evidence colocated with artifacts); handoffs live in `spec/planning/`, one per
   completed goal (`Goal<N>-handoff.md`).
 * Path convention: repo-relative paths in all docs.
@@ -67,6 +67,12 @@ this log holds pointers, not content. A session that only reads appends nothing.
 * Repo committed (initial commit, user go-ahead given). `.gitignore` excludes `.env`
   (BYOK key), `.idea/`, `.claude/`, `.venv/`. Root `harness/` mystery resolved: empty
   accidental scaffold, removed. M2 workstream 4's commit item is done early.
+* Proving-ground material moved under `tests/` (user decision): `tests/targets/`,
+  `tests/out/`, `tests/runs/`, `tests/exit/`. Core product (`pipeline/`, `ir-spec/`,
+  `spec/`) stays at root; the plugin architecture survives inside `tests/`. Script
+  path derivations and all doc references updated; scripts syntax-checked and path
+  resolution verified. Note: OFBiz source was never in this repo — only our plugin
+  and evidence.
 
 **Open**
 * M3 scope tension flagged: measurement duties (cross-model E1, mutation sweep) live in
@@ -88,7 +94,7 @@ this log holds pointers, not content. A session that only reads appends nothing.
 * Target-agnostic pipeline + Airlift IR proven end-to-end on Copilot CLI + Opus 4.8
   BYOK against OFBiz `TaxAuthorityServices.rateProductTaxCalc`. E1 35/35 blind, E2 7/7
   mutations named, E3 refactor green, E4 flip caught and named. Evidence:
-  `out/ofbiz-tax/RUN-REPORT.md`; state + gotchas: `planning/Goal1-handoff.md`.
+  `tests/out/ofbiz-tax/RUN-REPORT.md`; state + gotchas: `planning/Goal1-handoff.md`.
 
 **Decisions**
 

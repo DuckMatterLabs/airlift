@@ -5,11 +5,11 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-AIRLIFT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+AIRLIFT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$AIRLIFT_ROOT/pipeline/lib.sh"
-TARGET_DIR="$AIRLIFT_ROOT/targets/ofbiz-tax"
+TARGET_DIR="$AIRLIFT_ROOT/tests/targets/ofbiz-tax"
 source "$TARGET_DIR/target.env"
-OUT_DIR="$AIRLIFT_ROOT/out/$TARGET_NAME"
+OUT_DIR="$AIRLIFT_ROOT/tests/out/$TARGET_NAME"
 PY="$AIRLIFT_ROOT/.venv/bin/python"
 
 PROMPT="$RUNS_DIR/rendered/ofbiz-tax-refactor.md"
@@ -27,7 +27,7 @@ RUN_EXIT=$?
 set -e
 "$PY" "$TARGET_DIR/harness/report-claims.py" \
   --results "$TEST_RESULTS_DIR/airliftblind.xml" \
-  --tests-dir "$BLIND_TEST_DIR" --ir "$OUT_DIR/ir" | tee "$AIRLIFT_ROOT/runs/e3-spine.txt"
+  --tests-dir "$BLIND_TEST_DIR" --ir "$OUT_DIR/ir" | tee "$AIRLIFT_ROOT/tests/runs/e3-spine.txt"
 
 mkdir -p "$OUT_DIR/e3"
 cp "$SEAM_PRIMARY_FILE" "$OUT_DIR/e3/TaxAuthorityServices.refactored.java"

@@ -57,7 +57,7 @@ onboards, before full distillation pays off.
 ### Store — centralized, partitioned per team
 
 * One central Airlift store; **partition = team** (≈ their services). Inside a
-  partition: per-target IRs exactly as today (`out/<target>/ir/` genre), the team's
+  partition: per-target IRs exactly as today (`tests/out/<target>/ir/` genre), the team's
   glossary namespace, their Ledger slice, their AADR-style decisions.
 * Two-layer store discipline (whitepaper §I): MD/YAML files as the event log (git —
   per-team repos or a partitioned monorepo; decide at execution against org git

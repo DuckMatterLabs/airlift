@@ -11,7 +11,7 @@ distillation pipeline and Airlift IR exist, and were proven end-to-end on the re
 execution harness — **GitHub Copilot CLI (`copilot -p`) with Anthropic Opus 4.8 via BYOK**
 — against OFBiz `TaxAuthorityServices.rateProductTaxCalc` (sales-tax / tax-exemption seam).
 
-All four exit criteria passed (details + evidence pointers in `out/ofbiz-tax/RUN-REPORT.md`):
+All four exit criteria passed (details + evidence pointers in `tests/out/ofbiz-tax/RUN-REPORT.md`):
 
 | Exit | Verdict |
 |---|---|
@@ -22,7 +22,7 @@ All four exit criteria passed (details + evidence pointers in `out/ofbiz-tax/RUN
 
 The one mid-run course correction that shapes everything: **the pipeline and IR are
 target-agnostic by user directive.** OFBiz is only the first target plugin. Never put
-target-specific content in `pipeline/prompts/` or `ir-spec/` — it goes in `targets/<name>/`.
+target-specific content in `pipeline/prompts/` or `ir-spec/` — it goes in `tests/targets/<name>/`.
 
 ## 2. Repo map (what each component is)
 
@@ -34,18 +34,18 @@ See `README.md` for the component descriptions. Quick index:
   `{{PLACEHOLDER}}`-parameterized), `lib.sh` (Copilot BYOK wrapper `run_copilot`),
   `render.py`, `validate.py` (per-stage deterministic validators), `run-pipeline.sh`
   (render → run → validate, ≤3 attempts with repair prompts).
-* `targets/ofbiz-tax/` — target plugin: `target.env` (all paths/commands), `seam.md`
+* `tests/targets/ofbiz-tax/` — target plugin: `target.env` (all paths/commands), `seam.md`
   (seam brief injected into prompts), `harness/` (fixture DSL `TaxFixture`, base case,
   `@AirliftClaim` annotation, `TaxCalcResult`, smoke tests, testdef suites, `install.sh`,
   `run-tests.sh`, `report-claims.py` = the spine reporter, `harness-contract.md` = the
   mechanics-only doc agents write tests against), `mutations/mutations.py` (7 planted bugs).
-* `out/ofbiz-tax/` — pipeline products: `fragment-map.yaml`, `coverage-gaps.yaml`,
+* `tests/out/ofbiz-tax/` — pipeline products: `fragment-map.yaml`, `coverage-gaps.yaml`,
   `behavior-catalog.yaml`, `backfill-report.yaml`, `ir/` (34 claims, glossary 75 terms,
   domain-model, traceability, provenance/, architecture/), `e3/` (refactor artifacts),
   `RUN-REPORT.md` (the full narrative), `testgen-summary` lives in the blind sandbox copy.
-* `exit/run-e1-blind.sh … run-e4-flip.sh` — the four proof runners.
-* `runs/` — logs, rendered prompts, spine reports (`e1-spine.txt`, `e2-summary.txt`,
-  `e2-*-spine.txt`, `e4-spine.txt`), blind sandbox (`runs/blind-sandbox/`).
+* `tests/exit/run-e1-blind.sh … run-e4-flip.sh` — the four proof runners.
+* `tests/runs/` — logs, rendered prompts, spine reports (`e1-spine.txt`, `e2-summary.txt`,
+  `e2-*-spine.txt`, `e4-spine.txt`), blind sandbox (`tests/runs/blind-sandbox/`).
 * `.venv/` — python venv with PyYAML (validators/reporters use `./.venv/bin/python`).
 
 **Outside this repo:**
@@ -71,21 +71,21 @@ See `README.md` for the component descriptions. Quick index:
 cd /Volumes/Dancer/Develop/AIRLIFT/airlift
 
 # Full distillation (stages: map testscape catalog backfill distill | all)
-./pipeline/run-pipeline.sh targets/ofbiz-tax all
+./pipeline/run-pipeline.sh tests/targets/ofbiz-tax all
 
 # Exit proofs (E1 must run first — it generates + installs the blind suite)
-./exit/run-e1-blind.sh
-./exit/run-e2-mutations.sh
-./exit/run-e4-flip.sh
-./exit/run-e3-refactor.sh
+./tests/exit/run-e1-blind.sh
+./tests/exit/run-e2-mutations.sh
+./tests/exit/run-e4-flip.sh
+./tests/exit/run-e3-refactor.sh
 
 # Harness alone
-./targets/ofbiz-tax/harness/install.sh          # idempotent copy into OFBiz
-./targets/ofbiz-tax/harness/run-tests.sh airliftsmoke|airliftbackfill|airliftblind
-./.venv/bin/python targets/ofbiz-tax/harness/report-claims.py \
+./tests/targets/ofbiz-tax/harness/install.sh          # idempotent copy into OFBiz
+./tests/targets/ofbiz-tax/harness/run-tests.sh airliftsmoke|airliftbackfill|airliftblind
+./.venv/bin/python tests/targets/ofbiz-tax/harness/report-claims.py \
     --results ../ofbiz-framework/runtime/logs/test-results/airliftblind.xml \
     --tests-dir ../ofbiz-framework/applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/blind \
-    --ir out/ofbiz-tax/ir
+    --ir tests/out/ofbiz-tax/ir
 ```
 
 Copilot BYOK env is set inside `pipeline/lib.sh:airlift_env` (key read from `.env`;
@@ -135,12 +135,12 @@ Copilot BYOK env is set inside `pipeline/lib.sh:airlift_env` (key read from `.en
    commits→PRs→tickets), then claim-driven mining backwards from `@Claim`/fragment bindings.
    Consumes the now-frozen claim schema as a fixed contract. The `provenance/*.yaml` files
    emitted by stage 5 are the stub to grow from (git-only today; no PR/ticket join yet).
-2. **Goal 3 — architecture distillation**: `out/ofbiz-tax/ir/architecture/` (3 ADRs +
+2. **Goal 3 — architecture distillation**: `tests/out/ofbiz-tax/ir/architecture/` (3 ADRs +
    3 mustache patterns) is a deliberate stub. Full goal: pattern library extraction as its
    own pipeline with the swap-test ("architecture can change, claims survive") as its
    validation — E3 was a first taste.
 3. **Second target** to stress generality (spec suggests Fineract, or OFBiz
-   `InvoiceServices.createInvoiceForOrder` as the "final boss"). Cost: one `targets/<name>/`
+   `InvoiceServices.createInvoiceForOrder` as the "final boss"). Cost: one `tests/targets/<name>/`
    plugin (descriptor + seam brief + harness + mutations); pipeline unchanged.
 4. **Claim-status upgrade pass**: claims now carry `status: extracted`; the manifest knows
    pinned (backfill) vs blind-verified. A small deterministic tool could promote statuses
@@ -154,8 +154,8 @@ Copilot BYOK env is set inside `pipeline/lib.sh:airlift_env` (key read from `.en
 ## 7. Reproducing the proof from scratch (if the world resets)
 
 1. OFBiz: init wrapper, build, load seed tiers (§3 one-time setup).
-2. `targets/ofbiz-tax/harness/install.sh` → run `airliftsmoke` (must be 2/2 green).
-3. `./pipeline/run-pipeline.sh targets/ofbiz-tax all` (each stage validates itself).
-4. `exit/run-e1-blind.sh` → expect green (IR ambiguity discovered here is the METHOD:
+2. `tests/targets/ofbiz-tax/harness/install.sh` → run `airliftsmoke` (must be 2/2 green).
+3. `./pipeline/run-pipeline.sh tests/targets/ofbiz-tax all` (each stage validates itself).
+4. `tests/exit/run-e1-blind.sh` → expect green (IR ambiguity discovered here is the METHOD:
    repair claims, rerun fresh).
-5. `exit/run-e2-mutations.sh`, `exit/run-e4-flip.sh`, `exit/run-e3-refactor.sh`.
+5. `tests/exit/run-e2-mutations.sh`, `tests/exit/run-e4-flip.sh`, `tests/exit/run-e3-refactor.sh`.

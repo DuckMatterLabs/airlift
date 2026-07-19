@@ -29,10 +29,10 @@ First blind trial: 30/35 green. The 5 reds decomposed into:
 |---|---|
 | E1 blind IR-only testgen, green vs real code | **PASSED** — 35 tests / 35 green (agent sandboxed: no shell, no web, no repo file access — verified) |
 | E2 planted bugs caught | **PASSED — 7/7 caught**, each naming the right claims; includes the ≤→< boundary bug and the audit-trail (exempt-amount) bug |
-| E3 behavior-preserving refactor stays green | **PASSED** — Copilot+Opus extracted 10 business-named methods from the ~300-line `getTaxAdjustments` monolith (675-line diff, traceability annotations preserved); 35/35 blind tests stayed green (`out/ofbiz-tax/e3/`) |
+| E3 behavior-preserving refactor stays green | **PASSED** — Copilot+Opus extracted 10 business-named methods from the ~300-line `getTaxAdjustments` monolith (675-line diff, traceability annotations preserved); 35/35 blind tests stayed green (`tests/out/ofbiz-tax/e3/`) |
 | E4 flipped exemption rule caught AND named | **PASSED** — suite red; spine named TAX.EXEMPT.ZEROING, TAX.EXEMPT.GROUP-ROLLUP, TAX.EXEMPT.JURISDICTION-INHERITANCE, TAX.EXEMPT.EFFECTIVE-INFO |
 
-E2 detail (violated claims per mutation) — `runs/e2-summary.txt`:
+E2 detail (violated claims per mutation) — `tests/runs/e2-summary.txt`:
 * M1 exempt-flip → all four TAX.EXEMPT claims
 * M2 min-price boundary → TAX.RATE.THRESHOLD-MIN-ITEM-PRICE (exactly)
 * M3 item amount untaxed → TAX.CALC.* + downstream
@@ -43,9 +43,9 @@ E2 detail (violated claims per mutation) — `runs/e2-summary.txt`:
 
 ## Artifacts
 
-* IR: `out/ofbiz-tax/ir/` (claims, glossary, domain model, traceability, provenance,
+* IR: `tests/out/ofbiz-tax/ir/` (claims, glossary, domain model, traceability, provenance,
   architecture stub)
 * Blind suite: OFBiz `applications/accounting/src/test/java/.../tax/test/blind/` (35 tests)
 * Backfill suite: `.../tax/test/backfill/` (19 tests)
-* Harness: `targets/ofbiz-tax/harness/` (DSL, contract, spine reporter)
-* Logs & spine reports: `runs/`
+* Harness: `tests/targets/ofbiz-tax/harness/` (DSL, contract, spine reporter)
+* Logs & spine reports: `tests/runs/`

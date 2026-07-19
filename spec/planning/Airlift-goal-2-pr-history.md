@@ -37,7 +37,7 @@ ratifies. The output of mining is always a **tier-3 inferred claim** awaiting ra
 * `ir-spec/IR-SCHEMA.md` v1.0 — frozen. Claims, `traceability.yaml`, fragment IDs
   (`F-TAS-NNN`), and the `provenance/*.yaml` stubs emitted by stage 5 (git-only today) are
   the seed this goal grows from.
-* `out/ofbiz-tax/ir/` — 34 claims with fragment bindings; the mining demos run here.
+* `tests/out/ofbiz-tax/ir/` — 34 claims with fragment bindings; the mining demos run here.
 * Target git repos. For ofbiz-tax: the OFBiz clone (`airlift` branch for harness, but
   history mining runs over upstream history). OFBiz work items are Apache JIRA keys
   (`OFBIZ-NNNN`) embedded in commit messages — no PR/ticket API needed for the first
@@ -67,7 +67,7 @@ Design rules:
 
 * **Target-agnostic core, forge adapters as plugins.** The walker and schema live in
   `pipeline/`; the *work-item resolver* (JIRA-key regex for OFBiz, AzDO API for Engage,
-  GitHub PR API) is a `targets/<name>/ledger/` adapter. Same invariant as everywhere else:
+  GitHub PR API) is a `tests/targets/<name>/ledger/` adapter. Same invariant as everywhere else:
   nothing forge-specific in the core.
 * **Stable IDs across renames.** Files/methods rename and die; follow renames via git's
   rename detection and record `old_path` chains. Where symbol-level tracking is needed,
@@ -93,7 +93,7 @@ For a claim needing provenance/WHY, run archaeology **backwards from the claim**
 4. LLM synthesis over that **bounded bundle only** (diffs of those commits + PR/ticket
    text): a provenance narrative with explicit citations — "introduced in `sha`/PR#n under
    OFBIZ-nnnn; changed in PR#m with rationale X."
-5. Output lands in `out/<target>/ir/provenance/<claim>.yaml` as **tier-3 inferred**,
+5. Output lands in `tests/out/<target>/ir/provenance/<claim>.yaml` as **tier-3 inferred**,
    `status: inferred`, `awaiting: ratification`, with every assertion carrying a
    commit/PR/ticket citation. A deterministic validator checks that every cited sha/PR/
    work-item actually exists in the Ledger and actually touches the claim's fragments —
@@ -111,7 +111,7 @@ stays unmined forever; the Ledger holds the pointers if anyone asks. Emit a rank
 ## Deliverables
 
 * `pipeline/ledger/` — schema, walker, metric queries (churn, coupling, knowledge map);
-  `targets/ofbiz-tax/ledger/` — JIRA-key adapter.
+  `tests/targets/ofbiz-tax/ledger/` — JIRA-key adapter.
 * `pipeline/prompts/mine-claim.md` (parameterized, target-agnostic) + `validate.py` stage
   for provenance narratives.
 * Provenance narratives for ≥5 claims from the M1 IR, ratification-ready.

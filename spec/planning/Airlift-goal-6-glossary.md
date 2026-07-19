@@ -1,7 +1,7 @@
 ---
 confidence: proposed
 related: [spec/drafts/Airlift-article.md, spec/planning/Airlift-goal-4-mcp.md, spec/planning/Airlift-goal-7-productionalization.md, Airbase]
-sources: [spec/drafts/Airlift-article.md, spec/drafts/Airlift-IR.md, spec/analysis/IR-analysis.md, ir-spec/IR-SCHEMA.md, out/ofbiz-tax/ir/]
+sources: [spec/drafts/Airlift-article.md, spec/drafts/Airlift-IR.md, spec/analysis/IR-analysis.md, ir-spec/IR-SCHEMA.md, tests/out/ofbiz-tax/ir/]
 trajectory: >
   Executes as M8 after M3 (needs two target glossaries to prove federation);
   resolve_term in the Goal 4 MCP consumes it; the Airbase bridge it builds is

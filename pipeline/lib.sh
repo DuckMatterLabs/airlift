@@ -5,7 +5,7 @@ set -euo pipefail
 
 AIRLIFT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OFBIZ_ROOT="$(cd "$AIRLIFT_ROOT/../ofbiz-framework" && pwd)"
-RUNS_DIR="$AIRLIFT_ROOT/runs"
+RUNS_DIR="$AIRLIFT_ROOT/tests/runs"
 
 airlift_env() {
   # Anthropic key from .env; Copilot BYOK pointed at Anthropic with Opus 4.8.

@@ -1,7 +1,7 @@
 ---
 confidence: analyzed
 related: [spec/analysis/socraticode-analysis.md, spec/analysis/Airlift-reflexive.md, spec/planning/Airlift-goal-4-mcp.md, Understand-Anything]
-sources: [spec/planning/Goal1-handoff.md, out/ofbiz-tax/RUN-REPORT.md, ir-spec/IR-SCHEMA.md, out/ofbiz-tax/ir/, /Volumes/Dancer/Develop/AIRLIFT/Understand-Anything]
+sources: [spec/planning/Goal1-handoff.md, tests/out/ofbiz-tax/RUN-REPORT.md, ir-spec/IR-SCHEMA.md, tests/out/ofbiz-tax/ir/, /Volumes/Dancer/Develop/AIRLIFT/Understand-Anything]
 trajectory: >
   Pitfalls feed reflexive risks R1-R5; MCP section is normative for Goal 4;
   UA borrowings feed Goals 3 and 5. Revisit after M3 evidence lands.
@@ -9,8 +9,8 @@ trajectory: >
 
 # Airlift IR — critical analysis and comparison with Understand-Anything
 
-Date: 2026-07-19. Sources: `spec/planning/Goal1-handoff.md`, `out/ofbiz-tax/RUN-REPORT.md`, `ir-spec/IR-SCHEMA.md`,
-the produced IR in `out/ofbiz-tax/ir/`, and the Understand-Anything repo
+Date: 2026-07-19. Sources: `spec/planning/Goal1-handoff.md`, `tests/out/ofbiz-tax/RUN-REPORT.md`, `ir-spec/IR-SCHEMA.md`,
+the produced IR in `tests/out/ofbiz-tax/ir/`, and the Understand-Anything repo
 (clone at `/Volumes/Dancer/Develop/AIRLIFT/Understand-Anything`,
 upstream: <https://github.com/Egonex-AI/Understand-Anything>).
 

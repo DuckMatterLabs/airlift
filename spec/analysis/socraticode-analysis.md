@@ -148,7 +148,7 @@ survives the code being rewritten.
 
 1. **Airlift IR as SocratiCode context artifacts — the literal integration.** SocratiCode
    already indexes non-code knowledge (schemas, API specs) via
-   `.socraticodecontextartifacts.json`. `out/ofbiz-tax/ir/**/*.yaml` is exactly such an
+   `.socraticodecontextartifacts.json`. `tests/out/ofbiz-tax/ir/**/*.yaml` is exactly such an
    artifact set: registering the claims, glossary, and traceability files would make
    `codebase_context_search "tax exemption"` return *verified claims ranked above raw code* —
    tier-1 warranted knowledge surfaced through tier-0 retrieval infrastructure, today, with

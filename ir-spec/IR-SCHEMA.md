@@ -12,7 +12,7 @@ that consumes it.
 ## 1. File layout
 
 ```
-out/ir/
+tests/out/ir/
   ir-manifest.yaml          # package scope, source binding, claim index
   glossary.yaml             # canonical terms (lingua franca; claims may only use these terms)
   domain-model.yaml         # typed domain concepts + attributes + fixture vocabulary

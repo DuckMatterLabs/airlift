@@ -11,7 +11,7 @@ countermeasures live in `spec/analysis/Airlift-reflexive.md` (normative for M2/M
 Standing invariants (carry through every milestone — do not relax):
 
 * **Target-agnostic core.** Nothing target-specific ever lands in `pipeline/` or
-  `ir-spec/`; targets are plugins under `targets/<name>/`.
+  `ir-spec/`; targets are plugins under `tests/targets/<name>/`.
 * **Copilot+Opus executes; Claude authors.** Delivered artifacts must run under the
   `copilot -p` BYOK harness.
 * **Blind means blind.** IR-only test generation never sees code; repair feedback is
@@ -44,7 +44,7 @@ The funded spike. Target-agnostic distillation pipeline + Airlift IR, co-evolved
 against OFBiz `TaxAuthorityServices.rateProductTaxCalc` (tax-exemption seam), executed
 end-to-end on Copilot CLI + Opus 4.8 BYOK.
 
-**Exit criteria — all passed** (evidence: `out/ofbiz-tax/RUN-REPORT.md`):
+**Exit criteria — all passed** (evidence: `tests/out/ofbiz-tax/RUN-REPORT.md`):
 
 | Exit | Result |
 |---|---|
@@ -87,7 +87,7 @@ One slice proves the method; a second target proves the *pipeline*. Candidates:
 Fineract (over-abstraction pathology — the opposite failure mode from OFBiz's
 entanglement) or OFBiz `InvoiceServices.createInvoiceForOrder` (the "final boss").
 
-**Deliverables**: one new `targets/<name>/` plugin only — descriptor, seam brief,
+**Deliverables**: one new `tests/targets/<name>/` plugin only — descriptor, seam brief,
 harness + fixture DSL, mutations. Pipeline and ir-spec untouched.
 
 **Exit criteria**
@@ -134,7 +134,7 @@ human ratifies. Spec: `spec/drafts/Arlift-PR-history-distillation.md`. Grows fro
 Independent track — different source of truth (patterns/ADRs, not business rules),
 different output (mustache pattern library), different validation (swapped architecture
 leaves behavior invariant). Unblocked; run whenever. Grows the deliberate stub at
-`out/ofbiz-tax/ir/architecture/` (3 ADRs + 3 patterns) into its own pipeline.
+`tests/out/ofbiz-tax/ir/architecture/` (3 ADRs + 3 patterns) into its own pipeline.
 **Detailed goal spec: `spec/planning/Airlift-goal-3-architecture.md`** (borrows Understand-Anything's
 deterministic/LLM split, forced layer assignment, and reviewer-gate — never its
 unverified narration).
@@ -166,7 +166,7 @@ search on the truth path).
 
 **Deliverables**
 
-* MCP server over `out/<target>/ir/`: query claims by ID/term/fragment, resolve
+* MCP server over `tests/out/<target>/ir/`: query claims by ID/term/fragment, resolve
   glossary terms, fetch harness contract, report claim coverage and status.
 * Answers ship with the paper trail — claim ID, status tier, owner, provenance — never
   as an oracle (the whitepaper's indemnity design: cite the record, don't assert).

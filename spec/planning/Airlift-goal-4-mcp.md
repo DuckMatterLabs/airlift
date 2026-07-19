@@ -36,12 +36,12 @@ never a bare assertion.
 
 ## Inputs (fixed contracts)
 
-* `out/<target>/ir/` — the only source of truth. The MCP is a **view**; it holds no
+* `tests/out/<target>/ir/` — the only source of truth. The MCP is a **view**; it holds no
   knowledge of its own and can be restarted/rebuilt from the IR files at any time.
 * `ir-spec/IR-SCHEMA.md` v1.0 — response shapes derive from it.
 * Claim statuses from the M2 promotion tool (`extracted → pinned → verified`, plus
   tier-3 `inferred` from Goal 2).
-* `targets/<name>/harness/` — `harness-contract.md` and the spine runner, for the
+* `tests/targets/<name>/harness/` — `harness-contract.md` and the spine runner, for the
   `verify` tool.
 
 ## Tool surface (progressive disclosure — the IR-analysis layers, made concrete)
@@ -89,12 +89,12 @@ goal needs; steal the product engineering, refuse the epistemics:
   Agent-instruction blocks for non-plugin hosts (CLAUDE.md / AGENTS.md snippets) ship in
   the README, SocratiCode-style.
 * **Project identity**: a committed `.airlift.json` (`{"target": "ofbiz-tax", "ir":
-  "out/ofbiz-tax/ir"}`) so any checkout resolves the same IR — SocratiCode's committed
+  "tests/out/ofbiz-tax/ir"}`) so any checkout resolves the same IR — SocratiCode's committed
   `projectId` move.
 * **Multi-agent read concurrency** is free (IR files are static); `verify` takes a
   cross-process lock (SocratiCode's `proper-lockfile` pattern) since the spine mutates
   the OFBiz working tree.
-* **Interim integration, zero code**: register `out/<target>/ir/**/*.yaml` as SocratiCode
+* **Interim integration, zero code**: register `tests/out/<target>/ir/**/*.yaml` as SocratiCode
   *context artifacts* (`.socraticodecontextartifacts.json`) so teams already running
   SocratiCode surface verified claims through `codebase_context_search` before Airlift
   MCP ships. This is a bridge, not the product.
@@ -110,13 +110,13 @@ goal needs; steal the product engineering, refuse the epistemics:
 
 ## Deliverables
 
-* MCP server (stdio) over `out/<target>/ir/` with the tool surface above; multi-target.
+* MCP server (stdio) over `tests/out/<target>/ir/` with the tool surface above; multi-target.
 * Claude Code plugin (skills + agent instructions); README config blocks for Copilot CLI
   and other MCP hosts.
 * `.airlift.json` resolution; `verify` lock + background execution.
 * Deterministic response-envelope validator (every response schema-checks, every claim
   reference in a response resolves) — same validator discipline as the pipeline.
-* E1-style blind-agent exit runner: `exit/run-e6-mcp-blind.sh`.
+* E1-style blind-agent exit runner: `tests/exit/run-e6-mcp-blind.sh`.
 
 ## Exit criteria
 

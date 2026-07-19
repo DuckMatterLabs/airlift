@@ -9,7 +9,7 @@ trajectory: >
 
 # Airlift Goal 3 spec — Architecture distillation (Milestone M5)
 
-Status: NOT STARTED (deliberate stub exists: `out/ofbiz-tax/ir/architecture/` — 3 ADRs +
+Status: NOT STARTED (deliberate stub exists: `tests/out/ofbiz-tax/ir/architecture/` — 3 ADRs +
 3 mustache patterns). Date: 2026-07-19.
 Prerequisites: none hard — the most independent track; runnable any time. M2's schema
 freeze is advisable so architecture artifacts version cleanly alongside claims.
@@ -38,7 +38,7 @@ architectural constraints — each side's tests are the other side's invariance 
 ## Inputs (fixed contracts)
 
 * The M1 slice and its verified blind suite (35 tests) — the swap test's invariant.
-* `out/ofbiz-tax/ir/architecture/` stub — grow it, don't restart it.
+* `tests/out/ofbiz-tax/ir/architecture/` stub — grow it, don't restart it.
 * Pattern format (from `Airlift-goal.md`, fixed): unambiguous specs as code / config /
   terraform / script snippets, parameters in **mustache** syntax; ADRs reference patterns,
   optionally pinning concrete parameter values.
@@ -130,9 +130,9 @@ unverified narration. Borrow the former, never the latter:
 ## Deliverables
 
 * `pipeline/prompts/` new stages (A–D generative parts) + validators; conformance tool.
-* `out/ofbiz-tax/ir/architecture/`: layer map, dep graph, pattern library (≥5 real
+* `tests/out/ofbiz-tax/ir/architecture/`: layer map, dep graph, pattern library (≥5 real
   patterns with example bindings), ADRs (grown from the 3 stubs), all referentially valid.
-* Swap-test artifacts under `out/ofbiz-tax/e5-swap/` (diff, agent logs, green run).
+* Swap-test artifacts under `tests/out/ofbiz-tax/e5-swap/` (diff, agent logs, green run).
 
 ## Exit criteria
 
@@ -144,7 +144,7 @@ unverified narration. Borrow the former, never the latter:
    pattern and ADR.
 3. Every pattern regenerates its own example instances (Stage C validator clean).
 4. `pipeline/` additions are target-agnostic; all OFBiz specifics live in
-   `targets/ofbiz-tax/` (pattern matchers may be target files; the conformance engine may
+   `tests/targets/ofbiz-tax/` (pattern matchers may be target files; the conformance engine may
    not).
 
 ## Non-goals

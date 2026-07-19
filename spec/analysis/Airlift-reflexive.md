@@ -1,7 +1,7 @@
 ---
 confidence: analyzed
 related: [spec/planning/Airlift-m2-freeze.md, spec/planning/Airlift-m3-second-target.md, spec/drafts/Airlift-IR.md]
-sources: [spec/drafts/Airlift-IR.md, spec/drafts/Airlift-article.md, ir-spec/IR-SCHEMA.md, out/ofbiz-tax/RUN-REPORT.md, spec/analysis/IR-analysis.md, spec/analysis/socraticode-analysis.md]
+sources: [spec/drafts/Airlift-IR.md, spec/drafts/Airlift-article.md, ir-spec/IR-SCHEMA.md, tests/out/ofbiz-tax/RUN-REPORT.md, spec/analysis/IR-analysis.md, spec/analysis/socraticode-analysis.md]
 trajectory: >
   Normative for M2/M3; AADR register materializes as spec/adr/ at M2; risks
   R1-R5 await falsifier evidence from M3; re-derivation probes due ~M3 and ~M7.
@@ -11,7 +11,7 @@ trajectory: >
 
 Date: 2026-07-19. Companion to `spec/planning/MILESTONES.md`; normative input to M2 (the freeze) and
 M3 (the second target). Sources: `spec/drafts/Airlift-IR.md`, `spec/drafts/Airlift-article.md`,
-`ir-spec/IR-SCHEMA.md`, `out/ofbiz-tax/RUN-REPORT.md`, `spec/analysis/IR-analysis.md`,
+`ir-spec/IR-SCHEMA.md`, `tests/out/ofbiz-tax/RUN-REPORT.md`, `spec/analysis/IR-analysis.md`,
 `spec/analysis/socraticode-analysis.md`.
 
 ## 1. The reflexive principle

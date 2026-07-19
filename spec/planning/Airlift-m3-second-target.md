@@ -21,7 +21,7 @@ Execution harness: Copilot CLI (`copilot -p`) + Opus BYOK, unchanged.
 ## Goal summary
 
 One slice proves the *method*; a second target proves the *pipeline*. The deliverable is
-deliberately boring — one new `targets/<name>/` plugin, nothing else — and the measure is
+deliberately boring — one new `tests/targets/<name>/` plugin, nothing else — and the measure is
 everything that *wasn't* supposed to change: `pipeline/` and `ir-spec/` diffs, prompt
 bending, and harness cost. M3 is equally a **measurement milestone**: it produces the
 evidence that several reflexive falsifiers (R1, R2, R3, R5) are waiting on.
@@ -51,13 +51,13 @@ discipline: refine before execution, then run a fixed plan).
 
 ## Method
 
-1. **Target plugin authoring** — `targets/fineract-<seam>/`: `target.env` (paths, build,
+1. **Target plugin authoring** — `tests/targets/fineract-<seam>/`: `target.env` (paths, build,
    test commands), `seam.md` brief, `harness/` (fixture DSL, base case, claim-binding
    mechanism appropriate to the target's test stack, contract doc, smoke tests, install
    + run scripts, spine reporter config), `mutations/` (planted bugs, occurrence-checked
    as in M1). Reuse `report-claims.py` and the pipeline unchanged; anything that *can't*
    be reused unchanged goes in the friction log.
-2. **Pipeline replay** — `run-pipeline.sh targets/fineract-<seam> all`: map → testscape
+2. **Pipeline replay** — `run-pipeline.sh tests/targets/fineract-<seam> all`: map → testscape
    → catalog → backfill → distill, each stage through its own validator + repair loop
    (no manual driving this time — that determinism was M2 debt, now paid).
 3. **Exit proofs** — E1 blind (fresh sandboxed agent, IR + harness contract only), E2
@@ -79,9 +79,9 @@ discipline: refine before execution, then run a fixed plan).
 
 ## Deliverables
 
-* `targets/fineract-<seam>/` — complete plugin (the only new production code).
-* `out/fineract-<seam>/` — full pipeline products + `RUN-REPORT.md` in the M1 genre.
-* `exit/` runners generalized only if generalization is target-agnostic (else per-target
+* `tests/targets/fineract-<seam>/` — complete plugin (the only new production code).
+* `tests/out/fineract-<seam>/` — full pipeline products + `RUN-REPORT.md` in the M1 genre.
+* `tests/exit/` runners generalized only if generalization is target-agnostic (else per-target
   variants live in the plugin).
 * `friction-log.md`, cost accounting section in the run report, cross-model E1 results;
   mutation-sweep results or an explicit skip record.

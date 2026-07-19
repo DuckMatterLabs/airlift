@@ -4,13 +4,13 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-AIRLIFT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-TARGET_DIR="$AIRLIFT_ROOT/targets/ofbiz-tax"
+AIRLIFT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+TARGET_DIR="$AIRLIFT_ROOT/tests/targets/ofbiz-tax"
 source "$TARGET_DIR/target.env"
-OUT_DIR="$AIRLIFT_ROOT/out/$TARGET_NAME"
+OUT_DIR="$AIRLIFT_ROOT/tests/out/$TARGET_NAME"
 PY="$AIRLIFT_ROOT/.venv/bin/python"
 MUT="$TARGET_DIR/mutations/mutations.py"
-SUMMARY="$AIRLIFT_ROOT/runs/e2-summary.txt"
+SUMMARY="$AIRLIFT_ROOT/tests/runs/e2-summary.txt"
 
 : > "$SUMMARY"
 caught=0
@@ -20,11 +20,11 @@ for mid in $($PY "$MUT" list | cut -d: -f1); do
   echo "=== E2 mutation $mid ==="
   $PY "$MUT" apply "$mid"
   set +e
-  "$TARGET_DIR/harness/run-tests.sh" airliftblind > "$AIRLIFT_ROOT/runs/e2-$mid.log" 2>&1
+  "$TARGET_DIR/harness/run-tests.sh" airliftblind > "$AIRLIFT_ROOT/tests/runs/e2-$mid.log" 2>&1
   RUN_EXIT=$?
   $PY "$TARGET_DIR/harness/report-claims.py" \
       --results "$TEST_RESULTS_DIR/airliftblind.xml" \
-      --tests-dir "$BLIND_TEST_DIR" --ir "$OUT_DIR/ir" > "$AIRLIFT_ROOT/runs/e2-$mid-spine.txt" 2>&1
+      --tests-dir "$BLIND_TEST_DIR" --ir "$OUT_DIR/ir" > "$AIRLIFT_ROOT/tests/runs/e2-$mid-spine.txt" 2>&1
   set -e
   $PY "$MUT" revert
   if [ "$RUN_EXIT" -ne 0 ]; then
@@ -33,7 +33,7 @@ for mid in $($PY "$MUT" list | cut -d: -f1); do
   else
     verdict="MISSED"
   fi
-  claims="$(grep -E '^\s+✗' "$AIRLIFT_ROOT/runs/e2-$mid-spine.txt" | sed 's/^ *✗ *//' | paste -sd ';' - || true)"
+  claims="$(grep -E '^\s+✗' "$AIRLIFT_ROOT/tests/runs/e2-$mid-spine.txt" | sed 's/^ *✗ *//' | paste -sd ';' - || true)"
   echo "$mid: $verdict ${claims:+— violated: $claims}" | tee -a "$SUMMARY"
 done
 

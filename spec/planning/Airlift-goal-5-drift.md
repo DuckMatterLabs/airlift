@@ -113,7 +113,7 @@ demonstrated sufficient not just to *test* the behavior but to *reproduce* it.
   versioned); integrity checker; PR-gate driver script; staleness/decay reporter.
 * Promotion tool extension: demotion, `stale` status, attestation records.
 * Compensation-loop runner: scoped re-extraction + claim diff + proposed-delta emitter.
-* `exit/run-e7-*.sh` runners for the three exit criteria; drift report (HTML/MD — the
+* `tests/exit/run-e7-*.sh` runners for the three exit criteria; drift report (HTML/MD — the
   adoption wedge surface from the whitepaper, pointing humans at drift).
 
 ## Exit criteria
