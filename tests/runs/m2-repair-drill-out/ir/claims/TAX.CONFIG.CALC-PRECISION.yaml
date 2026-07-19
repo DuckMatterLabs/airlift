@@ -1,0 +1,25 @@
+id: TAX.CONFIG.CALC-PRECISION
+kind: config
+title: Per-line tax is computed and rounded to three decimal places, half-up.
+status: extracted
+priority: core
+terms: [sales-tax-precision, rounding-mode, tax-amount]
+depends_on: []
+behavior: |
+  Rule: Sales-tax-precision is three decimals, rounding half away from zero
+    Given any tax-calculation
+    When a per-line tax-amount is computed
+    Then it is carried and rounded to three decimal places
+    And ties are rounded half up (away from zero)
+scenarios:
+  - name: constants
+    given: {}
+    expect: {calculation-decimals: 3, rounding-mode: HALF_UP}
+outputs_affected: [tax-amount]
+observability: internal
+source_fragments: [F-ARITH-001, F-TAS-002]
+confidence: derived-from-code
+notes: >
+  Load-bearing constants: calculation decimals = 3, rounding mode = HALF_UP. These are the
+  assertion constants behind every worked numeric scenario in the CALC/EXEMPT/RATE claims
+  (e.g. 6.25% of 100.00 = 6.250). Distinct from display-precision (TAX.CONFIG.FINAL-PRECISION).

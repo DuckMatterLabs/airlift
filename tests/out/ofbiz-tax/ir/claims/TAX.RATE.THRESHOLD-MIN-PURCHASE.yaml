@@ -1,7 +1,7 @@
 id: TAX.RATE.THRESHOLD-MIN-PURCHASE
 kind: behavior
 title: A rate rule with a minimum purchase applies only at or above that line amount.
-status: extracted
+status: verified
 priority: edge
 terms: [rate-rule, minimum-purchase, line-amount, tax-adjustment, tax-amount]
 depends_on: [TAX.RATE.AUTHORITY-MATCH]
@@ -46,3 +46,8 @@ confidence: derived-from-code
 notes: >
   The threshold is inclusive (at-or-above) and compares against the order-line line-amount
   (unit-price times quantity). A rate-rule with no minimum-purchase imposes no floor.
+attestations:
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

@@ -37,3 +37,8 @@ notes: >
   6 + 4 = 10. Per-unit tax added to price = (12.600 + 8.400)/quantity(2) = 6.300 + 4.200;
   display-price-with-tax = base-price(100.00) + shipping-price(10.00) + 10.500 = 120.500 ->
   120.50.
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"

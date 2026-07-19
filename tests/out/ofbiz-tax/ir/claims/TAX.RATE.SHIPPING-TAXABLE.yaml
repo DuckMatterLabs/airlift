@@ -1,7 +1,7 @@
 id: TAX.RATE.SHIPPING-TAXABLE
 kind: behavior
 title: Freight is taxed only under rate rules that permit taxing shipping.
-status: pinned
+status: verified
 priority: edge
 terms: [freight, rate-rule, shipping-taxable-flag, tax-adjustment, tax-amount]
 depends_on: [TAX.ORDER.FREIGHT-SPLIT]
@@ -39,3 +39,12 @@ notes: >
   With a single product carrying the whole order value its value-weight is one, so freight
   tax is 10.00*6.25% = 0.625. A rate-rule with an unset shipping-taxable-flag is treated as
   permitting shipping tax.
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

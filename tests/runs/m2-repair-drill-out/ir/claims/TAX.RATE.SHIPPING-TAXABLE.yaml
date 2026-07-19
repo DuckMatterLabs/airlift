@@ -1,0 +1,20 @@
+id: TAX.RATE.SHIPPING-TAXABLE
+kind: behavior
+title: Freight is taxed only under rate-rules that permit taxing shipping.
+status: extracted
+priority: edge
+terms: [rate-rule, freight-amount, tax-line, order]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.ORDER.FREIGHT-SPLIT]
+behavior: |
+  Rule: Only shipping-taxable rate-rules tax freight
+    Given an order with a freight-amount
+    And a rate-rule that permits taxing shipping
+    When tax is calculated for the order
+    Then an order-level tax-line taxes the freight-amount
+    And when instead the rate-rule forbids taxing shipping, no order-level freight tax-line appears
+outputs_affected: [tax-line]
+observability: direct
+source_fragments: [F-TAS-034, F-TAS-038, F-ACCTEM-006]
+confidence: derived-from-code
+notes: >
+  An unset taxes-shipping flag permits shipping tax. Pinned by two green backfill tests.

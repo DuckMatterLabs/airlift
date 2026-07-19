@@ -1,0 +1,20 @@
+id: TAX.ORDER.VALUE-WEIGHT
+kind: behavior
+title: Order-level tax is apportioned to items by each item's share of total order value.
+status: extracted
+priority: edge
+terms: [order-shipping-amount, order-line, item-amount, value-weight, tax-line]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.ORDER.FREIGHT-SPLIT]
+behavior: |
+  Rule: Order-level charges split by value-weight
+    Given an order with multiple taxable order-lines and an order-level charge
+    When tax is calculated for the order
+    Then the order-level charge's tax is divided among the order-lines in proportion to each order-line's item-amount share of the total order value
+outputs_affected: [tax-line]
+observability: internal
+source_fragments: [F-TAS-023, F-TAS-024]
+confidence: derived-from-code
+notes: >
+  Internal mechanism underlying TAX.ORDER.FREIGHT-SPLIT: the fraction applied to an order-line
+  is item-amount / sum(item-amounts). Not separately observable; verified through the freight
+  split's per-item results.

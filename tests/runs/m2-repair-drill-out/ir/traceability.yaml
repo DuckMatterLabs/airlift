@@ -1,0 +1,354 @@
+# Airlift traceability for the ofbiz sales-tax seam.
+# Every referenced fragment is bound to file/symbol/role/lines at the source commit below;
+# every claim lists the fragment IDs it derives from (mirrors source_fragments in each claim).
+schema_version: "1.0"
+
+source_binding:
+  repo: ofbiz-framework
+  commit: 1a7d91a2979ed366f617978441a20575dab12281
+  note: >
+    Line numbers for TaxAuthorityServices.java fragments are at this commit, which carries the
+    committed AIRLIFT source annotations (comment-only additions). All other files are unchanged
+    from the catalog's source_binding (68b751ff) so their line ranges are identical.
+
+annotation:
+  file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  convention: "// AIRLIFT: <fragment-id> inserted at the first line of each business-logic or fused fragment"
+  comment_only: true
+
+fragments:
+  - id: F-ACCTEM-001
+    file: applications/datamodel/entitydef/accounting-entitymodel.xml
+    symbol: "PartyTaxAuthInfo"
+    role: fused
+    lines: [3622, 3643]
+  - id: F-ACCTEM-002
+    file: applications/datamodel/entitydef/accounting-entitymodel.xml
+    symbol: "TaxAuthority"
+    role: plumbing
+    lines: [3658, 3672]
+  - id: F-ACCTEM-003
+    file: applications/datamodel/entitydef/accounting-entitymodel.xml
+    symbol: "TaxAuthorityAssoc"
+    role: fused
+    lines: [3687, 3711]
+  - id: F-ACCTEM-006
+    file: applications/datamodel/entitydef/accounting-entitymodel.xml
+    symbol: "TaxAuthorityRateProduct"
+    role: fused
+    lines: [3780, 3811]
+  - id: F-ARITH-001
+    file: applications/accounting/config/arithmetic.properties
+    symbol: "salestax.*"
+    role: business-logic
+    lines: [46, 52]
+  - id: F-COMMONEM-001
+    file: framework/common/entitydef/entitymodel.xml
+    symbol: "Geo"
+    role: plumbing
+    lines: [207, 221]
+  - id: F-COMMONEM-002
+    file: framework/common/entitydef/entitymodel.xml
+    symbol: "GeoAssoc"
+    role: fused
+    lines: [222, 242]
+  - id: F-ORDEREM-001
+    file: applications/datamodel/entitydef/order-entitymodel.xml
+    symbol: "OrderAdjustment"
+    role: plumbing
+    lines: [48, 159]
+  - id: F-PARTYEM-001
+    file: applications/datamodel/entitydef/party-entitymodel.xml
+    symbol: "PostalAddress"
+    role: plumbing
+    lines: [1237, 1295]
+  - id: F-PARTYEM-002
+    file: applications/datamodel/entitydef/party-entitymodel.xml
+    symbol: "PartyRelationship"
+    role: plumbing
+    lines: [2302, 2358]
+  - id: F-PRODEM-001
+    file: applications/datamodel/entitydef/product-entitymodel.xml
+    symbol: "ProductCategoryMember"
+    role: plumbing
+    lines: [368, 390]
+  - id: F-PRODEM-002
+    file: applications/datamodel/entitydef/product-entitymodel.xml
+    symbol: "Facility"
+    role: plumbing
+    lines: [996, 1053]
+  - id: F-PRODEM-003
+    file: applications/datamodel/entitydef/product-entitymodel.xml
+    symbol: "ProductPrice"
+    role: fused
+    lines: [2509, 2578]
+  - id: F-PRODEM-004
+    file: applications/datamodel/entitydef/product-entitymodel.xml
+    symbol: "Product"
+    role: plumbing
+    lines: [2802, 2937]
+  - id: F-PRODEM-005
+    file: applications/datamodel/entitydef/product-entitymodel.xml
+    symbol: "ProductStore"
+    role: plumbing
+    lines: [3838, 3982]
+  - id: F-STAX-001
+    file: applications/accounting/servicedef/services_tax.xml
+    symbol: "calcTaxInterface"
+    role: plumbing
+    lines: [28, 44]
+  - id: F-STAX-002
+    file: applications/accounting/servicedef/services_tax.xml
+    symbol: "calcTaxTotalForDisplayInterface"
+    role: plumbing
+    lines: [45, 56]
+  - id: F-STAX-003
+    file: applications/accounting/servicedef/services_tax.xml
+    symbol: "calcTax"
+    role: plumbing
+    lines: [59, 63]
+  - id: F-STAX-004
+    file: applications/accounting/servicedef/services_tax.xml
+    symbol: "calcTaxForDisplay"
+    role: plumbing
+    lines: [64, 68]
+  - id: F-TAS-002
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "(static constants)"
+    role: boilerplate
+    lines: [60, 66]
+  - id: F-TAS-003
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalcForDisplay :: input extraction"
+    role: plumbing
+    lines: [67, 76]
+  - id: F-TAS-004
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalcForDisplay :: accumulator seed"
+    role: business-logic
+    lines: [77, 89]
+  - id: F-TAS-007
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalcForDisplay :: VAT authority resolution"
+    role: fused
+    lines: [105, 121]
+  - id: F-TAS-010
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalcForDisplay :: sum SALES_TAX"
+    role: business-logic
+    lines: [137, 152]
+  - id: F-TAS-012
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalcForDisplay :: final rounding"
+    role: business-logic
+    lines: [159, 162]
+  - id: F-TAS-014
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalc :: input extraction"
+    role: plumbing
+    lines: [171, 185]
+  - id: F-TAS-017
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalc :: facility address fallback"
+    role: fused
+    lines: [208, 224]
+  - id: F-TAS-018
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalc :: address required guard"
+    role: business-logic
+    lines: [225, 239]
+  - id: F-TAS-021
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalc :: per-item loop"
+    role: business-logic
+    lines: [258, 279]
+  - id: F-TAS-022
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalc :: value weights"
+    role: business-logic
+    lines: [280, 289]
+  - id: F-TAS-023
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalc :: shipping tax split"
+    role: business-logic
+    lines: [290, 297]
+  - id: F-TAS-024
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalc :: promotions tax"
+    role: business-logic
+    lines: [298, 304]
+  - id: F-TAS-025
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "rateProductTaxCalc :: result"
+    role: plumbing
+    lines: [305, 311]
+  - id: F-TAS-026
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAuthorities :: address to geo map"
+    role: business-logic
+    lines: [312, 333]
+  - id: F-TAS-027
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAuthorities :: geo expansion and lookup"
+    role: fused
+    lines: [334, 345]
+  - id: F-TAS-031
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAdjustments :: store condition"
+    role: fused
+    lines: [373, 385]
+  - id: F-TAS-032
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAdjustments :: authorities condition"
+    role: fused
+    lines: [386, 405]
+  - id: F-TAS-034
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAdjustments :: shipping taxability widening"
+    role: fused
+    lines: [410, 420]
+  - id: F-TAS-035
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAdjustments :: promotions taxability widening"
+    role: fused
+    lines: [421, 431]
+  - id: F-TAS-036
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAdjustments :: threshold main condition"
+    role: fused
+    lines: [432, 442]
+  - id: F-TAS-038
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAdjustments :: taxable base"
+    role: business-logic
+    lines: [452, 480]
+  - id: F-TAS-039
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAdjustments :: tax amount"
+    role: business-logic
+    lines: [481, 485]
+  - id: F-TAS-041
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAdjustments :: product price resolution"
+    role: fused
+    lines: [501, 513]
+  - id: F-TAS-042
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAdjustments :: VAT-in-price extraction"
+    role: business-logic
+    lines: [514, 551]
+  - id: F-TAS-044
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAdjustments :: exemption entry / group rollup"
+    role: fused
+    lines: [569, 589]
+  - id: F-TAS-045
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAdjustments :: negative VAT adjustment"
+    role: business-logic
+    lines: [591, 598]
+  - id: F-TAS-046
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getTaxAdjustments :: VAT price correction"
+    role: business-logic
+    lines: [600, 662]
+  - id: F-TAS-049
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "getProductPrice :: price query"
+    role: fused
+    lines: [681, 701]
+  - id: F-TAS-051
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "setProductCategoryCond :: product id condition"
+    role: fused
+    lines: [710, 738]
+  - id: F-TAS-052
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "setProductCategoryCond :: category match condition"
+    role: fused
+    lines: [740, 754]
+  - id: F-TAS-054
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "handlePartyTaxExempt :: party tax info lookup"
+    role: fused
+    lines: [760, 775]
+  - id: F-TAS-055
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "handlePartyTaxExempt :: exemption zeroing"
+    role: business-logic
+    lines: [777, 786]
+  - id: F-TAS-056
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: "handlePartyTaxExempt :: exemption inheritance"
+    role: fused
+    lines: [788, 800]
+
+claims:
+  - id: TAX.CALC.TAX-AMOUNT
+    fragments: [F-TAS-039, F-ARITH-001]
+  - id: TAX.CALC.TAXABLE-BASE
+    fragments: [F-TAS-038, F-PRODEM-004]
+  - id: TAX.CONFIG.CALC-PRECISION
+    fragments: [F-ARITH-001, F-TAS-002]
+  - id: TAX.CONFIG.FINAL-PRECISION
+    fragments: [F-ARITH-001, F-TAS-012]
+  - id: TAX.CONTRACT.CALC-ORDER-TAX
+    fragments: [F-TAS-014, F-TAS-021, F-TAS-025, F-STAX-001, F-STAX-003, F-ORDEREM-001]
+  - id: TAX.CONTRACT.DISPLAY-PRICE-WITH-TAX
+    fragments: [F-TAS-003, F-TAS-004, F-STAX-002, F-STAX-004]
+  - id: TAX.DISPLAY.FINAL-ROUNDING
+    fragments: [F-TAS-010, F-TAS-012, F-ARITH-001]
+  - id: TAX.DISPLAY.PRICE-WITH-TAX
+    fragments: [F-TAS-007, F-TAS-010]
+  - id: TAX.DISPLAY.VAT-ONLY
+    fragments: [F-TAS-007, F-TAS-041]
+  - id: TAX.EXEMPT.EFFECTIVE-INFO
+    fragments: [F-TAS-054, F-ACCTEM-001]
+  - id: TAX.EXEMPT.GROUP-ROLLUP
+    fragments: [F-TAS-044, F-PARTYEM-002, F-ACCTEM-001]
+  - id: TAX.EXEMPT.JURISDICTION-INHERITANCE
+    fragments: [F-TAS-056, F-ACCTEM-003]
+  - id: TAX.EXEMPT.ZEROING
+    fragments: [F-TAS-055, F-ACCTEM-001]
+  - id: TAX.JURIS.ADDRESS-REQUIRED
+    fragments: [F-TAS-018, F-PARTYEM-001]
+  - id: TAX.JURIS.ADDRESS-TO-JURISDICTION
+    fragments: [F-TAS-026, F-TAS-027, F-COMMONEM-001, F-ACCTEM-002, F-PARTYEM-001]
+  - id: TAX.JURIS.CONTAINMENT
+    fragments: [F-TAS-027, F-COMMONEM-002]
+  - id: TAX.JURIS.FACILITY-FALLBACK
+    fragments: [F-TAS-017, F-PRODEM-002, F-PARTYEM-001]
+  - id: TAX.ORDER.FREIGHT-SPLIT
+    fragments: [F-TAS-023, F-TAS-024, F-TAS-018]
+  - id: TAX.ORDER.PER-ITEM
+    fragments: [F-TAS-021, F-TAS-022]
+  - id: TAX.ORDER.PROMO-TAX
+    fragments: [F-TAS-026, F-TAS-017]
+  - id: TAX.ORDER.VALUE-WEIGHT
+    fragments: [F-TAS-023, F-TAS-024]
+  - id: TAX.RATE.AUTHORITY-MATCH
+    fragments: [F-TAS-032, F-ACCTEM-002, F-ACCTEM-006]
+  - id: TAX.RATE.CATEGORY-MATCH
+    fragments: [F-TAS-051, F-TAS-052, F-PRODEM-001]
+  - id: TAX.RATE.PROMO-TAXABLE
+    fragments: [F-TAS-035, F-TAS-038, F-ACCTEM-006]
+  - id: TAX.RATE.SHIPPING-TAXABLE
+    fragments: [F-TAS-034, F-TAS-038, F-ACCTEM-006]
+  - id: TAX.RATE.STORE-SCOPE
+    fragments: [F-TAS-031]
+  - id: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE
+    fragments: [F-TAS-036, F-ACCTEM-006]
+  - id: TAX.RATE.THRESHOLD-MIN-PURCHASE
+    fragments: [F-TAS-036, F-ACCTEM-006]
+  - id: TAX.RATE.VARIANT-CATEGORY
+    fragments: [F-TAS-051]
+  - id: TAX.VAT.DISCOUNT-CORRECTION
+    fragments: [F-TAS-042, F-TAS-045]
+  - id: TAX.VAT.PRICE-CORRECTION
+    fragments: [F-TAS-046, F-PRODEM-003]
+  - id: TAX.VAT.PRICE-GROUP-SCOPE
+    fragments: [F-TAS-049, F-PRODEM-003, F-PRODEM-005]
+  - id: TAX.VAT.PRICE-INCLUSIVE
+    fragments: [F-TAS-041, F-TAS-042, F-PRODEM-003]
+  - id: TAX.VAT.VARIANT-PRICE
+    fragments: [F-TAS-041]

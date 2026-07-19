@@ -1,0 +1,25 @@
+suite: "airliftbackfill"
+results_file: "tests/runs/m2-promotion/airliftbackfill.xml"
+sha: "1a7d91a2979ed366f617978441a20575dab12281"
+timestamp: "2026-07-19T22:58:24"
+tests:
+  - {test: "BackfillTaxTests#testPromotionsTaxedWhenRuleAllowsTaxingPromotions", claim: "TAX.RATE.PROMO-TAXABLE", outcome: passed}
+  - {test: "BackfillTaxTests#testNonVatStoreReturnsNoDisplayTax", claim: "TAX.DISPLAY.VAT-ONLY", outcome: passed}
+  - {test: "BackfillTaxTests#testMemberInheritsParentGroupExemption", claim: "TAX.EXEMPT.GROUP-ROLLUP", outcome: passed}
+  - {test: "BackfillTaxTests#testCategoryRestrictedRuleTaxesProductInCategory", claim: "TAX.RATE.CATEGORY-MATCH", outcome: passed}
+  - {test: "BackfillTaxTests#testOrderPromotionsProduceOrderLevelTaxLine", claim: "TAX.ORDER.PROMO-TAX", outcome: passed}
+  - {test: "BackfillTaxTests#testEnclosingAuthorityAppliesToInnerAddress", claim: "TAX.JURIS.CONTAINMENT", outcome: passed}
+  - {test: "BackfillTaxTests#testPriceWithTaxRoundingReconciledByCorrectionLine", claim: "TAX.VAT.PRICE-CORRECTION", outcome: passed}
+  - {test: "BackfillTaxTests#testExemptionInheritedFromParentJurisdiction", claim: "TAX.EXEMPT.JURISDICTION-INHERITANCE", outcome: passed}
+  - {test: "BackfillTaxTests#testFreightNotTaxedWhenRuleForbidsTaxingShipping", claim: "TAX.RATE.SHIPPING-TAXABLE", outcome: passed}
+  - {test: "BackfillTaxTests#testTaxInclusivePriceReportsIncludedTaxNotAdded", claim: "TAX.VAT.PRICE-INCLUSIVE", outcome: passed}
+  - {test: "BackfillTaxTests#testFacilityAddressTaxedWhenNoShippingDestination", claim: "TAX.JURIS.FACILITY-FALLBACK", outcome: passed}
+  - {test: "BackfillTaxTests#testPromotionsNotTaxedWhenRuleForbidsTaxingPromotions", claim: "TAX.RATE.PROMO-TAXABLE", outcome: passed}
+  - {test: "BackfillTaxTests#testOrderFreightTaxSplitByProductValue", claim: "TAX.ORDER.FREIGHT-SPLIT", outcome: passed}
+  - {test: "BackfillTaxTests#testDiscountedTaxInclusiveItemEmitsNegativeIncludedTax", claim: "TAX.VAT.DISCOUNT-CORRECTION", outcome: passed}
+  - {test: "BackfillTaxTests#testDisplayPriceWithTaxSumsBaseShippingAndRates", claim: "TAX.DISPLAY.PRICE-WITH-TAX", outcome: passed}
+  - {test: "BackfillTaxTests#testDisplayAmountsRoundedToFinalScale", claim: "TAX.DISPLAY.FINAL-ROUNDING", outcome: passed}
+  - {test: "BackfillTaxTests#testCategoryRestrictedRuleSkipsProductNotInCategory", claim: "TAX.RATE.CATEGORY-MATCH", outcome: passed}
+  - {test: "BackfillTaxTests#testFreightTaxedWhenRuleAllowsTaxingShipping", claim: "TAX.RATE.SHIPPING-TAXABLE", outcome: passed}
+  - {test: "BackfillTaxTests#testVatStoreReturnsTaxForConfiguredAuthority", claim: "TAX.DISPLAY.VAT-ONLY", outcome: passed}
+unbound: []

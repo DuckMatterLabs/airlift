@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="Mac-mini-2.local" name="airliftblind" skipped="0" tests="35" time="1.931" timestamp="2026-07-19T22:58:34">
+  <properties />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testMemberInheritsParentGroupExemption" time="1.4" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testEnclosingCountryAuthorityAppliesToStateNamedAddress" time="0.014" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testResolvedAuthorityRuleDrivesTheTaxLine" time="0.013" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testPromotionsTaxedWhenRuleAllows" time="0.012" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testCalcPrecisionHalfUpAtThirdDecimal" time="0.011" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testEffectiveRegistrationIdRecordedNonExemptStillTaxed" time="0.012" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testMinItemPriceAtThresholdIsTaxed" time="0.01" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testVariantUsesParentVatPrice" time="0.018" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testOrderPromotionsProduceOrderLevelTaxLine" time="0.01" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testMinItemPriceAboveThresholdIsTaxed" time="0.011" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testPromotionsNotTaxedWhenRuleForbids" time="0.012" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testCategoryRuleSkipsProductNotInCategory" time="0.015" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testPriceWithTaxRoundingReconciledByCorrectionLine" time="0.008" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testFinalPrecisionHalfUpAtSecondDecimal" time="0.008" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testFreightTaxedWhenRuleAllows" time="0.008" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testMinPurchaseAboveThresholdIsTaxed" time="0.008" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testTaxInclusivePriceReportsIncludedTaxNotAdded" time="0.007" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testMinPurchaseBelowThresholdIsNotTaxed" time="0.007" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testStateAddressYieldsStateJurisdiction" time="0.008" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testFacilityAddressTaxedWhenNoShippingDestination" time="0.01" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testCategoryRuleTaxesProductInCategory" time="0.008" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testOrderFreightTaxSplitByProductValue" time="0.012" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testTaxableProductIsTaxed" time="0.01" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testDiscountedTaxInclusiveItemEmitsNegativeIncludedTax" time="0.009" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testNonTaxableProductYieldsNoLine" time="0.01" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testFreightNotTaxedWhenRuleForbids" time="0.011" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testVariantTaxedViaParentCategory" time="0.015" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testCountyTaxExemptViaStateExemption" time="0.015" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testTaxAmountIsBaseTimesRate" time="0.009" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testExemptPartyPaysZero" time="0.009" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testStoreScopedRuleAppliesToItsStore" time="0.007" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testEmptyDestinationErrors" time="0.134" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testMinPurchaseAtThresholdIsTaxed" time="0.007" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testTwoLinesTaxedSeparately" time="0.009" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests" name="testMinItemPriceBelowThresholdIsNotTaxed" time="0.005" />
+</testsuite>

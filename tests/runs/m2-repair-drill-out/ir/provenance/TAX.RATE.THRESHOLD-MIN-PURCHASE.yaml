@@ -1,0 +1,17 @@
+claim: TAX.RATE.THRESHOLD-MIN-PURCHASE
+summary: >
+  The minimum-purchase threshold gate on a rate rule is present from the initial import.
+  No later semantic change found.
+introduced:
+  commit: 94fe6d1cdaa176365cce77422f7ce2a8b1ad0534
+  date: "2006-07-01"
+  author: David E. Jones
+  message: "Initial OFBiz import from revision 7923"
+  confidence: inferred
+changes: []
+provenance_method:
+  - "git log -S'minPurchase' -- applications/accounting/.../TaxAuthorityServices.java"
+confidence: inferred
+notes: >
+  Provenance-critical (threshold rule) per the seam brief. A rate rule applies only when the
+  order/item purchase amount meets its configured minimum-purchase.

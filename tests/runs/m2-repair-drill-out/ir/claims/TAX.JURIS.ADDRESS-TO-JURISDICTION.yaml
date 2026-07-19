@@ -1,0 +1,30 @@
+id: TAX.JURIS.ADDRESS-TO-JURISDICTION
+kind: behavior
+title: Taxing jurisdictions are resolved from the destination country, state, county, and postal-code.
+status: extracted
+priority: core
+terms: [tax-calculation, destination-address, taxing-jurisdiction, tax-authority, rate-rule,
+        tax-line, order-line, taxable-product]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.RATE.AUTHORITY-MATCH]
+behavior: |
+  Rule: The address determines the jurisdictions
+    Given a destination-address naming a country and a state
+    And a rate-rule under the state's tax-authority
+    And a taxable-product on the order-line
+    When tax is calculated for the order
+    Then a tax-line is produced whose jurisdiction is the state
+scenarios:
+  - name: state-jurisdiction-on-the-line
+    given:
+      destination-address: {country: US-like, state: state-of-country}
+      tax-authority: state
+      rate-rule: {rate-percentage: "6.25"}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+    expect:
+      tax-line: {kind: sales-tax-line, jurisdiction: state, tax-amount: "6.250", rate-percentage: "6.25"}
+outputs_affected: [tax-line, taxing-jurisdiction]
+observability: direct
+source_fragments: [F-TAS-026, F-TAS-027, F-COMMONEM-001, F-ACCTEM-002, F-PARTYEM-001]
+confidence: derived-from-code
+notes: >
+  The tax-amount 6.250 follows from TAX.CALC.TAX-AMOUNT at TAX.CONFIG.CALC-PRECISION.

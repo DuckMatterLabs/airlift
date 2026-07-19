@@ -1,7 +1,7 @@
 id: TAX.EXEMPT.EFFECTIVE-INFO
 kind: behavior
 title: The party's most recent effective registration is used and its id recorded on the tax line.
-status: extracted
+status: verified
 priority: core
 terms: [purchasing-party, tax-registration, tax-registration-id, effective-date-range, taxing-jurisdiction, customer-tax-id, tax-adjustment, tax-amount]
 depends_on: [TAX.RATE.AUTHORITY-MATCH]
@@ -34,3 +34,8 @@ notes: >
   When more than one registration exists for the jurisdiction, the most recent by start date
   is used. A non-exempt registration records its id but does not zero the tax; exemption
   zeroing is TAX.EXEMPT.ZEROING.
+attestations:
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

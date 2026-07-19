@@ -31,3 +31,8 @@ notes: >
   taxable base = 104.25. Tax at 6% = 6.2550 -> 6.255 at calculation-precision. Rounded to the
   display-precision half-up: display-tax-total 6.255 -> 6.26. display-price-with-tax =
   104.25 + 6.255 = 110.505 -> 110.51. Demonstrates round-half-up at the final two-decimal step.
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"

@@ -1,0 +1,12 @@
+# Mustache-parameterized fused rule + entity-query.
+# Renders how a business rule is expressed as an entity-engine condition list.
+rule:
+  name: {{rule_name}}                    # domain rule, e.g. "rate rule matches store"
+  quantifies_over: {{entity}}            # entity-model concept (architecture only)
+  predicate:
+    {{#conditions}}
+    - field: {{field}}
+      op: {{op}}                         # equals | in | greater-equals | null-or
+      value: {{value}}                   # from context / fixture
+    {{/conditions}}
+  effect: {{effect}}                     # domain outcome, e.g. "rule is eligible"

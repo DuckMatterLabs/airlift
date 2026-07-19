@@ -1,0 +1,41 @@
+suite: "airliftblind"
+results_file: "tests/runs/m2-promotion/airliftblind.xml"
+sha: "1a7d91a2979ed366f617978441a20575dab12281"
+timestamp: "2026-07-19T22:58:34"
+tests:
+  - {test: "BlindTaxClaimTests#testMemberInheritsParentGroupExemption", claim: "TAX.EXEMPT.GROUP-ROLLUP", outcome: passed}
+  - {test: "BlindTaxClaimTests#testEnclosingCountryAuthorityAppliesToStateNamedAddress", claim: "TAX.JURIS.CONTAINMENT", outcome: passed}
+  - {test: "BlindTaxClaimTests#testResolvedAuthorityRuleDrivesTheTaxLine", claim: "TAX.RATE.AUTHORITY-MATCH", outcome: passed}
+  - {test: "BlindTaxClaimTests#testPromotionsTaxedWhenRuleAllows", claim: "TAX.RATE.PROMO-TAXABLE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testCalcPrecisionHalfUpAtThirdDecimal", claim: "TAX.CONFIG.CALC-PRECISION", outcome: passed}
+  - {test: "BlindTaxClaimTests#testEffectiveRegistrationIdRecordedNonExemptStillTaxed", claim: "TAX.EXEMPT.EFFECTIVE-INFO", outcome: passed}
+  - {test: "BlindTaxClaimTests#testMinItemPriceAtThresholdIsTaxed", claim: "TAX.RATE.THRESHOLD-MIN-ITEM-PRICE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testVariantUsesParentVatPrice", claim: "TAX.VAT.VARIANT-PRICE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testOrderPromotionsProduceOrderLevelTaxLine", claim: "TAX.ORDER.PROMO-TAX", outcome: passed}
+  - {test: "BlindTaxClaimTests#testMinItemPriceAboveThresholdIsTaxed", claim: "TAX.RATE.THRESHOLD-MIN-ITEM-PRICE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testPromotionsNotTaxedWhenRuleForbids", claim: "TAX.RATE.PROMO-TAXABLE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testCategoryRuleSkipsProductNotInCategory", claim: "TAX.RATE.CATEGORY-MATCH", outcome: passed}
+  - {test: "BlindTaxClaimTests#testPriceWithTaxRoundingReconciledByCorrectionLine", claim: "TAX.VAT.PRICE-CORRECTION", outcome: passed}
+  - {test: "BlindTaxClaimTests#testFinalPrecisionHalfUpAtSecondDecimal", claim: "TAX.CONFIG.FINAL-PRECISION", outcome: passed}
+  - {test: "BlindTaxClaimTests#testFreightTaxedWhenRuleAllows", claim: "TAX.RATE.SHIPPING-TAXABLE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testMinPurchaseAboveThresholdIsTaxed", claim: "TAX.RATE.THRESHOLD-MIN-PURCHASE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testTaxInclusivePriceReportsIncludedTaxNotAdded", claim: "TAX.VAT.PRICE-INCLUSIVE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testMinPurchaseBelowThresholdIsNotTaxed", claim: "TAX.RATE.THRESHOLD-MIN-PURCHASE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testStateAddressYieldsStateJurisdiction", claim: "TAX.JURIS.ADDRESS-TO-JURISDICTION", outcome: passed}
+  - {test: "BlindTaxClaimTests#testFacilityAddressTaxedWhenNoShippingDestination", claim: "TAX.JURIS.FACILITY-FALLBACK", outcome: passed}
+  - {test: "BlindTaxClaimTests#testCategoryRuleTaxesProductInCategory", claim: "TAX.RATE.CATEGORY-MATCH", outcome: passed}
+  - {test: "BlindTaxClaimTests#testOrderFreightTaxSplitByProductValue", claim: "TAX.ORDER.FREIGHT-SPLIT", outcome: passed}
+  - {test: "BlindTaxClaimTests#testTaxableProductIsTaxed", claim: "TAX.CALC.TAXABLE-BASE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testDiscountedTaxInclusiveItemEmitsNegativeIncludedTax", claim: "TAX.VAT.DISCOUNT-CORRECTION", outcome: passed}
+  - {test: "BlindTaxClaimTests#testNonTaxableProductYieldsNoLine", claim: "TAX.CALC.TAXABLE-BASE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testFreightNotTaxedWhenRuleForbids", claim: "TAX.RATE.SHIPPING-TAXABLE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testVariantTaxedViaParentCategory", claim: "TAX.RATE.VARIANT-CATEGORY", outcome: passed}
+  - {test: "BlindTaxClaimTests#testCountyTaxExemptViaStateExemption", claim: "TAX.EXEMPT.JURISDICTION-INHERITANCE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testTaxAmountIsBaseTimesRate", claim: "TAX.CALC.TAX-AMOUNT", outcome: passed}
+  - {test: "BlindTaxClaimTests#testExemptPartyPaysZero", claim: "TAX.EXEMPT.ZEROING", outcome: passed}
+  - {test: "BlindTaxClaimTests#testStoreScopedRuleAppliesToItsStore", claim: "TAX.RATE.STORE-SCOPE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testEmptyDestinationErrors", claim: "TAX.JURIS.ADDRESS-REQUIRED", outcome: passed}
+  - {test: "BlindTaxClaimTests#testMinPurchaseAtThresholdIsTaxed", claim: "TAX.RATE.THRESHOLD-MIN-PURCHASE", outcome: passed}
+  - {test: "BlindTaxClaimTests#testTwoLinesTaxedSeparately", claim: "TAX.ORDER.PER-ITEM", outcome: passed}
+  - {test: "BlindTaxClaimTests#testMinItemPriceBelowThresholdIsNotTaxed", claim: "TAX.RATE.THRESHOLD-MIN-ITEM-PRICE", outcome: passed}
+unbound: []

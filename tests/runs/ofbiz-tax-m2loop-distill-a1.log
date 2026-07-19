@@ -1,0 +1,536 @@
+[airlift] copilot stage=ofbiz-tax-m2loop-distill-a1 workdir=/Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework model=claude-opus-4-8
+I'll start by reading all the input files before writing anything, as instructed.
+
+● Read fragment-map.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/fragment-map.yaml
+  └ 1 line read
+
+● Read coverage-gaps.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/coverage-gaps.yaml
+  └ 231 lines read
+
+● Read IR-SCHEMA.md
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/ir-spec/IR-SCHEMA.md
+  └ 317 lines read
+
+Let me read the remaining inputs. The fragment-map is large, so I'll read it in sections along with the other files.
+
+● Read backfill-report.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/backfill-report.yaml
+  └ 103 lines read
+
+● Read behavior-catalog.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/behavior-catalog.yaml
+  └ 318 lines read
+
+Now the harness contract and fragment-map. Let me read them.
+
+● Read harness-contract.md
+  │ /private/tmp/claude-501/-Volumes-Dancer-Develop-AIRLIFT-airlift/58ea57b7-01f5-469a-b1cf-e02e51cb
+  │ 0dfa/scratchpad/ofbiz-tax-m2loop/harness/harness-contract.md
+  └ 155 lines read
+
+Now the fragment-map (in chunks) and the source file.
+
+● Read fragment-map.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/fragment-map.yaml
+  └ L1:120 (120 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L1:80 (80 lines read)
+
+● Check existing AIRLIFT annotations and git state (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && grep -n "AIRLIFT:"
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java;
+  │ echo "---count---"; grep -c "AIRLIFT:"
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java;
+  │ echo "---git status---"; git status --short; echo "---head commit---"; git rev-parse HEAD
+  └ 36 lines…
+
+● Inspect git history and commit relationship (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && git --no-pager log --oneline -8; echo
+  │ "---does 68b751 exist?---"; git cat-file -t 68b751ffe4b7012bcddc6f53de439183b35f292a 2>&1; echo
+  │ "---diff HEAD vs 68b751 for the file---"; git --no-pager diff --stat
+  │ 68b751ffe4b7012bcddc6f53de439183b35f292a HEAD --
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  │ 2>&1 | head
+  └ 14 lines…
+
+✗ Check existing IR directories (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift && echo "=== m2loop out dir ==="; ls -la
+  │ tests/out/ofbiz-tax-m2loop/ 2>&1; echo "=== m2loop ir dir ==="; ls -la
+  │ tests/out/ofbiz-tax-m2loop/ir/ 2>&1; echo "=== original ofbiz-tax ir ==="; ls -la
+  │ tests/out/ofbiz-tax/ir/ 2>&1
+  └ Permission denied and could not request permission from user
+
+✗ List m2loop output directory (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out && ls -la ofbiz-tax-m2loop/ 2>&1; echo "===
+  │ ir ==="; ls -la ofbiz-tax-m2loop/ir/ 2>&1
+  └ Permission denied and could not request permission from user
+
+● List m2loop dir absolute (shell)
+  │ ls -la /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/
+  └ 8 lines…
+
+The `ir/` dir doesn't exist yet. Let me check the reference IR from the original proven seam to match format exactly.
+
+✗ List reference IR files (shell)
+  │ find /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax/ir -type f 2>&1 | head -80
+  └ Permission denied and could not request permission from user
+
+✗ List reference IR recursively (shell)
+  │ ls -R /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax/ir 2>&1 | head -100
+  └ Permission denied and could not request permission from user
+
+✗ List out dir and ofbiz-tax (shell)
+  │ ls -la /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ 2>&1; echo "==="; ls -la
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax/ 2>&1
+  └ Permission denied and could not request permission from user
+
+✗ List tests dir (shell)
+  │ ls -la /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/ 2>&1
+  └ Permission denied and could not request permission from user
+
+✗ List ofbiz-tax/ir directly (shell)
+  │ ls /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax/ir/ 2>&1; echo "exit: $?"
+  └ Permission denied and could not request permission from user
+
+● Create IR directory structure (shell)
+  │ mkdir -p /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/provenance
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/architecture/adr
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/architecture/patterns &&
+  │ echo OK && ls -la /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/
+  └ 8 lines…
+
+I have write access. Now let me read the full source file thoroughly since precision comes from code.
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L80:340 (261 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L340:620 (281 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L620:800 (181 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L800:810 (3 lines read)
+
+● Read salestax config (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && cat
+  │ applications/accounting/config/arithmetic.properties | grep -n "salestax"
+  └ 4 lines…
+
+Now let me read the service contract and the rest of the fragment-map for entity fragments.
+
+● Read services_tax.xml (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && grep -n "arithmetic\|salestax"
+  │ applications/accounting/config/arithmetic.properties | head; echo "=== services_tax.xml ===";
+  │ sed -n '1,200p' applications/accounting/servicedef/services_tax.xml
+  └ 205 lines…
+
+Let me read the rest of the fragment-map for the remaining and entity fragments.
+
+● Read fragment-map.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/fragment-map.yaml
+  └ L120:340 (221 lines read)
+
+● Read fragment-map.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/fragment-map.yaml
+  └ L340:560 (221 lines read)
+
+● Read fragment-map.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/fragment-map.yaml
+  └ L560:650 (81 lines read)
+
+I now have a full understanding. Let me verify which files changed between the catalog commit and HEAD, to get correct line numbers for traceability.
+
+● Check which referenced files changed since catalog commit (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && git --no-pager diff --stat
+  │ 68b751ffe4b7012bcddc6f53de439183b35f292a HEAD | grep -E
+  │ "entitymodel|services_tax|arithmetic|TaxAuthorityServices" ; echo "=== total current lines in
+  │ TAS ==="; wc -l
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ 4 lines…
+
+Only the primary source file changed. Now let me mine git history for the provenance-critical behaviors.
+
+● Mine git history for provenance-critical tokens (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && F=applications/accounting/src/main/java/
+  │ org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  │ echo "=== isExempt / exemptAmount introduction ==="; git --no-pager log -S'exemptAmount'
+  │ --oneline --follow -- $F | tail -5
+  │ echo "=== GROUP_ROLLUP ==="; git --no-pager log -S'GROUP_ROLLUP' --oneline --follow -- $F | …
+  └ 18 lines…
+
+● Get commit details for provenance (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && for c in 94fe6d1cda be33bfe63a; do echo
+  │ "=== $c ==="; git --no-pager show -s --format='%H%n%ad%n%an%n%s' --date=short $c; done
+  │ echo "=== full EXEMPT_INHER commit body ==="; git --no-pager show -s --format='%b' be33bfe63a
+  │ | head -20
+  │ echo "=== exemption inheritance introduced full sha ==="; git --no-pager log -S'EXEMPT_INHER' …
+  └ 18 lines…
+
+I have everything I need. Let me set up a todo list and start writing the IR. First, the glossary.
+
+● Todo added 8 items
+  │ Writing glossary.yaml
+  │ Writing domain-model.yaml
+  │ Writing 34 claim atoms
+  │ Writing traceability.yaml
+  │ Writing provenance files
+  │ Writing architecture stub
+  │ Writing ir-manifest.yaml
+  └ Verify source compiles + self-read IR
+
+● Create glossary.yaml +397
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/glossary.yaml
+
+Now the domain model.
+
+● Create domain-model.yaml +239
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/domain-model.yaml
+
+Now the claim atoms. Let me write them grouped by area.
+
+● Write contract and JURIS claim files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims
+  │
+  │ cat > TAX.CONTRACT.CALC-ORDER-TAX.yaml <<'EOF'
+  │ id: TAX.CONTRACT.CALC-ORDER-TAX
+  │ kind: contract…
+  └ 204 lines…
+
+● Write RATE claim files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims
+  │
+  │ cat > TAX.RATE.STORE-SCOPE.yaml <<'EOF'
+  │ id: TAX.RATE.STORE-SCOPE
+  │ kind: behavior…
+  └ 237 lines…
+
+● Write CALC and CONFIG claim files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims
+  │
+  │ cat > TAX.CALC.TAXABLE-BASE.yaml <<'EOF'
+  │ id: TAX.CALC.TAXABLE-BASE
+  │ kind: behavior…
+  └ 134 lines…
+
+● Write EXEMPT claim files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims
+  │
+  │ cat > TAX.EXEMPT.EFFECTIVE-INFO.yaml <<'EOF'
+  │ id: TAX.EXEMPT.EFFECTIVE-INFO
+  │ kind: behavior…
+  └ 162 lines…
+
+● Write VAT claim files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims
+  │
+  │ cat > TAX.VAT.PRICE-INCLUSIVE.yaml <<'EOF'
+  │ id: TAX.VAT.PRICE-INCLUSIVE
+  │ kind: behavior…
+  └ 149 lines…
+
+● Write ORDER claim files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims
+  │
+  │ cat > TAX.ORDER.PER-ITEM.yaml <<'EOF'
+  │ id: TAX.ORDER.PER-ITEM
+  │ kind: behavior…
+  └ 134 lines…
+
+● Write DISPLAY claim files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims
+  │
+  │ cat > TAX.DISPLAY.VAT-ONLY.yaml <<'EOF'
+  │ id: TAX.DISPLAY.VAT-ONLY
+  │ kind: behavior…
+  └ 105 lines…
+
+All 34 claim files written. Let me verify the inventory and update tracking.
+
+● List all claim files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims && ls | sort
+  └ 35 lines…
+
+All 34 claims present. Let me gather all referenced fragments to build traceability.
+
+✔ Todo completed
+
+● List all referenced fragment IDs (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims && grep -h
+  │ 'source_fragments' *.yaml | grep -oE 'F-[A-Z]+-[0-9]+' | sort -u
+  └ 54 lines…
+
+Let me read the fragment-map to get symbols/roles/lines for traceability.
+
+● Read fragment-map head (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop && sed -n '1,120p'
+  │ fragment-map.yaml
+  └ 121 lines…
+
+● Check PyYAML availability (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop && python3 -c "import
+  │ yaml; print('ok')" 2>&1 | head -1
+  └ 2 lines…
+
+● Extract fragment metadata for traceability (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop && python3 - <<'PY'
+  │ import yaml
+  │ d=yaml.safe_load(open('fragment-map.yaml'))
+  │ frs={f['id']:f for f in d['fragments']}
+  │ # annotated TAS fragments in order (from summary computed table)…
+  └ 79 lines…
+
+● Find claims referencing non-annotated TAS fragments (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims && grep -l
+  │ 'F-TAS-014\|F-TAS-025\|F-TAS-002\|F-TAS-003' *.yaml
+  └ 4 lines…
+
+● Show context lines of those refs (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims && grep -h
+  │ 'F-TAS-014\|F-TAS-025\|F-TAS-003' TAX.CONTRACT.*.yaml
+  └ 3 lines…
+
+● Compute shifted lines for non-annotated TAS fragments (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop && python3 - <<'PY'
+  │ import yaml
+  │ d=yaml.safe_load(open('fragment-map.yaml'))
+  │ frs={f['id']:f for f in d['fragments']}
+  │ annotated=['F-TAS-004','F-TAS-007','F-TAS-010','F-TAS-012','F-TAS-017','F-TAS-018','F-TAS-021'…
+  └ 15 lines…
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L171:173 (3 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L305:311 (6 lines read)
+
+Verified. Now generating traceability.yaml.
+
+● Generate traceability.yaml (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop && python3 - <<'PY'
+  │ import yaml, glob, os
+  │ d=yaml.safe_load(open('fragment-map.yaml'))
+  │ frs={f['id']:f for f in d['fragments']}
+  │ tas_new={…
+  └ 71 lines…
+
+● Validate and preview traceability (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop && python3 -c "import
+  │ yaml;yaml.safe_load(open('ir/traceability.yaml'));print('valid yaml')" && sed -n '1,40p'
+  │ ir/traceability.yaml
+  └ 42 lines…
+
+Now provenance files. Let me write them using the git findings.
+
+● Write provenance files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/provenance
+  │
+  │ cat > TAX.EXEMPT.ZEROING.yaml <<'EOF'
+  │ claim: TAX.EXEMPT.ZEROING
+  │ summary: >…
+  └ 129 lines…
+
+Let me verify provenance commits against git history quickly.
+
+● Verify provenance commits (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && git log -S'inheritExemption' --oneline
+  │ --follow --
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  │ 2>/dev/null | tail -3; echo "---zeroing---"; git log -S'exemptAmount' --oneline --follow --
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  │ 2>/dev/null | tail -2
+  └ 3 lines…
+
+● Verify inheritExemption commit (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && git log -S'inheritExemption' --oneline --
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  │ 2>/dev/null | tail -3; echo "==="; git show -s --format='%H %ci %an%n%s'
+  │ be33bfe63ab143d9d4b634b1bccb0ea0ec24cb98 2>/dev/null | head -3
+  └ 4 lines…
+
+Commit verified. Now the architecture stub.
+
+● Write architecture README and ADRs (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/architecture
+  │
+  │ cat > README.md <<'EOF'
+  │ # Architecture stub — ofbiz sales-tax seam…
+  └ 125 lines…
+
+● Write mustache pattern snippets (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/architecture/patterns
+  │
+  │ cat > service-contract.mustache <<'EOF'
+  │ # Mustache-parameterized service-contract boundary.
+  │ # Renders the seam's public request/response wiring for a given service.…
+  └ 63 lines…
+
+Now the manifest, generated from the claim files.
+
+● Generate ir-manifest.yaml (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop && python3 - <<'PY'
+  │ import yaml, glob
+  │ claims={}
+  │ for p in sorted(glob.glob('ir/claims/*.yaml')):
+  │ c=yaml.safe_load(open(p))…
+  └ 104 lines…
+
+Now let me validate all YAML files and cross-check glossary term coverage.
+
+● Validate YAML and check glossary term coverage (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir && python3 - <<'PY'
+  │ import yaml, glob
+  │ bad=0
+  │ for p in glob.glob('**/*.yaml', recursive=True):
+  │ try: yaml.safe_load(open(p))…
+  └ 243 lines…
+
+The glossary check found only 1 "term" — my parser didn't match the glossary structure. Let me inspect it.
+
+● Inspect glossary structure (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir && sed -n '1,40p'
+  │ glossary.yaml
+  └ 41 lines…
+
+The glossary uses `canonical` keys. Let me re-run the coverage check with the correct field.
+
+● Re-check glossary coverage with canonical field (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir && python3 - <<'PY'
+  │ import yaml, glob
+  │ g=yaml.safe_load(open('glossary.yaml'))
+  │ terms={t['canonical'] for t in g['terms']}
+  │ print("glossary terms:",len(terms))…
+  └ 16 lines…
+
+5 terms need to be added or aligned. Let me check what the glossary uses for these concepts.
+
+● Check related glossary terms (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir && python3 -c "
+  │ import yaml
+  │ g=yaml.safe_load(open('glossary.yaml'))
+  │ for t in g['terms']: print(t['canonical'])" | grep -iE
+  │ 'freight|promo|ship|weight|count|item-amount'
+  └ 4 lines…
+
+I'll add the 5 missing terms to the glossary. Let me view the end of the file.
+
+● View glossary tail (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir && tail -20
+  │ glossary.yaml
+  └ 20 lines…
+
+● Add 5 glossary terms and re-check (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir && cat >>
+  │ glossary.yaml <<'EOF'
+  │
+  │ - id: term.order-shipping-amount
+  │ canonical: order-shipping-amount…
+  └ 51 lines…
+
+All terms covered. Now verify no implementation identifiers leak into `behavior:` bodies.
+
+● Scan behavior bodies for implementation identifiers (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir && python3 - <<'PY'
+  │ import yaml, glob, re
+  │ # impl-identifier heuristics: CamelCase, snake_case tokens, known impl names
+  │ patterns=re.compile(r'\b(OrderAdjustment|EntityQuery|EntityCondition|TaxAuthority\w*|ProductSt
+  │ ore|ProductPrice|PartyTaxAuthInfo|PartyRelationship|GeoAssoc|calcTax\w*|rateProduct\w*|getTax\…
+  └ 13 lines…
+
+No leaks. Let me verify source file is unchanged and do a final structural check.
+
+● Confirm source file unchanged and annotation count (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && git status --short
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java;
+  │ echo "--- annotation count ---"; grep -c 'AIRLIFT:'
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ 3 lines…
+
+Source unchanged with 30 committed annotations. Let me do a final review of the domain-model and overall IR tree.
+
+● Review IR tree and domain-model (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir && echo "=== TREE
+  │ ==="; find . -type f | sort; echo; echo "=== domain-model concepts & verbs ==="; python3 -
+  │ <<'PY'
+  │ import yaml
+  │ d=yaml.safe_load(open('domain-model.yaml'))…
+  └ 75 lines…
+
+Domain-model is complete (concept key differs from `name`, verbs all present). Let me confirm every `core` claim carries a numeric scenario.
+
+● Verify core claims have scenarios (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir && python3 - <<'PY'
+  │ import yaml, glob
+  │ for p in sorted(glob.glob('claims/*.yaml')):
+  │ c=yaml.safe_load(open(p))
+  │ if c.get('priority')=='core':…
+  └ 28 lines…
+
+Two `core` contract claims lack scenarios. Let me view them and add worked numeric scenarios.
+
+● View calc-order-tax contract claim (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims && cat
+  │ TAX.CONTRACT.CALC-ORDER-TAX.yaml
+  └ 30 lines…
+
+● Edit TAX.CONTRACT.CALC-ORDER-TAX.yaml +14
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims/TAX.CONTRACT.CALC-O
+    RDER-TAX.yaml
+
+● View display contract claim (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims && cat
+  │ TAX.CONTRACT.DISPLAY-PRICE-WITH-TAX.yaml
+  └ 24 lines…
+
+● Edit TAX.CONTRACT.DISPLAY-PRICE-WITH-TAX.yaml +11
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir/claims/TAX.CONTRACT.DISPLA
+    Y-PRICE-WITH-TAX.yaml
+
+● Final scenario and YAML validation (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/out/ofbiz-tax-m2loop/ir && python3 - <<'PY'
+  │ import yaml, glob
+  │ missing=[]
+  │ for p in sorted(glob.glob('claims/*.yaml')):
+  │ c=yaml.safe_load(open(p))…
+  └ 12 lines…
+
+All checks pass. Let me finalize the todo tracking.
+
+✔ Todo completed
+
+The Airlift IR for the OFBiz sales-tax seam is complete. Everything was written under `tests/out/ofbiz-tax-m2loop/ir/`; the primary source file remains unchanged (its 30 `AIRLIFT:` annotations were already committed).
+
+## Delivered
+
+**34 claim atoms** (`claims/`) — pure domain Gherkin, zero implementation identifiers in `behavior:` bodies (verified):
+- 4 JURIS, 8 RATE, 2 CALC, 4 EXEMPT, 5 VAT, 4 ORDER, 3 DISPLAY, 2 CONFIG, 2 CONTRACT
+- Every `core` claim carries ≥1 hand-verified numeric scenario against the real precision rules (calc = 3 dp, final = 2 dp, HALF_UP); edge/fiddly VAT claims use qualitative decision tables to avoid asserting uncertain decimals.
+
+**Supporting artifacts:**
+- `glossary.yaml` — 57 domain terms; every claim noun resolves (verified, 0 missing).
+- `domain-model.yaml` — concepts + attributes + harness fixture verbs (aligned 1:1 to the harness contract).
+- `traceability.yaml` — 53 fragments bound to file/symbol/role/lines at HEAD `1a7d91a2`, with TAS line numbers shifted for the committed annotations; 34 claims → fragment maps.
+- `provenance/` — 5 files. Jurisdiction-exemption inheritance traced to `be33bfe6` (2007-04-19, verified); exemption zeroing, group rollup, and both thresholds to initial import `94fe6d1c` (marked `inferred`).
+- `architecture/` — README + 3 ADRs (contract / persistence / harness) + 3 mustache pattern snippets.
+- `ir-manifest.yaml` — `schema_version: "0.9"`, 34-claim index (all `status: extracted`), 15 pinned / 19 unpinned, `descoped: []`, `catalog_deltas` (config+contract additions, DISPLAY promotions, VAT/ORDER splits), `catalog_corrections: []`.
+
+All YAML validates; source file `git status` is clean.
+
+
+
+Changes    +661 -0
+Duration   17m 37s
+Tokens     ↑ 5.3m (5.1m cached, 216.1k written) • ↓ 79.9k (23.1k reasoning)
+Resume     copilot --resume=2919433b-58bf-49c5-bd5b-6097bd2db37a

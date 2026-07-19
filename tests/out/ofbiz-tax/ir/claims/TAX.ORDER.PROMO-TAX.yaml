@@ -1,7 +1,7 @@
 id: TAX.ORDER.PROMO-TAX
 kind: behavior
 title: Order-level promotions produce a single order-level tax adjustment.
-status: pinned
+status: verified
 priority: edge
 terms: [promotions, rate-rule, rate-percentage, tax-adjustment, tax-amount, order-adjustments]
 depends_on: [TAX.RATE.PROMO-TAXABLE]
@@ -28,3 +28,12 @@ confidence: derived-from-code
 notes: >
   Unlike freight, the promotions call is made once for the whole order (no per-item split), so
   a single order-level adjustment is produced: 100.00*6.25% = 6.250 at calculation-precision.
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

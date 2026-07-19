@@ -1,0 +1,434 @@
+# Airlift IR — glossary (lingua franca for the sales-tax seam).
+# Every noun used in a claim `behavior:` body resolves to one of these terms.
+# Terms are domain vocabulary only: no class, entity, field, service, or config-key
+# names appear here (those live in traceability and the architecture stub).
+
+terms:
+  - id: term.tax-calculation
+    canonical: tax-calculation
+    definition: >
+      The act of determining, for a purchase, what tax lines apply and how much tax is
+      charged, given where the goods go, who is buying, and what is being bought.
+    not: ["posting tax to a ledger", "collecting tax"]
+    aliases: [tax-calc]
+
+  - id: term.order
+    canonical: order
+    definition: >
+      A purchase consisting of one or more order-lines shipped to a single
+      destination-address, plus optional order-level freight-amount and promotions-amount.
+    not: ["a single product", "a shopping session"]
+    aliases: []
+
+  - id: term.order-line
+    canonical: order-line
+    definition: >
+      One priced position in an order, identified by its product, unit-price, quantity,
+      and item-amount.
+    not: ["a tax-line"]
+    aliases: [line-item, item]
+
+  - id: term.product
+    canonical: product
+    definition: A good or service being purchased on an order-line.
+    not: []
+    aliases: []
+
+  - id: term.taxable-product
+    canonical: taxable-product
+    definition: >
+      A product marked as subject to tax. When a product is not marked taxable it
+      contributes nothing to a taxable-amount.
+    not: ["a product with a zero rate", "an exempt purchasing-party"]
+    aliases: [taxable-flag]
+
+  - id: term.variant-product
+    canonical: variant-product
+    definition: >
+      A concrete purchasable product that is a specific variation of a
+      virtual-parent-product (e.g. a size/colour of a shirt).
+    not: []
+    aliases: []
+
+  - id: term.virtual-parent-product
+    canonical: virtual-parent-product
+    definition: >
+      The abstract product that a variant-product varies; it may carry tax-category
+      memberships and tax-inclusive-price configuration inherited by its variants.
+    not: []
+    aliases: [virtual-product, parent-product]
+
+  - id: term.unit-price
+    canonical: unit-price
+    definition: The price of one unit of a product on an order-line, before tax is considered.
+    not: ["item-amount", "tax-inclusive-price"]
+    aliases: []
+
+  - id: term.quantity
+    canonical: quantity
+    definition: The number of units of a product on an order-line.
+    not: []
+    aliases: []
+
+  - id: term.item-amount
+    canonical: item-amount
+    definition: >
+      The monetary amount of an order-line, normally unit-price times quantity but
+      supplied independently when the line carries a discount.
+    not: ["unit-price"]
+    aliases: [line-amount]
+
+  - id: term.destination-address
+    canonical: destination-address
+    definition: >
+      Where the goods are sent, expressed as some combination of a country, a
+      state, a county, and a postal-code, each naming a taxing-jurisdiction area.
+    not: ["a billing address", "the fulfilling-facility address"]
+    aliases: [shipping-address]
+
+  - id: term.taxing-jurisdiction
+    canonical: taxing-jurisdiction
+    definition: >
+      A geographic area (country, state, county, or postal-code area) that levies tax on
+      purchases delivered within it.
+    not: ["a tax-authority party", "a rate-rule"]
+    aliases: [jurisdiction]
+
+  - id: term.region-containment
+    canonical: region-containment
+    definition: >
+      The relationship by which one taxing-jurisdiction area geographically encloses
+      another, so that an address inside the smaller area is also inside the larger one.
+    not: ["a parent-group relationship", "jurisdiction exemption-inheritance"]
+    aliases: [containment]
+
+  - id: term.tax-authority
+    canonical: tax-authority
+    definition: >
+      The body that governs a taxing-jurisdiction and under which rate-rules,
+      registrations, and exemptions are configured.
+    not: ["a taxing-jurisdiction area by itself"]
+    aliases: [authority]
+
+  - id: term.default-authority
+    canonical: default-authority
+    definition: >
+      A special catch-all tax-authority whose rate-rules are always considered in addition
+      to those of the jurisdictions resolved from the destination-address.
+    not: ["a global-rate-rule"]
+    aliases: []
+
+  - id: term.rate-rule
+    canonical: rate-rule
+    definition: >
+      A configured rule under a tax-authority that, when its conditions match, contributes a
+      rate-percentage (and may restrict by store, tax-category, thresholds, or freight/
+      promotions taxability).
+    not: ["a tax-line", "a tax-authority"]
+    aliases: [rate]
+
+  - id: term.rate-percentage
+    canonical: rate-percentage
+    definition: The percentage a rate-rule applies to a taxable-amount to produce a tax-amount.
+    not: ["combined-tax-percentage"]
+    aliases: [percent]
+
+  - id: term.global-rate-rule
+    canonical: global-rate-rule
+    definition: >
+      A rate-rule that is not restricted to any single selling-store and therefore applies
+      to every store.
+    not: ["the default-authority"]
+    aliases: [store-agnostic-rule]
+
+  - id: term.selling-store
+    canonical: selling-store
+    definition: >
+      The store making the sale; it scopes which store-restricted rate-rules apply, supplies
+      the collecting party, and may declare a price-group and tax-inclusive display.
+    not: []
+    aliases: [store]
+
+  - id: term.tax-category
+    canonical: tax-category
+    definition: >
+      A grouping of products used to restrict a rate-rule to particular kinds of goods; a
+      product may belong to zero or more tax-categories.
+    not: ["a product itself"]
+    aliases: [product-tax-category, category]
+
+  - id: term.minimum-item-price
+    canonical: minimum-item-price
+    definition: >
+      A threshold on a rate-rule: the rule applies only when the order-line unit-price is at
+      least this value.
+    not: ["minimum-purchase-amount"]
+    aliases: []
+
+  - id: term.minimum-purchase-amount
+    canonical: minimum-purchase-amount
+    definition: >
+      A threshold on a rate-rule: the rule applies only when the order-line item-amount is at
+      least this value.
+    not: ["minimum-item-price"]
+    aliases: []
+
+  - id: term.purchasing-party
+    canonical: purchasing-party
+    definition: The party billed for the order, whose registrations and exemptions are consulted.
+    not: ["the selling-store's collecting party"]
+    aliases: [bill-to-party, party]
+
+  - id: term.parent-group
+    canonical: parent-group
+    definition: >
+      An organization a purchasing-party rolls up to; the purchasing-party inherits the
+      parent-group's tax-registrations and exemptions.
+    not: ["a virtual-parent-product", "a parent taxing-jurisdiction"]
+    aliases: [group]
+
+  - id: term.tax-registration
+    canonical: tax-registration
+    definition: >
+      A purchasing-party's standing with a tax-authority for a jurisdiction, effective over a
+      date range, carrying a tax-registration-id and possibly a tax-exemption.
+    not: ["a rate-rule"]
+    aliases: [registration, party-tax-info]
+
+  - id: term.tax-registration-id
+    canonical: tax-registration-id
+    definition: The identifier of a purchasing-party's tax-registration, recorded on the tax-line.
+    not: []
+    aliases: [customer-tax-id]
+
+  - id: term.tax-exemption
+    canonical: tax-exemption
+    definition: >
+      A registered status on a tax-registration that zeroes the tax charged for that
+      jurisdiction while recording separately what would otherwise have been charged.
+    not: ["a zero rate-percentage", "absence of a matching rate-rule"]
+    aliases: [exemption]
+
+  - id: term.exemption-inheritance
+    canonical: exemption-inheritance
+    definition: >
+      The rule by which, when a purchasing-party is not exempt at a jurisdiction, its
+      exemption is looked for up the parent-jurisdiction chain of that authority.
+    not: ["region-containment", "parent-group rollup"]
+    aliases: [jurisdiction-inheritance]
+
+  - id: term.calculation-date
+    canonical: calculation-date
+    definition: The moment the tax-calculation is performed, used to select currently-effective registrations and rules.
+    not: []
+    aliases: [effective-date, now]
+
+  - id: term.tax-line
+    canonical: tax-line
+    definition: >
+      One output record of a tax-calculation for a jurisdiction, carrying a kind, a
+      tax-amount, a rate-percentage, the jurisdiction, and optionally an exempt-amount,
+      included-tax, and tax-registration-id.
+    not: ["an order-line"]
+    aliases: [tax-adjustment, adjustment]
+
+  - id: term.sales-tax-line
+    canonical: sales-tax-line
+    definition: A tax-line for tax added on top of the price (the ordinary added sales tax).
+    not: ["a vat-tax-line"]
+    aliases: []
+
+  - id: term.vat-tax-line
+    canonical: vat-tax-line
+    definition: >
+      A tax-line reporting tax already contained in a tax-inclusive-price; it carries the
+      included-tax and adds no amount on top of the price.
+    not: ["a sales-tax-line"]
+    aliases: []
+
+  - id: term.price-correction-line
+    canonical: price-correction-line
+    definition: >
+      A tax-line that reconciles a rounding difference between an intended price-with-tax and
+      the price-with-tax computed from the tax-exclusive price plus calculated tax; it adjusts
+      the price, not the tax.
+    not: ["a vat-tax-line"]
+    aliases: []
+
+  - id: term.tax-amount
+    canonical: tax-amount
+    definition: >
+      The tax charged on a tax-line: a taxable-amount multiplied by a rate-percentage, at the
+      sales-tax-precision. Zero on an exempt tax-line and on a vat-tax-line.
+    not: ["exempt-amount", "included-tax"]
+    aliases: [amount]
+
+  - id: term.taxable-amount
+    canonical: taxable-amount
+    definition: >
+      The base a rate-percentage is applied to: the item-amount of a taxable-product, plus any
+      taxable freight-amount or promotions-amount folded into the same rate-rule evaluation.
+    not: ["item-amount always"]
+    aliases: [taxable-base]
+
+  - id: term.exempt-amount
+    canonical: exempt-amount
+    definition: >
+      The tax that would have been charged, recorded on an exempt tax-line whose tax-amount is
+      zeroed by a tax-exemption.
+    not: ["tax-amount"]
+    aliases: []
+
+  - id: term.included-tax
+    canonical: included-tax
+    definition: >
+      The tax already contained within a tax-inclusive-price, reported on a vat-tax-line
+      without being added to the price. A negative included-tax reports the drop in contained
+      tax caused by a discount.
+    not: ["tax-amount", "exempt-amount"]
+    aliases: [already-included-tax]
+
+  - id: term.tax-inclusive-price
+    canonical: tax-inclusive-price
+    definition: >
+      A configured product price that already contains tax, so that tax is reported as
+      already-included rather than added on top.
+    not: ["price-with-tax as an output"]
+    aliases: [tax-in-price]
+
+  - id: term.price-with-tax
+    canonical: price-with-tax
+    definition: >
+      An intended or reported total that includes tax: as a rate-rule input it is a
+      configured target used for reconciliation; as a display output it is base price plus
+      per-unit tax.
+    not: ["tax-inclusive-price flag"]
+    aliases: []
+
+  - id: term.price-group
+    canonical: price-group
+    definition: >
+      A selling-store's pricing scope used to select which configured product price applies;
+      when a store has no price-group an unscoped purchase-price is used instead.
+    not: []
+    aliases: [store-price-group]
+
+  - id: term.purchase-price
+    canonical: purchase-price
+    definition: The unscoped configured product price used when a selling-store has no price-group.
+    not: []
+    aliases: []
+
+  - id: term.freight-amount
+    canonical: freight-amount
+    definition: An order-level shipping charge that may itself be taxed by rate-rules permitting it.
+    not: ["a per-line shipping amount"]
+    aliases: [order-freight]
+
+  - id: term.promotions-amount
+    canonical: promotions-amount
+    definition: An order-level promotional amount that may itself be taxed by rate-rules permitting it.
+    not: []
+    aliases: [order-promotions]
+
+  - id: term.value-share
+    canonical: value-share
+    definition: >
+      A product's fraction of the order total by value, used to apportion order-level freight
+      and promotion tax across products.
+    not: []
+    aliases: [value-weight]
+
+  - id: term.fulfilling-facility
+    canonical: fulfilling-facility
+    definition: >
+      A physical shop that fulfills a sale; its own location address is used as the taxing
+      destination for a face-to-face-sale with no shipping destination.
+    not: []
+    aliases: [facility]
+
+  - id: term.face-to-face-sale
+    canonical: face-to-face-sale
+    definition: A sale with no shipping destination, taxed at the fulfilling-facility's location.
+    not: []
+    aliases: []
+
+  - id: term.sales-tax-precision
+    canonical: sales-tax-precision
+    definition: >
+      The number of decimal places and the rounding-mode at which per-line tax-amounts are
+      computed and rounded during calculation.
+    not: ["display-precision"]
+    aliases: [calculation-precision]
+
+  - id: term.display-precision
+    canonical: display-precision
+    definition: >
+      The number of decimal places and the rounding-mode at which the display tax-total and
+      display-price-with-tax are finally rounded.
+    not: ["sales-tax-precision"]
+    aliases: [final-precision]
+
+  - id: term.rounding-mode
+    canonical: rounding-mode
+    definition: The rule used to round a monetary value that has more digits than the target precision.
+    not: []
+    aliases: []
+
+  - id: term.display-price-with-tax
+    canonical: display-price-with-tax
+    definition: >
+      The single-product price-with-tax reported by the display tax-calculation: base price
+      (plus any shipping) increased by per-unit tax.
+    not: []
+    aliases: []
+
+  - id: term.tax-total
+    canonical: tax-total
+    definition: The summed tax reported by the display tax-calculation for one product.
+    not: []
+    aliases: []
+
+  - id: term.combined-tax-percentage
+    canonical: combined-tax-percentage
+    definition: The sum of the applicable rate-percentages reported by the display tax-calculation.
+    not: ["a single rate-percentage"]
+    aliases: []
+
+  - id: term.order-shipping-amount
+    canonical: order-shipping-amount
+    definition: >
+      The order-level freight-amount considered for tax, apportioned across order-lines by
+      value-weight when a rate-rule taxes shipping.
+    not: ["a per-line charge"]
+    aliases: [order-freight-amount]
+
+  - id: term.order-promotion-amount
+    canonical: order-promotion-amount
+    definition: >
+      The order-level promotions-amount (a negative value) considered for tax when a rate-rule
+      taxes promotions; it reduces the taxable base.
+    not: ["a per-line discount"]
+    aliases: []
+
+  - id: term.value-weight
+    canonical: value-weight
+    definition: >
+      An order-line's fraction of total order value: its item-amount divided by the sum of all
+      order-lines' item-amounts. Used to apportion order-level charges across order-lines.
+    not: ["a physical weight"]
+    aliases: []
+
+  - id: term.item-count
+    canonical: item-count
+    definition: The number of order-lines processed by an order tax-calculation, reported in the result.
+    not: []
+    aliases: []
+
+  - id: term.promotion-taxable
+    canonical: promotion-taxable
+    definition: >
+      A property of a rate-rule indicating that order-level promotions are taxed under it; when
+      unset, promotions do not contribute to that rule's tax.
+    not: []
+    aliases: []

@@ -1,0 +1,30 @@
+id: TAX.JURIS.FACILITY-FALLBACK
+kind: behavior
+title: With no shipping destination, a face-to-face sale is taxed at the fulfilling facility's address.
+status: extracted
+priority: edge
+terms: [tax-calculation, face-to-face-sale, fulfilling-facility, destination-address,
+        taxing-jurisdiction, rate-rule, tax-line, taxable-product]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.JURIS.ADDRESS-TO-JURISDICTION]
+behavior: |
+  Rule: The facility's location is the taxing destination
+    Given an order with no destination-address but a fulfilling-facility
+    And the fulfilling-facility has a location address in a taxing-jurisdiction
+    And a rate-rule under that jurisdiction's tax-authority
+    And a taxable-product on the order-line
+    When tax is calculated for the order
+    Then a tax-line is produced for the facility's taxing-jurisdiction
+scenarios:
+  - name: facility-address-drives-tax
+    given:
+      fulfilling-facility: {location-address: {country: country, state: state}}
+      rate-rule: {under: state, rate-percentage: "6.25"}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+      destination-address: none
+    expect:
+      tax-line: {kind: sales-tax-line, jurisdiction: state, tax-amount: "6.250", rate-percentage: "6.25"}
+outputs_affected: [tax-line, taxing-jurisdiction]
+observability: direct
+source_fragments: [F-TAS-017, F-PRODEM-002, F-PARTYEM-001]
+confidence: derived-from-code
+notes: Pinned by a green backfill test (atFacility path).

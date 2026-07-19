@@ -1,0 +1,34 @@
+id: TAX.RATE.CATEGORY-MATCH
+kind: behavior
+title: A rate-rule applies when it restricts to no tax-category or to one the product belongs to.
+status: extracted
+priority: edge
+terms: [rate-rule, tax-category, product, taxable-product, tax-line]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.RATE.AUTHORITY-MATCH]
+behavior: |
+  Rule: Category restriction gates a rate-rule
+    Given a rate-rule restricted to a tax-category
+    And a taxable-product that belongs to that tax-category
+    And another taxable-product that belongs to no tax-category
+    When tax is calculated for the order
+    Then the category-restricted rate-rule taxes the product in its tax-category
+    And the category-restricted rate-rule does not tax the product outside its tax-category
+scenarios:
+  - name: in-category-taxed
+    given:
+      rate-rule: {rate-percentage: "6.25", tax-category: books}
+      order-line: {product: taxable-in-books, unit-price: "100.00", quantity: "1"}
+    expect:
+      tax-line: {kind: sales-tax-line, tax-amount: "6.250"}
+  - name: out-of-category-not-taxed
+    given:
+      rate-rule: {rate-percentage: "6.25", tax-category: books}
+      order-line: {product: taxable-in-no-category, unit-price: "100.00", quantity: "1"}
+    expect:
+      tax-lines: none
+outputs_affected: [tax-line]
+observability: direct
+source_fragments: [F-TAS-051, F-TAS-052, F-PRODEM-001]
+confidence: derived-from-code
+notes: >
+  An unrestricted rate-rule taxes any product. Pinned by two green backfill tests.

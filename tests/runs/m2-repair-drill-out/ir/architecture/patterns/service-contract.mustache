@@ -1,0 +1,18 @@
+# Mustache-parameterized service-contract boundary.
+# Renders the seam's public request/response wiring for a given service.
+service:
+  name: {{service_name}}                 # e.g. calcTax | calcTaxForDisplay
+  engine: service-engine
+  implemented_by: {{impl_symbol}}        # Java entry point (architecture only)
+  request:
+    {{#request_fields}}
+    - name: {{name}}                     # domain term
+      required: {{required}}
+    {{/request_fields}}
+  response:
+    shape: {{response_shape}}            # e.g. list of OrderAdjustment
+    fields:
+      {{#response_fields}}
+      - name: {{name}}
+        meaning: {{meaning}}            # glossary term
+      {{/response_fields}}

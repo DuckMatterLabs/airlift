@@ -1,0 +1,34 @@
+id: TAX.CALC.TAXABLE-BASE
+kind: behavior
+title: Tax is charged only on taxable products, and none when nothing taxable remains.
+status: extracted
+priority: core
+terms: [taxable-product, item-amount, taxable-amount, tax-line, tax-amount, order-line, product]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.RATE.AUTHORITY-MATCH]
+behavior: |
+  Rule: Only taxable products form a taxable-amount
+    Given a taxable-product on one order-line and a non-taxable product on another order-line
+    And a rate-rule under the resolved taxing-jurisdiction's tax-authority
+    When tax is calculated for the order
+    Then the taxable-product order-line is taxed on its item-amount
+    And the non-taxable product order-line produces no tax-line
+scenarios:
+  - name: taxable-product-taxed
+    given:
+      rate-rule: {rate-percentage: "6.25"}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+    expect:
+      tax-line: {kind: sales-tax-line, tax-amount: "6.250"}
+  - name: non-taxable-product-yields-nothing
+    given:
+      rate-rule: {rate-percentage: "6.25"}
+      order-line: {product: non-taxable, unit-price: "100.00", quantity: "1"}
+    expect:
+      tax-lines: none
+outputs_affected: [tax-line, tax-amount, taxable-amount]
+observability: direct
+source_fragments: [F-TAS-038, F-PRODEM-004]
+confidence: derived-from-code
+notes: >
+  An unset taxable flag is treated as taxable. When the taxable-amount is zero no tax-line is
+  emitted for that rate-rule.

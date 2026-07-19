@@ -1,0 +1,30 @@
+id: TAX.RATE.AUTHORITY-MATCH
+kind: behavior
+title: The rate-rules considered are those of the resolved jurisdictions plus the default-authority.
+status: extracted
+priority: core
+terms: [rate-rule, tax-authority, default-authority, taxing-jurisdiction, tax-line,
+        rate-percentage, taxable-product]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.JURIS.ADDRESS-TO-JURISDICTION]
+behavior: |
+  Rule: Applicable rate-rules follow the resolved authorities
+    Given a destination-address resolving a taxing-jurisdiction
+    And a rate-rule under that jurisdiction's tax-authority
+    And a taxable-product on the order-line
+    When tax is calculated for the order
+    Then the tax-line's rate-percentage and jurisdiction come from that rate-rule
+    And rate-rules under the default-authority are also considered
+scenarios:
+  - name: resolved-authority-rate-applies
+    given:
+      destination-address: {country: country, state: state}
+      tax-authority: state
+      rate-rule: {under: state, rate-percentage: "6.25"}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+    expect:
+      tax-line: {kind: sales-tax-line, jurisdiction: state, rate-percentage: "6.25", tax-amount: "6.250"}
+outputs_affected: [tax-line, rate-percentage, taxing-jurisdiction]
+observability: direct
+source_fragments: [F-TAS-032, F-ACCTEM-002, F-ACCTEM-006]
+confidence: derived-from-code
+notes: The default-authority catch-all is always added to the considered authority set.

@@ -1,7 +1,7 @@
 id: TAX.VAT.VARIANT-PRICE
 kind: behavior
 title: A variant product falls back to its parent's tax-inclusive price record.
-status: extracted
+status: verified
 priority: edge
 terms: [product, variant-product, virtual-product, tax-inclusive-price, included-tax, vat-tax-line]
 depends_on: [TAX.VAT.PRICE-INCLUSIVE]
@@ -46,3 +46,8 @@ notes: >
   product (F-TAS-041, F-TAS-049). The virtual product's record must therefore be created scoped to
   the same authority via fx.price(virtualProduct, authority).price("35.83").taxInPrice(true).create().
   Numbers mirror TAX.VAT.PRICE-INCLUSIVE.
+attestations:
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

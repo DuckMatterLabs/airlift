@@ -1,7 +1,7 @@
 id: TAX.JURIS.ADDRESS-TO-JURISDICTION
 kind: behavior
 title: Taxing jurisdictions are derived from the destination address components.
-status: extracted
+status: verified
 priority: core
 terms: [destination-address, country, state, county, postal-code-area, taxing-jurisdiction, tax-authority, jurisdiction-geo, tax-adjustment]
 depends_on: [TAX.RATE.AUTHORITY-MATCH]
@@ -31,3 +31,8 @@ notes: >
   The destination's country, state, county, and postal-code-area are each mapped to a
   jurisdiction, then matched against configured tax-authorities. Region-containment can add
   enclosing jurisdictions (see TAX.JURIS.CONTAINMENT).
+attestations:
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

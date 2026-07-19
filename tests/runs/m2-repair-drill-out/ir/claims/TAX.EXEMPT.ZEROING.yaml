@@ -1,0 +1,32 @@
+id: TAX.EXEMPT.ZEROING
+kind: behavior
+title: A valid exemption zeroes the tax-amount and records the would-be tax as an exempt-amount.
+status: extracted
+priority: core
+terms: [purchasing-party, tax-exemption, tax-registration, taxing-jurisdiction, tax-line,
+        tax-amount, exempt-amount, tax-registration-id]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.EXEMPT.EFFECTIVE-INFO, TAX.CALC.TAX-AMOUNT]
+behavior: |
+  Rule: Exemption zeroes the tax and preserves the amount as exempt
+    Given a purchasing-party holding an effective tax-exemption for the taxing-jurisdiction
+    And a taxable-product taxed under that jurisdiction
+    When tax is calculated for the order
+    Then the tax-line's tax-amount is zero
+    And the would-be tax is recorded as the exempt-amount
+    And the tax-line records the tax-registration-id
+scenarios:
+  - name: exempt-party-pays-zero
+    given:
+      purchasing-party: customer
+      tax-registration: {tax-registration-id: "EX-001", exempt: true, effective: current}
+      rate-rule: {rate-percentage: "6.25"}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+    expect:
+      tax-line: {kind: sales-tax-line, tax-amount: "0", exempt-amount: "6.250", tax-registration-id: "EX-001"}
+outputs_affected: [tax-amount, exempt-amount, tax-registration-id, tax-line]
+observability: direct
+source_fragments: [F-TAS-055, F-ACCTEM-001]
+confidence: derived-from-code
+notes: >
+  Provenance-critical. The exempt-amount equals the tax that TAX.CALC.TAX-AMOUNT would have
+  produced (6.250 for 6.25% of 100.00). Pinned by the harness smoke self-test.

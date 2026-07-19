@@ -1,0 +1,29 @@
+claim: TAX.EXEMPT.JURISDICTION-INHERITANCE
+summary: >
+  Exemption inheritance up the parent-jurisdiction chain was added after the initial import to
+  support the case where a county tax is configured but the customer holds a state-level
+  exemption.
+introduced:
+  commit: be33bfe63ab143d9d4b634b1bccb0ea0ec24cb98
+  date: "2007-04-19"
+  author: David E. Jones
+  message: >
+    "Implemented feature to support excemption inheritance, used for example when a county tax
+    is setup and the customer has an exemption with the state" (svn r530218)
+  confidence: high
+changes:
+  - commit: be33bfe63ab143d9d4b634b1bccb0ea0ec24cb98
+    date: "2007-04-19"
+    semantic_change: >
+      Introduced: when a party is not exempt at the taxing jurisdiction, follow the
+      TaxAuthorityAssoc parent chain (inheritExemption flag) and apply a parent-jurisdiction
+      exemption to zero the child-jurisdiction tax.
+    confidence: high
+provenance_method:
+  - "git log -S'inheritExemption' -- applications/accounting/.../TaxAuthorityServices.java"
+  - "git log --follow on TaxAuthorityServices.java"
+confidence: high
+notes: >
+  Provenance-critical per the seam brief. Distinct from geo-region containment
+  (TAX.JURIS.CONTAINMENT): inheritance concerns exemption lookup up TaxAuthorityAssoc, not
+  jurisdiction resolution from an address.

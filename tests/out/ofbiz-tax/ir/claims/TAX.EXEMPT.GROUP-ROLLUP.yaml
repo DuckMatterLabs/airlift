@@ -1,7 +1,7 @@
 id: TAX.EXEMPT.GROUP-ROLLUP
 kind: behavior
 title: A party inherits the tax exemptions of the parent groups it rolls up to.
-status: pinned
+status: verified
 priority: core
 terms: [purchasing-party, party-group, group-rollup, tax-exemption, taxing-jurisdiction, tax-amount, exempt-amount, tax-adjustment]
 depends_on: [TAX.EXEMPT.ZEROING]
@@ -38,3 +38,12 @@ confidence: derived-from-code
 notes: >
   The exemption check considers the billed party together with all parent groups it rolls up
   to; an exemption on any of them zeroes the tax. Provenance-critical.
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

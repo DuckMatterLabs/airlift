@@ -1,0 +1,268 @@
+# Airlift IR manifest — ofbiz sales-tax seam.
+schema_version: "1.0"
+
+seam:
+  name: sales-tax-calculation
+  repo: ofbiz-framework
+  primary_source: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+
+source_binding:
+  repo: ofbiz-framework
+  commit: 1a7d91a2979ed366f617978441a20575dab12281
+  catalog_commit: 68b751ffe4b7012bcddc6f53de439183b35f292a
+  note: >
+    HEAD carries the committed comment-only AIRLIFT source annotations; only
+    TaxAuthorityServices.java line numbers differ from the catalog commit.
+
+claims:
+  - id: TAX.CALC.TAX-AMOUNT
+    kind: behavior
+    title: "The tax charged is the taxable-amount times the rate-percentage at the sales-tax-precision."
+    status: extracted
+    priority: core
+  - id: TAX.CALC.TAXABLE-BASE
+    kind: behavior
+    title: "Tax is charged only on taxable products, and none when nothing taxable remains."
+    status: extracted
+    priority: core
+  - id: TAX.CONFIG.CALC-PRECISION
+    kind: config
+    title: "Per-line tax is computed and rounded to three decimal places, half-up."
+    status: extracted
+    priority: core
+  - id: TAX.CONFIG.FINAL-PRECISION
+    kind: config
+    title: "Display totals are finally rounded to two decimal places, half-up."
+    status: extracted
+    priority: edge
+  - id: TAX.CONTRACT.CALC-ORDER-TAX
+    kind: contract
+    title: "The order tax-calculation returns one tax-line list per order-line plus order-level tax-lines."
+    status: extracted
+    priority: core
+  - id: TAX.CONTRACT.DISPLAY-PRICE-WITH-TAX
+    kind: contract
+    title: "The display tax-calculation returns a single product's price-with-tax, tax-total, and combined percentage."
+    status: extracted
+    priority: core
+  - id: TAX.DISPLAY.FINAL-ROUNDING
+    kind: behavior
+    title: "The display tax-total is finally rounded to the display-precision."
+    status: extracted
+    priority: secondary
+  - id: TAX.DISPLAY.PRICE-WITH-TAX
+    kind: behavior
+    title: "The display price-with-tax is the entered price plus the tax that would be charged on it."
+    status: extracted
+    priority: secondary
+  - id: TAX.DISPLAY.VAT-ONLY
+    kind: behavior
+    title: "The display path reports tax only for jurisdictions that tax within the price."
+    status: extracted
+    priority: secondary
+  - id: TAX.EXEMPT.EFFECTIVE-INFO
+    kind: behavior
+    title: "The tax-registration-id from the party's most recent effective registration is recorded on the tax-line."
+    status: extracted
+    priority: core
+  - id: TAX.EXEMPT.GROUP-ROLLUP
+    kind: behavior
+    title: "A party inherits the exemptions of the parent-groups it rolls up to."
+    status: extracted
+    priority: core
+  - id: TAX.EXEMPT.JURISDICTION-INHERITANCE
+    kind: behavior
+    title: "When not exempt at a jurisdiction, the exemption is sought up the parent-jurisdiction chain."
+    status: extracted
+    priority: core
+  - id: TAX.EXEMPT.ZEROING
+    kind: behavior
+    title: "A valid exemption zeroes the tax-amount and records the would-be tax as an exempt-amount."
+    status: extracted
+    priority: core
+  - id: TAX.JURIS.ADDRESS-REQUIRED
+    kind: behavior
+    title: "Tax is calculated only when the destination names a country, state, or postal-code."
+    status: extracted
+    priority: core
+  - id: TAX.JURIS.ADDRESS-TO-JURISDICTION
+    kind: behavior
+    title: "Taxing jurisdictions are resolved from the destination country, state, county, and postal-code."
+    status: extracted
+    priority: core
+  - id: TAX.JURIS.CONTAINMENT
+    kind: behavior
+    title: "An authority applies to any destination whose enclosing region contains the address."
+    status: extracted
+    priority: edge
+  - id: TAX.JURIS.FACILITY-FALLBACK
+    kind: behavior
+    title: "With no shipping destination, a face-to-face sale is taxed at the fulfilling facility's address."
+    status: extracted
+    priority: edge
+  - id: TAX.ORDER.FREIGHT-SPLIT
+    kind: behavior
+    title: "Order-level freight tax is split across items in proportion to item value."
+    status: extracted
+    priority: core
+  - id: TAX.ORDER.PER-ITEM
+    kind: behavior
+    title: "Each order-line is taxed independently and yields its own tax-line."
+    status: extracted
+    priority: core
+  - id: TAX.ORDER.PROMO-TAX
+    kind: behavior
+    title: "A taxable order-level promotion reduces the taxed base by its (negative) amount."
+    status: extracted
+    priority: core
+  - id: TAX.ORDER.VALUE-WEIGHT
+    kind: behavior
+    title: "Order-level tax is apportioned to items by each item's share of total order value."
+    status: extracted
+    priority: edge
+  - id: TAX.RATE.AUTHORITY-MATCH
+    kind: behavior
+    title: "The rate-rules considered are those of the resolved jurisdictions plus the default-authority."
+    status: extracted
+    priority: core
+  - id: TAX.RATE.CATEGORY-MATCH
+    kind: behavior
+    title: "A rate-rule applies when it restricts to no tax-category or to one the product belongs to."
+    status: extracted
+    priority: edge
+  - id: TAX.RATE.PROMO-TAXABLE
+    kind: behavior
+    title: "Promotions are taxed only under rate-rules that permit taxing promotions."
+    status: extracted
+    priority: edge
+  - id: TAX.RATE.SHIPPING-TAXABLE
+    kind: behavior
+    title: "Freight is taxed only under rate-rules that permit taxing shipping."
+    status: extracted
+    priority: edge
+  - id: TAX.RATE.STORE-SCOPE
+    kind: behavior
+    title: "A rate-rule applies when it targets the selling-store or is global."
+    status: extracted
+    priority: edge
+  - id: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE
+    kind: behavior
+    title: "A rate-rule applies only when the unit-price is at least its minimum-item-price."
+    status: extracted
+    priority: edge
+  - id: TAX.RATE.THRESHOLD-MIN-PURCHASE
+    kind: behavior
+    title: "A rate-rule applies only when the item-amount is at least its minimum-purchase-amount."
+    status: extracted
+    priority: edge
+  - id: TAX.RATE.VARIANT-CATEGORY
+    kind: behavior
+    title: "A variant-product matches tax-categories of both itself and its virtual-parent-product."
+    status: extracted
+    priority: edge
+  - id: TAX.VAT.DISCOUNT-CORRECTION
+    kind: behavior
+    title: "Discounting a tax-inclusive item emits the drop in included tax as a negative included-tax line."
+    status: extracted
+    priority: edge
+  - id: TAX.VAT.PRICE-CORRECTION
+    kind: behavior
+    title: "A tax-exclusive item with an intended price-with-tax reconciles any rounding gap via a price-correction line."
+    status: extracted
+    priority: edge
+  - id: TAX.VAT.PRICE-GROUP-SCOPE
+    kind: behavior
+    title: "The tax-inclusive price used is the selling-store's price-group price, or the unscoped purchase-price when none."
+    status: extracted
+    priority: edge
+  - id: TAX.VAT.PRICE-INCLUSIVE
+    kind: behavior
+    title: "A tax-inclusive price reports its contained tax as included, not added on top."
+    status: extracted
+    priority: core
+  - id: TAX.VAT.VARIANT-PRICE
+    kind: behavior
+    title: "A variant-product uses its virtual-parent-product's tax-inclusive price when it has none of its own."
+    status: extracted
+    priority: edge
+
+# Claims with a green backfill test (from backfill-report.yaml).
+pinned_claims:
+  - TAX.JURIS.CONTAINMENT
+  - TAX.JURIS.FACILITY-FALLBACK
+  - TAX.RATE.CATEGORY-MATCH
+  - TAX.RATE.SHIPPING-TAXABLE
+  - TAX.RATE.PROMO-TAXABLE
+  - TAX.EXEMPT.GROUP-ROLLUP
+  - TAX.EXEMPT.JURISDICTION-INHERITANCE
+  - TAX.VAT.PRICE-INCLUSIVE
+  - TAX.VAT.DISCOUNT-CORRECTION
+  - TAX.VAT.PRICE-CORRECTION
+  - TAX.ORDER.FREIGHT-SPLIT
+  - TAX.ORDER.PROMO-TAX
+  - TAX.DISPLAY.VAT-ONLY
+  - TAX.DISPLAY.PRICE-WITH-TAX
+  - TAX.DISPLAY.FINAL-ROUNDING
+
+# Claims extracted but not yet pinned by a backfill test.
+unpinned_claims:
+  - TAX.CALC.TAX-AMOUNT
+  - TAX.CALC.TAXABLE-BASE
+  - TAX.CONFIG.CALC-PRECISION
+  - TAX.CONFIG.FINAL-PRECISION
+  - TAX.CONTRACT.CALC-ORDER-TAX
+  - TAX.CONTRACT.DISPLAY-PRICE-WITH-TAX
+  - TAX.EXEMPT.EFFECTIVE-INFO
+  - TAX.EXEMPT.ZEROING
+  - TAX.JURIS.ADDRESS-REQUIRED
+  - TAX.JURIS.ADDRESS-TO-JURISDICTION
+  - TAX.ORDER.PER-ITEM
+  - TAX.ORDER.VALUE-WEIGHT
+  - TAX.RATE.AUTHORITY-MATCH
+  - TAX.RATE.STORE-SCOPE
+  - TAX.RATE.THRESHOLD-MIN-ITEM-PRICE
+  - TAX.RATE.THRESHOLD-MIN-PURCHASE
+  - TAX.RATE.VARIANT-CATEGORY
+  - TAX.VAT.PRICE-GROUP-SCOPE
+  - TAX.VAT.VARIANT-PRICE
+
+# Classify, never discard: nothing was dropped.
+descoped: []
+
+catalog_deltas:
+  - kind: added
+    claims: [TAX.CONFIG.CALC-PRECISION, TAX.CONFIG.FINAL-PRECISION]
+    reason: >
+      Emitted the load-bearing precision/rounding rules as explicit config claims so that
+      every worked numeric scenario cites concrete constants (calc=3dp, final=2dp, HALF_UP).
+  - kind: added
+    claims: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.CONTRACT.DISPLAY-PRICE-WITH-TAX]
+    reason: >
+      Added explicit contract claims describing the seam request/response in domain
+      vocabulary (field by field) to make blind test generation possible.
+  - kind: promoted
+    claims: [TAX.DISPLAY.VAT-ONLY, TAX.DISPLAY.PRICE-WITH-TAX, TAX.DISPLAY.FINAL-ROUNDING]
+    reason: >
+      Catalog priority is secondary, but all three are pinned by green backfill tests, so
+      they are promoted to claims rather than descoped. Priority left as secondary.
+  - kind: split
+    claims: [TAX.ORDER.VALUE-WEIGHT, TAX.ORDER.FREIGHT-SPLIT]
+    reason: >
+      The value-weight apportionment mechanism (internal) is split from the observable
+      freight-split behavior for crisper claims.
+  - kind: split
+    claims: [TAX.VAT.PRICE-INCLUSIVE, TAX.VAT.DISCOUNT-CORRECTION, TAX.VAT.PRICE-CORRECTION, TAX.VAT.VARIANT-PRICE, TAX.VAT.PRICE-GROUP-SCOPE]
+    reason: >
+      VAT-in-price handling split into inclusive-price reporting, discount correction,
+      price-with-tax correction, variant fallback, and price-group scoping.
+
+# From backfill-report.yaml: no catalog corrections were discovered during pinning.
+catalog_corrections: []
+
+artifacts:
+  glossary: glossary.yaml
+  domain_model: domain-model.yaml
+  traceability: traceability.yaml
+  claims_dir: claims/
+  provenance_dir: provenance/
+  architecture_dir: architecture/

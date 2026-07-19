@@ -1,7 +1,7 @@
 id: TAX.RATE.CATEGORY-MATCH
 kind: behavior
 title: A rate rule with a category applies only to products in that category.
-status: pinned
+status: verified
 priority: edge
 terms: [rate-rule, tax-category, product, tax-adjustment, tax-amount]
 depends_on: [TAX.RATE.AUTHORITY-MATCH]
@@ -43,3 +43,12 @@ notes: >
   A rate-rule with no tax-category taxes every product; a category-restricted rule matches
   only when the product belongs to that category. Variant products also match on their
   virtual parent's categories (see TAX.RATE.VARIANT-CATEGORY).
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

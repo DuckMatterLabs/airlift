@@ -1,7 +1,7 @@
 id: TAX.RATE.PROMO-TAXABLE
 kind: behavior
 title: Promotions are taxed only under rate rules that permit taxing promotions.
-status: pinned
+status: verified
 priority: edge
 terms: [promotions, rate-rule, promotions-taxable-flag, tax-adjustment, tax-amount]
 depends_on: [TAX.ORDER.PROMO-TAX]
@@ -39,3 +39,12 @@ notes: >
   Unlike the freight split, the promotions call is made with no product, so a rate-rule that
   forbids taxing promotions is excluded from the rate lookup entirely. An unset
   promotions-taxable-flag is treated as permitting promotions tax.
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

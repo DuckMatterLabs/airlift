@@ -1,7 +1,7 @@
 id: TAX.ORDER.PER-ITEM
 kind: behavior
 title: Each order line is taxed independently and receives its own tax adjustment.
-status: extracted
+status: verified
 priority: core
 terms: [order-line, tax-adjustment, tax-amount, item-adjustments]
 depends_on: [TAX.CALC.TAX-AMOUNT]
@@ -34,3 +34,8 @@ confidence: derived-from-code
 notes: >
   The response is a list aligned with the order-lines, each element the adjustments for that
   line: 100.00*6.25% = 6.250 and 40.00*6.25% = 2.500.
+attestations:
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

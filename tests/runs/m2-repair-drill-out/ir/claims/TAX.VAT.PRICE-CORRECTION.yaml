@@ -1,0 +1,23 @@
+id: TAX.VAT.PRICE-CORRECTION
+kind: behavior
+title: A tax-exclusive item with an intended price-with-tax reconciles any rounding gap via a price-correction line.
+status: extracted
+priority: edge
+terms: [price-with-tax, unit-price, quantity, tax-amount, price-correction-line, tax-line]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.CALC.TAX-AMOUNT]
+behavior: |
+  Rule: Reconcile entered vs calculated price-with-tax without touching the tax
+    Given a product configured with a tax-exclusive price and an intended price-with-tax
+    And a rate-rule under the taxing-jurisdiction's tax-authority
+    And an order-line for that product
+    When tax is calculated for the order
+    Then a sales-tax-line carries the calculated tax-amount
+    And a price-correction-line carries the difference between the intended and calculated price-with-tax totals
+outputs_affected: [tax-line, tax-amount]
+observability: direct
+source_fragments: [F-TAS-046, F-PRODEM-003]
+confidence: derived-from-code
+notes: >
+  correction = intended-price-with-tax*quantity - (price*quantity + calculated-tax). The tax
+  itself is left intact; only the price is corrected. Emitted only when the two totals differ.
+  Pinned by a green backfill test.

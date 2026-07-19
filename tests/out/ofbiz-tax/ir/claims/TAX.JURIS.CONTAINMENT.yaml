@@ -1,7 +1,7 @@
 id: TAX.JURIS.CONTAINMENT
 kind: behavior
 title: An authority for an enclosing region applies to a destination named at a finer level.
-status: pinned
+status: verified
 priority: edge
 terms: [region-containment, taxing-jurisdiction, tax-authority, destination-address, country, state, jurisdiction-geo, tax-adjustment]
 depends_on: [TAX.JURIS.ADDRESS-TO-JURISDICTION, TAX.JURIS.ADDRESS-REQUIRED]
@@ -41,3 +41,12 @@ notes: >
   reported as the adjustment's jurisdiction-geo. A county named IN ADDITION to a state is added
   to the geo set and participates in the same upward expansion, but a county is never required
   to license containment and cannot license it on its own.
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

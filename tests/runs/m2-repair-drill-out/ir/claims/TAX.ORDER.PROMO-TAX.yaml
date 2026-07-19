@@ -1,0 +1,32 @@
+id: TAX.ORDER.PROMO-TAX
+kind: behavior
+title: A taxable order-level promotion reduces the taxed base by its (negative) amount.
+status: extracted
+priority: core
+terms: [order-promotion-amount, promotion-taxable, taxable-amount, tax-line, tax-amount]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.RATE.PROMO-TAXABLE]
+behavior: |
+  Rule: Taxable promotions lower the tax
+    Given an order with a taxable order-line and a taxable order-promotion-amount that is negative
+    And a rate-rule whose promotion-taxable flag is set under the taxing-jurisdiction's tax-authority
+    When tax is calculated for the order
+    Then the promotion's negative amount is taxed, reducing the total tax
+scenarios:
+  - name: promotion-reduces-tax
+    given:
+      rate-rule: {rate-percentage: "10.00", taxes-promotions: true}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+      order-promotion-amount: "-20.00"
+    expect:
+      # item tax 10.000 on 100.00; promo tax 10% of -20.00 = -2.000
+      tax-lines:
+        - {kind: sales-tax-line, on: item, tax-amount: "10.000"}
+        - {kind: sales-tax-line, on: promotion, tax-amount: "-2.000"}
+outputs_affected: [tax-line, tax-amount]
+observability: direct
+source_fragments: [F-TAS-026, F-TAS-017]
+confidence: derived-from-code
+notes: >
+  The order-promotion-amount is a negative value; taxing it yields a negative tax-line that
+  offsets item tax. Only rate-rules with the promotion-taxable flag apply. Pinned by a green
+  backfill test.

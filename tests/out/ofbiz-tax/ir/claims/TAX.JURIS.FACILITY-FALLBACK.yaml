@@ -1,7 +1,7 @@
 id: TAX.JURIS.FACILITY-FALLBACK
 kind: behavior
 title: With no destination address, a face-to-face sale is taxed at the facility's address.
-status: pinned
+status: verified
 priority: edge
 terms: [destination-address, facility, taxing-jurisdiction, jurisdiction-geo, tax-adjustment]
 depends_on: [TAX.JURIS.ADDRESS-TO-JURISDICTION]
@@ -31,3 +31,12 @@ confidence: derived-from-code
 notes: >
   Applies only when no destination-address is present but a facility is; the facility's
   origin/primary location address is used as if it were the destination.
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

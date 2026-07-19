@@ -1,0 +1,33 @@
+id: TAX.ORDER.FREIGHT-SPLIT
+kind: behavior
+title: Order-level freight tax is split across items in proportion to item value.
+status: extracted
+priority: core
+terms: [order-shipping-amount, order-line, item-amount, value-weight, tax-line, tax-amount]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.ORDER.VALUE-WEIGHT, TAX.RATE.SHIPPING-TAXABLE]
+behavior: |
+  Rule: Freight tax follows item value
+    Given an order with taxable order-lines and a taxable order-shipping-amount
+    And a rate-rule that taxes shipping under the taxing-jurisdiction's tax-authority
+    When tax is calculated for the order
+    Then the freight tax is apportioned to each order-line in proportion to its item-amount share of the total order value
+scenarios:
+  - name: freight-split-by-value
+    given:
+      rate-rule: {rate-percentage: "10.00", taxes-shipping: true}
+      order-lines:
+        - {product: taxable, unit-price: "100.00", quantity: "1"}
+        - {product: taxable, unit-price: "300.00", quantity: "1"}
+      order-shipping-amount: "40.00"
+    expect:
+      # total value 400; weights 0.25 and 0.75; freight 40 -> 10 and 30; tax 10% -> 1.000 and 3.000
+      shipping-tax-lines:
+        - {kind: sales-tax-line, tax-amount: "1.000"}
+        - {kind: sales-tax-line, tax-amount: "3.000"}
+outputs_affected: [tax-line, tax-amount]
+observability: direct
+source_fragments: [F-TAS-023, F-TAS-024, F-TAS-018]
+confidence: derived-from-code
+notes: >
+  Value-weights: 100/400 = 0.25, 300/400 = 0.75. Apportioned freight 10.00 and 30.00; at 10%
+  the shipping tax is 1.000 and 3.000 (sales-tax-precision). Pinned by a green backfill test.

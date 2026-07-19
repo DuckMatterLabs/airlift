@@ -1,0 +1,43 @@
+id: TAX.CONTRACT.CALC-ORDER-TAX
+kind: contract
+title: The order tax-calculation returns one tax-line list per order-line plus order-level tax-lines.
+status: extracted
+priority: core
+terms: [tax-calculation, order, order-line, selling-store, purchasing-party, destination-address,
+        fulfilling-facility, unit-price, quantity, item-amount, freight-amount, promotions-amount,
+        tax-line, product]
+depends_on: []
+behavior: |
+  Rule: A caller supplies an order and receives its tax-lines
+    Given a selling-store (or a collecting party) is identified
+    And a destination-address or a fulfilling-facility is identified
+    And optionally a purchasing-party to bill
+    And one or more order-lines, each with a product, a unit-price, a quantity, and an item-amount
+    And optionally an order freight-amount and an order promotions-amount
+    When tax is calculated for the order
+    Then the response carries one list of tax-lines per order-line, keyed to that order-line
+    And the response carries a separate list of order-level tax-lines for freight and promotions
+    And each tax-line reports its kind, tax-amount, rate-percentage, and jurisdiction
+scenarios:
+  - name: single-item-order-round-trip
+    given:
+      selling-store: identified
+      destination-address: {country: country, state: state}
+      purchasing-party: customer
+      rate-rule: {rate-percentage: "6.25"}
+      order-lines:
+        - {product: taxable, unit-price: "100.00", quantity: "1", item-amount: "100.00"}
+    expect:
+      item-count: 1
+      item-tax-lines:
+        - {order-line: 1, tax-lines: [{kind: sales-tax-line, tax-amount: "6.250", rate-percentage: "6.25"}]}
+      order-level-tax-lines: none
+outputs_affected: [tax-line, tax-amount, rate-percentage]
+observability: direct
+source_fragments: [F-TAS-014, F-TAS-021, F-TAS-025, F-STAX-001, F-STAX-003, F-ORDEREM-001]
+confidence: derived-from-code
+notes: >
+  This is the canonical `When tax is calculated for the order` action referenced by every
+  order-path behavior claim. The request/response field vocabulary maps to the harness
+  fx.calcTax() builder and TaxCalcResult; architecture (service names, entity shapes) lives
+  in traceability and the architecture stub, not here.

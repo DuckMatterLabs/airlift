@@ -1,0 +1,39 @@
+id: TAX.EXEMPT.EFFECTIVE-INFO
+kind: behavior
+title: The tax-registration-id from the party's most recent effective registration is recorded on the tax-line.
+status: extracted
+priority: core
+terms: [purchasing-party, tax-registration, tax-registration-id, taxing-jurisdiction,
+        calculation-date, tax-line]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.CALC.TAX-AMOUNT]
+behavior: |
+  Rule: The effective registration id lands on the tax-line
+    Given a purchasing-party holding a tax-registration for the taxing-jurisdiction that is effective on the calculation-date
+    And a taxable-product taxed under that jurisdiction
+    When tax is calculated for the order
+    Then the tax-line records that registration's tax-registration-id
+    And a registration that is expired or not yet effective on the calculation-date is ignored
+scenarios:
+  - name: effective-registration-id-recorded
+    given:
+      purchasing-party: customer
+      tax-registration: {tax-registration-id: "EX-001", exempt: false, effective: current}
+      rate-rule: {rate-percentage: "6.25"}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+    expect:
+      tax-line: {kind: sales-tax-line, tax-registration-id: "EX-001", tax-amount: "6.250"}
+  - name: expired-registration-ignored
+    given:
+      purchasing-party: customer
+      tax-registration: {tax-registration-id: "EX-001", exempt: false, effective: expired}
+      rate-rule: {rate-percentage: "6.25"}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+    expect:
+      tax-line: {kind: sales-tax-line, tax-registration-id: none, tax-amount: "6.250"}
+outputs_affected: [tax-line, tax-registration-id]
+observability: direct
+source_fragments: [F-TAS-054, F-ACCTEM-001]
+confidence: derived-from-code
+notes: >
+  When more than one registration is effective, the one with the latest start date is used.
+  Recording the id is independent of whether the registration is exempt.

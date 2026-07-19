@@ -1,0 +1,30 @@
+id: TAX.DISPLAY.PRICE-WITH-TAX
+kind: behavior
+title: The display price-with-tax is the entered price plus the tax that would be charged on it.
+status: extracted
+priority: secondary
+terms: [display-price-with-tax, unit-price, quantity, rate-percentage, tax-total, display-precision]
+depends_on: [TAX.CONTRACT.DISPLAY-PRICE-WITH-TAX, TAX.CALC.TAX-AMOUNT, TAX.CONFIG.FINAL-PRECISION]
+behavior: |
+  Rule: Display price equals price plus its tax
+    Given a taxable-product with a tax-exclusive unit-price and a quantity
+    And a rate-rule with a rate-percentage under the taxing-jurisdiction's tax-authority
+    When the display price-with-tax is calculated for the product
+    Then the display price-with-tax is the price plus the tax charged on it
+    And the tax-total is reported alongside it
+scenarios:
+  - name: price-plus-tax
+    given:
+      rate-rule: {rate-percentage: "6.25"}
+      product: {unit-price: "100.00", quantity: "1", taxable: true}
+    expect:
+      # tax 6.25% of 100.00 = 6.250 -> final 2 dp 6.25; price-with-tax 106.25
+      tax-total: "6.25"
+      display-price-with-tax: "106.25"
+outputs_affected: [display-price-with-tax, tax-total]
+observability: direct
+source_fragments: [F-TAS-007, F-TAS-010]
+confidence: derived-from-code
+notes: >
+  The display total sums per-jurisdiction tax then finalizes at display-precision (2 dp).
+  6.250 -> 6.25; price-with-tax = 100.00 + 6.25 = 106.25. Pinned by a green backfill test.

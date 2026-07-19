@@ -1,0 +1,21 @@
+claim: TAX.EXEMPT.ZEROING
+summary: >
+  Party tax exemption zeroing — recording the would-be tax as an exempt-amount while charging
+  zero — has existed since the code was first imported. No semantic change has been found since.
+introduced:
+  commit: 94fe6d1cdaa176365cce77422f7ce2a8b1ad0534
+  date: "2006-07-01"
+  author: David E. Jones
+  message: "Initial OFBiz import from revision 7923"
+  confidence: inferred
+  note: >
+    The exemption path (handlePartyTaxExempt) with exempt-amount accumulation is present in the
+    initial import; its true origin predates this git history (imported from Subversion r7923).
+changes: []
+provenance_method:
+  - "git log --follow on TaxAuthorityServices.java"
+  - "git log -S'exemptAmount' -- applications/accounting/.../TaxAuthorityServices.java"
+confidence: inferred
+notes: >
+  Provenance-critical per the seam brief. The zeroing-with-exempt-amount contract is original
+  behavior; the exempt-amount field on OrderAdjustment carries the un-charged tax for audit.

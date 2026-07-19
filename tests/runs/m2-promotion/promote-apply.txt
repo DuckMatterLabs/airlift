@@ -1,0 +1,97 @@
+=== promotion changes (96) ===
+  TAX.CALC.TAX-AMOUNT: status extracted -> verified
+  TAX.CALC.TAX-AMOUNT: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.CALC.TAXABLE-BASE: status extracted -> verified
+  TAX.CALC.TAXABLE-BASE: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.CONFIG.CALC-PRECISION: status extracted -> verified
+  TAX.CONFIG.CALC-PRECISION: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.CONFIG.FINAL-PRECISION: status extracted -> verified
+  TAX.CONFIG.FINAL-PRECISION: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.DISPLAY.FINAL-ROUNDING: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.DISPLAY.PRICE-WITH-TAX: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.DISPLAY.VAT-ONLY: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.EXEMPT.EFFECTIVE-INFO: status extracted -> verified
+  TAX.EXEMPT.EFFECTIVE-INFO: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.EXEMPT.GROUP-ROLLUP: status pinned -> verified
+  TAX.EXEMPT.GROUP-ROLLUP: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.EXEMPT.GROUP-ROLLUP: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.EXEMPT.JURISDICTION-INHERITANCE: status pinned -> verified
+  TAX.EXEMPT.JURISDICTION-INHERITANCE: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.EXEMPT.JURISDICTION-INHERITANCE: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.EXEMPT.ZEROING: status extracted -> verified
+  TAX.EXEMPT.ZEROING: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.JURIS.ADDRESS-REQUIRED: status extracted -> verified
+  TAX.JURIS.ADDRESS-REQUIRED: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.JURIS.ADDRESS-TO-JURISDICTION: status extracted -> verified
+  TAX.JURIS.ADDRESS-TO-JURISDICTION: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.JURIS.CONTAINMENT: status pinned -> verified
+  TAX.JURIS.CONTAINMENT: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.JURIS.CONTAINMENT: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.JURIS.FACILITY-FALLBACK: status pinned -> verified
+  TAX.JURIS.FACILITY-FALLBACK: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.JURIS.FACILITY-FALLBACK: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.ORDER.FREIGHT-SPLIT: status pinned -> verified
+  TAX.ORDER.FREIGHT-SPLIT: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.ORDER.FREIGHT-SPLIT: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.ORDER.PER-ITEM: status extracted -> verified
+  TAX.ORDER.PER-ITEM: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.ORDER.PROMO-TAX: status pinned -> verified
+  TAX.ORDER.PROMO-TAX: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.ORDER.PROMO-TAX: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.RATE.AUTHORITY-MATCH: status extracted -> verified
+  TAX.RATE.AUTHORITY-MATCH: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.RATE.CATEGORY-MATCH: status pinned -> verified
+  TAX.RATE.CATEGORY-MATCH: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.RATE.CATEGORY-MATCH: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.RATE.PROMO-TAXABLE: status pinned -> verified
+  TAX.RATE.PROMO-TAXABLE: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.RATE.PROMO-TAXABLE: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.RATE.SHIPPING-TAXABLE: status pinned -> verified
+  TAX.RATE.SHIPPING-TAXABLE: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.RATE.SHIPPING-TAXABLE: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.RATE.STORE-SCOPE: status extracted -> verified
+  TAX.RATE.STORE-SCOPE: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.RATE.THRESHOLD-MIN-ITEM-PRICE: status extracted -> verified
+  TAX.RATE.THRESHOLD-MIN-ITEM-PRICE: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.RATE.THRESHOLD-MIN-PURCHASE: status extracted -> verified
+  TAX.RATE.THRESHOLD-MIN-PURCHASE: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.RATE.VARIANT-CATEGORY: status extracted -> verified
+  TAX.RATE.VARIANT-CATEGORY: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.VAT.DISCOUNT-CORRECTION: status pinned -> verified
+  TAX.VAT.DISCOUNT-CORRECTION: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.VAT.DISCOUNT-CORRECTION: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.VAT.PRICE-CORRECTION: status pinned -> verified
+  TAX.VAT.PRICE-CORRECTION: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.VAT.PRICE-CORRECTION: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.VAT.PRICE-INCLUSIVE: status pinned -> verified
+  TAX.VAT.PRICE-INCLUSIVE: + attestation tier=pinned sha=1a7d91a2979e date=2026-07-19T22:58:24 evidence=tests/runs/m2-promotion/airliftbackfill.xml
+  TAX.VAT.PRICE-INCLUSIVE: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  TAX.VAT.VARIANT-PRICE: status extracted -> verified
+  TAX.VAT.VARIANT-PRICE: + attestation tier=verified sha=1a7d91a2979e date=2026-07-19T22:58:34 evidence=tests/runs/m2-promotion/airliftblind.xml
+  manifest: TAX.CALC.TAX-AMOUNT: extracted -> verified (claim file is authoritative)
+  manifest: TAX.CALC.TAXABLE-BASE: extracted -> verified (claim file is authoritative)
+  manifest: TAX.CONFIG.CALC-PRECISION: extracted -> verified (claim file is authoritative)
+  manifest: TAX.CONFIG.FINAL-PRECISION: extracted -> verified (claim file is authoritative)
+  manifest: TAX.EXEMPT.EFFECTIVE-INFO: extracted -> verified (claim file is authoritative)
+  manifest: TAX.EXEMPT.GROUP-ROLLUP: pinned -> verified (claim file is authoritative)
+  manifest: TAX.EXEMPT.JURISDICTION-INHERITANCE: pinned -> verified (claim file is authoritative)
+  manifest: TAX.EXEMPT.ZEROING: extracted -> verified (claim file is authoritative)
+  manifest: TAX.JURIS.ADDRESS-REQUIRED: extracted -> verified (claim file is authoritative)
+  manifest: TAX.JURIS.ADDRESS-TO-JURISDICTION: extracted -> verified (claim file is authoritative)
+  manifest: TAX.JURIS.CONTAINMENT: pinned -> verified (claim file is authoritative)
+  manifest: TAX.JURIS.FACILITY-FALLBACK: pinned -> verified (claim file is authoritative)
+  manifest: TAX.ORDER.FREIGHT-SPLIT: pinned -> verified (claim file is authoritative)
+  manifest: TAX.ORDER.PER-ITEM: extracted -> verified (claim file is authoritative)
+  manifest: TAX.ORDER.PROMO-TAX: pinned -> verified (claim file is authoritative)
+  manifest: TAX.RATE.AUTHORITY-MATCH: extracted -> verified (claim file is authoritative)
+  manifest: TAX.RATE.CATEGORY-MATCH: pinned -> verified (claim file is authoritative)
+  manifest: TAX.RATE.PROMO-TAXABLE: pinned -> verified (claim file is authoritative)
+  manifest: TAX.RATE.SHIPPING-TAXABLE: pinned -> verified (claim file is authoritative)
+  manifest: TAX.RATE.STORE-SCOPE: extracted -> verified (claim file is authoritative)
+  manifest: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE: extracted -> verified (claim file is authoritative)
+  manifest: TAX.RATE.THRESHOLD-MIN-PURCHASE: extracted -> verified (claim file is authoritative)
+  manifest: TAX.RATE.VARIANT-CATEGORY: extracted -> verified (claim file is authoritative)
+  manifest: TAX.VAT.DISCOUNT-CORRECTION: pinned -> verified (claim file is authoritative)
+  manifest: TAX.VAT.PRICE-CORRECTION: pinned -> verified (claim file is authoritative)
+  manifest: TAX.VAT.PRICE-INCLUSIVE: pinned -> verified (claim file is authoritative)
+  manifest: TAX.VAT.VARIANT-PRICE: extracted -> verified (claim file is authoritative)

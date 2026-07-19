@@ -1,0 +1,20 @@
+id: TAX.RATE.PROMO-TAXABLE
+kind: behavior
+title: Promotions are taxed only under rate-rules that permit taxing promotions.
+status: extracted
+priority: edge
+terms: [rate-rule, promotions-amount, tax-line, order]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.ORDER.PROMO-TAX]
+behavior: |
+  Rule: Only promotion-taxable rate-rules tax promotions
+    Given an order with a promotions-amount
+    And a rate-rule that permits taxing promotions
+    When tax is calculated for the order
+    Then an order-level tax-line taxes the promotions-amount
+    And when instead the rate-rule forbids taxing promotions, no order-level promotion tax-line appears
+outputs_affected: [tax-line]
+observability: direct
+source_fragments: [F-TAS-035, F-TAS-038, F-ACCTEM-006]
+confidence: derived-from-code
+notes: >
+  An unset taxes-promotions flag permits promotion tax. Pinned by two green backfill tests.

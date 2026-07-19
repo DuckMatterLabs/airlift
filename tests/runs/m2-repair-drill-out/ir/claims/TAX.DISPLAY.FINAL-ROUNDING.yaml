@@ -1,0 +1,29 @@
+id: TAX.DISPLAY.FINAL-ROUNDING
+kind: behavior
+title: The display tax-total is finally rounded to the display-precision.
+status: extracted
+priority: secondary
+terms: [tax-total, display-price-with-tax, display-precision, rounding-mode]
+depends_on: [TAX.CONTRACT.DISPLAY-PRICE-WITH-TAX, TAX.DISPLAY.PRICE-WITH-TAX, TAX.CONFIG.FINAL-PRECISION]
+behavior: |
+  Rule: Final display rounding is two decimals half-up
+    Given a display price-with-tax calculation whose summed tax carries more than two decimals
+    When the display price-with-tax is calculated for the product
+    Then the reported tax-total is rounded to the display-precision
+    And ties round half up
+scenarios:
+  - name: final-round-half-up
+    given:
+      rate-rule: {rate-percentage: "8.25"}
+      product: {unit-price: "12.34", quantity: "1", taxable: true}
+    expect:
+      # 12.34*8.25/100 = 1.01805 -> at final 2 dp HALF_UP = 1.02
+      tax-total: "1.02"
+      display-price-with-tax: "13.36"
+outputs_affected: [tax-total, display-price-with-tax]
+observability: direct
+source_fragments: [F-TAS-010, F-TAS-012, F-ARITH-001]
+confidence: derived-from-code
+notes: >
+  1.01805 finalized at 2 dp HALF_UP = 1.02; price-with-tax = 12.34 + 1.02 = 13.36. Pinned by a
+  green backfill test.

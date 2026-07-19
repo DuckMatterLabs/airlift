@@ -1,0 +1,38 @@
+id: TAX.EXEMPT.JURISDICTION-INHERITANCE
+kind: behavior
+title: When not exempt at a jurisdiction, the exemption is sought up the parent-jurisdiction chain.
+status: extracted
+priority: core
+terms: [purchasing-party, tax-exemption, exemption-inheritance, taxing-jurisdiction,
+        tax-registration, tax-line, tax-amount, exempt-amount]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.EXEMPT.ZEROING]
+behavior: |
+  Rule: Exemption inherits up the jurisdiction chain
+    Given a taxable-product taxed under a child taxing-jurisdiction
+    And the child taxing-jurisdiction inherits exemptions from a parent taxing-jurisdiction
+    And the purchasing-party holds no exemption at the child taxing-jurisdiction
+    And the purchasing-party holds an effective tax-exemption at the parent taxing-jurisdiction
+    When tax is calculated for the order
+    Then the tax-line's tax-amount is zero
+    And the would-be tax is recorded as the exempt-amount
+scenarios:
+  - name: exemption-inherited-from-parent-jurisdiction
+    given:
+      child-jurisdiction: county
+      parent-jurisdiction: state
+      exemption-inheritance: {child: county, parent: state}
+      rate-rule: {under: county, rate-percentage: "2.00"}
+      parent-registration: {at: state, exempt: true, effective: current}
+      destination-address: {country: country, state: state, county: county}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+    expect:
+      # county rate 2.00% of 100.00 = 2.000
+      tax-line: {kind: sales-tax-line, jurisdiction: county, tax-amount: "0", exempt-amount: "2.000"}
+outputs_affected: [tax-amount, exempt-amount, tax-line]
+observability: direct
+source_fragments: [F-TAS-056, F-ACCTEM-003]
+confidence: derived-from-code
+notes: >
+  Provenance-critical. The parent chain is followed only when no direct exemption is found;
+  the exempt-amount uses the child jurisdiction's computed tax (2.000 for 2% of 100.00).
+  Distinct from region-containment (TAX.JURIS.CONTAINMENT). Pinned by a green backfill test.

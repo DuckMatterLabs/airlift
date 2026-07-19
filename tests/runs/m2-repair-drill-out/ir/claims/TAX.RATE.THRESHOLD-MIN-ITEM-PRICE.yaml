@@ -1,0 +1,28 @@
+id: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE
+kind: behavior
+title: A rate-rule applies only when the unit-price is at least its minimum-item-price.
+status: extracted
+priority: edge
+terms: [rate-rule, minimum-item-price, unit-price, tax-line, taxable-product]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.RATE.AUTHORITY-MATCH]
+behavior: |
+  Rule: The minimum-item-price threshold gates a rate-rule
+    Given a rate-rule with a minimum-item-price
+    And a taxable-product on the order-line
+    When tax is calculated for the order
+    Then the rate-rule produces no tax-line for an order-line whose unit-price is below the minimum-item-price
+    And the rate-rule produces a tax-line for an order-line whose unit-price is at or above the minimum-item-price
+decision_table:
+  columns: [minimum-item-price, unit-price, rate-rule-applies]
+  rows:
+    - ["50.00", "49.99", false]
+    - ["50.00", "50.00", true]
+    - ["50.00", "60.00", true]
+    - [unset,   "1.00",  true]
+outputs_affected: [tax-line]
+observability: direct
+source_fragments: [F-TAS-036, F-ACCTEM-006]
+confidence: derived-from-code
+notes: >
+  Provenance-critical threshold rule. Comparison is inclusive (unit-price >= minimum).
+  An unset minimum-item-price imposes no lower bound.

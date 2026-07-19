@@ -1,7 +1,7 @@
 id: TAX.CONFIG.FINAL-PRECISION
 kind: config
 title: Display totals are rounded to two decimal places, rounding half up.
-status: extracted
+status: verified
 priority: secondary
 terms: [display-precision, rounding-mode, display-tax-total, display-price-with-tax]
 depends_on: []
@@ -25,3 +25,8 @@ notes: >
   The display-precision (two final decimals, round-half-up) is applied only on the
   single-product display path, after intermediate amounts are accumulated at the
   calculation-precision. See TAX.CONFIG.CALC-PRECISION for the intermediate scale.
+attestations:
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

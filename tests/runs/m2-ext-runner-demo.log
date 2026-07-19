@@ -1,0 +1,16 @@
+[external runner] compile -> /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/runs/ofbiz-tax-extdemo-backfill-run.log
+[external runner] suite -> /Volumes/Dancer/Develop/AIRLIFT/airlift/tests/runs/ofbiz-tax-extdemo-backfill-run.log
+stamp-backfill: run.result=green tests=19 sha=1a7d91a2979e
+suite=airliftbackfill tests=19 red=0
+EXT_RUNNER_EXIT=0
+--- stamped run block:
+run:
+  command: 'cd "$TARGET_REPO" && ./gradlew "ofbiz --test component=accounting --test suitename=airliftbackfill" --console=plain'
+  result: green
+  results_file: /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework/runtime/logs/test-results/airliftbackfill.xml
+  sha: 1a7d91a2979ed366f617978441a20575dab12281
+  timestamp: "2026-07-19T23:00:12"
+  notes: stamped by the pipeline external runner (stage-4 external-runner variant)
+--- validator on scratch OUT_DIR:
+[validate:backfill] OK
+EXT_DEMO_DONE rc=0

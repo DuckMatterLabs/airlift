@@ -1,0 +1,21 @@
+id: TAX.RATE.VARIANT-CATEGORY
+kind: behavior
+title: A variant-product matches tax-categories of both itself and its virtual-parent-product.
+status: extracted
+priority: edge
+terms: [rate-rule, tax-category, variant-product, virtual-parent-product, taxable-product, tax-line]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.RATE.CATEGORY-MATCH]
+behavior: |
+  Rule: Variants inherit their parent's categories for matching
+    Given a category-restricted rate-rule
+    And a variant-product that itself belongs to no tax-category
+    And its virtual-parent-product belongs to the rate-rule's tax-category
+    When tax is calculated for the order
+    Then the category-restricted rate-rule taxes the variant-product
+outputs_affected: [tax-line]
+observability: direct
+source_fragments: [F-TAS-051]
+confidence: derived-from-code
+notes: >
+  The product-category match considers the variant's own product plus its virtual parent's
+  category memberships together.

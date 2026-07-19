@@ -1,7 +1,7 @@
 id: TAX.VAT.PRICE-CORRECTION
 kind: behavior
 title: A price-with-tax that disagrees with the computed total yields a rounding correction line.
-status: pinned
+status: verified
 priority: edge
 terms: [product, price-with-tax, unit-price, rate-percentage, tax-amount, tax-adjustment, price-correction-line, calculation-precision]
 depends_on: [TAX.CALC.TAX-AMOUNT]
@@ -48,3 +48,12 @@ notes: >
   priceWithTax value AND is NOT flagged tax-inclusive (taxInPrice != "Y"), NOT by any store
   VAT-display setting. Create it via
   fx.price(product, authority).price("35.83").priceWithTax("43.00").taxInPrice(false).create().
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

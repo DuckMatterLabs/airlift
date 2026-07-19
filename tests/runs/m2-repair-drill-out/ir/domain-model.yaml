@@ -1,0 +1,238 @@
+# Airlift IR — domain model + fixture vocabulary for the sales-tax seam.
+# The conceptual entities claims quantify over, their attributes (units/enumerations),
+# and the harness fixture verbs (names only; signatures live in the harness contract)
+# that construct each concept. Every `Given` in every claim must be expressible via
+# these verbs. Verbs are drawn verbatim from the tax test-harness contract.
+
+schema_version: "1.0"
+
+concepts:
+  - concept: taxing-jurisdiction
+    terms: [taxing-jurisdiction, region-containment]
+    description: A geographic area (country/state/county/postal-code) that levies tax.
+    attributes:
+      - name: level
+        enum: [country, state, county, postal-code]
+      - name: encloses
+        type: set-of-jurisdiction
+        note: region-containment; a larger area may enclose smaller ones.
+    fixture_verbs:
+      - country            # String fx.country()
+      - state              # String fx.state(countryGeoId)
+      - county             # String fx.county(stateGeoId)
+      - containedIn        # void fx.containedIn(parentGeoId, childGeoId)
+
+  - concept: tax-authority
+    terms: [tax-authority, default-authority]
+    description: The body governing a jurisdiction; owns rate-rules, registrations, exemptions.
+    attributes:
+      - name: jurisdiction
+        type: taxing-jurisdiction
+      - name: is-default-catch-all
+        type: boolean
+        note: the default-authority is the special catch-all authority.
+    fixture_verbs:
+      - taxAuthority       # TaxFixture.Authority fx.taxAuthority(geoId)
+      - globalAuthority    # TaxFixture.Authority fx.globalAuthority()  (default catch-all)
+      - inheritExemption   # void fx.inheritExemption(childAuthority, parentAuthority)
+      - glAccountFor       # String fx.glAccountFor(authority, organizationPartyId)
+
+  - concept: rate-rule
+    terms: [rate-rule, rate-percentage, global-rate-rule, minimum-item-price, minimum-purchase-amount]
+    description: A configured rule contributing a rate-percentage when its conditions match.
+    attributes:
+      - name: rate-percentage
+        unit: percent
+      - name: minimum-item-price
+        unit: currency
+        note: unset means no lower bound on unit-price.
+      - name: minimum-purchase-amount
+        unit: currency
+        note: unset means no lower bound on item-amount.
+      - name: taxes-shipping
+        type: boolean
+        note: unset is treated as permitting shipping tax.
+      - name: taxes-promotions
+        type: boolean
+        note: unset is treated as permitting promotions tax.
+      - name: store-scope
+        type: selling-store-or-global
+        note: unset means global-rate-rule (applies to every store).
+      - name: tax-category
+        type: tax-category
+        note: unset means the rule matches any product.
+      - name: effective-window
+        type: date-range
+    fixture_verbs:
+      - rate               # fx.rate(authority) builder -> .create()
+      # builder options: .percent .minItemPrice .minPurchase .taxShipping .taxPromotions
+      #                  .store .category .fromDaysFromNow .thruDaysFromNow .description
+
+  - concept: selling-store
+    terms: [selling-store, price-group]
+    description: The store making the sale; scopes store-restricted rules and VAT display.
+    attributes:
+      - name: collecting-party
+        type: party
+        note: the pay-to organization; defaults to a fresh organization.
+      - name: price-group
+        type: price-group
+        note: present only when placed in the default store group.
+      - name: vat-display-authority
+        type: tax-authority
+        note: present only for VAT-inclusive display stores.
+    fixture_verbs:
+      - store              # fx.store() builder -> storeId
+      # builder options: .payTo .inDefaultStoreGroup .vatDisplay
+
+  - concept: product
+    terms: [product, taxable-product, variant-product, virtual-parent-product]
+    description: A good or service on an order-line.
+    attributes:
+      - name: taxable
+        type: boolean
+        note: unset (taxableUnset) is treated as taxable.
+      - name: is-variant-of
+        type: virtual-parent-product
+      - name: is-virtual
+        type: boolean
+    fixture_verbs:
+      - product            # fx.product() builder -> productId
+      # builder options: .taxable .taxableUnset .variantOf .virtual
+
+  - concept: tax-category
+    terms: [tax-category]
+    description: A grouping of products used to restrict rate-rules.
+    attributes:
+      - name: members
+        type: set-of-product
+    fixture_verbs:
+      - category           # String fx.category()
+      - inCategory         # void fx.inCategory(productId, categoryId)
+
+  - concept: configured-product-price
+    terms: [tax-inclusive-price, price-with-tax, purchase-price, price-group]
+    description: A per-product, per-authority configured price feeding VAT handling.
+    attributes:
+      - name: price
+        unit: currency
+      - name: price-with-tax
+        unit: currency
+        note: intended tax-inclusive total for price-correction.
+      - name: tax-inclusive
+        type: boolean
+        note: when true the price already contains tax.
+    fixture_verbs:
+      - price              # fx.price(productId, authority) builder -> .create()
+      # builder options: .price .priceWithTax .taxInPrice
+
+  - concept: purchasing-party
+    terms: [purchasing-party, parent-group]
+    description: The billed party whose registrations and exemptions are consulted.
+    attributes:
+      - name: rolls-up-to
+        type: set-of-parent-group
+    fixture_verbs:
+      - customer           # String fx.customer(lastName)
+      - organization       # String fx.organization(name)
+      - groupRollup        # void fx.groupRollup(groupPartyId, memberPartyId)
+
+  - concept: tax-registration
+    terms: [tax-registration, tax-registration-id, tax-exemption, calculation-date]
+    description: A party's dated standing with an authority; may carry an exemption.
+    attributes:
+      - name: tax-registration-id
+        type: string
+      - name: exempt
+        type: boolean
+      - name: effective-window
+        type: date-range
+    fixture_verbs:
+      - registration       # fx.registration(partyId, authority) builder -> .create()
+      # builder options: .taxId .exempt .fromDaysFromNow .thruDaysFromNow
+
+  - concept: destination-address
+    terms: [destination-address, taxing-jurisdiction]
+    description: Where goods are sent; resolves the set of taxing jurisdictions.
+    attributes:
+      - name: country
+        type: taxing-jurisdiction
+      - name: state
+        type: taxing-jurisdiction
+      - name: county
+        type: taxing-jurisdiction
+      - name: postal-code
+        type: taxing-jurisdiction
+    fixture_verbs:
+      - address            # fx.address() builder (.country/.state/.county/.postalCodeGeo)
+
+  - concept: fulfilling-facility
+    terms: [fulfilling-facility, face-to-face-sale]
+    description: A physical shop whose own address is used when there is no shipping destination.
+    attributes:
+      - name: location-address
+        type: destination-address
+    fixture_verbs:
+      - facility           # String fx.facility(address)
+
+  - concept: order
+    terms: [order, order-line, unit-price, quantity, item-amount, freight-amount, promotions-amount]
+    description: The purchase submitted to the tax-calculation.
+    attributes:
+      - name: lines
+        type: list-of-order-line
+      - name: freight-amount
+        unit: currency
+      - name: promotions-amount
+        unit: currency
+    fixture_verbs:
+      - calcTax            # fx.calcTax() builder -> .run() / .runExpectingError()
+      # builder options: .store .payTo .billTo .shipTo .atFacility
+      #                  .item .itemWithAmount .lineShipping .orderShipping .orderPromotions
+
+  - concept: tax-line
+    terms: [tax-line, sales-tax-line, vat-tax-line, price-correction-line, tax-amount,
+            exempt-amount, included-tax, rate-percentage, taxing-jurisdiction, tax-registration-id]
+    description: An output record of the tax-calculation (observed via the result).
+    attributes:
+      - name: kind
+        enum: [sales-tax-line, vat-tax-line, price-correction-line]
+      - name: tax-amount
+        unit: currency
+      - name: exempt-amount
+        unit: currency
+      - name: included-tax
+        unit: currency
+      - name: rate-percentage
+        unit: percent
+      - name: jurisdiction
+        type: taxing-jurisdiction
+      - name: tax-registration-id
+        type: string
+    observed_via:
+      # result accessors from the harness contract (mechanics, not domain):
+      - itemAdjustments / single / itemCount / orderAdjustments / singleOrderAdjustment
+      - Adjustment.type / amount / exemptAmount / includedTax / ratePercent
+      - Adjustment.jurisdictionGeo / customerTaxId / primaryGeo / authorityParty
+
+  - concept: display-result
+    terms: [display-price-with-tax, tax-total, combined-tax-percentage]
+    description: The single-product output of the display tax-calculation.
+    attributes:
+      - name: tax-total
+        unit: currency
+      - name: combined-tax-percentage
+        unit: percent
+      - name: price-with-tax
+        unit: currency
+    fixture_verbs:
+      - calcTaxForDisplay  # fx.calcTaxForDisplay(storeId, productId, basePrice, quantity, shippingPrice)
+    observed_via:
+      - DisplayResult.taxTotal / taxPercentage / priceWithTax
+
+notes: >
+  Fixture verbs are the ONLY architecture a blind generator sees (harness contract).
+  Attribute "unset" semantics are load-bearing and are pinned by claims (see
+  TAX.RATE.STORE-SCOPE, TAX.RATE.SHIPPING-TAXABLE, TAX.RATE.PROMO-TAXABLE,
+  TAX.CALC.TAXABLE-BASE): an unset store scope means global; an unset taxes-shipping/
+  taxes-promotions flag permits the tax; an unset taxable flag means taxable.

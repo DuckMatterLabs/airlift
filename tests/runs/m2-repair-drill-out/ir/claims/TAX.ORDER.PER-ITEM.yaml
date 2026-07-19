@@ -1,0 +1,32 @@
+id: TAX.ORDER.PER-ITEM
+kind: behavior
+title: Each order-line is taxed independently and yields its own tax-line.
+status: extracted
+priority: core
+terms: [order-line, item-amount, tax-line, tax-amount, item-count]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.CALC.TAX-AMOUNT]
+behavior: |
+  Rule: One tax-line per taxed order-line
+    Given two order-lines for taxable products under the same rate-rule
+    When tax is calculated for the order
+    Then each order-line produces its own tax-line taxed on its own item-amount
+    And the returned item-count matches the number of order-lines
+scenarios:
+  - name: two-items-two-tax-lines
+    given:
+      rate-rule: {rate-percentage: "6.25"}
+      order-lines:
+        - {product: taxable, unit-price: "100.00", quantity: "1"}
+        - {product: taxable, unit-price: "200.00", quantity: "1"}
+    expect:
+      item-count: 2
+      tax-lines:
+        - {kind: sales-tax-line, tax-amount: "6.250"}
+        - {kind: sales-tax-line, tax-amount: "12.500"}
+outputs_affected: [tax-line, tax-amount, item-count]
+observability: direct
+source_fragments: [F-TAS-021, F-TAS-022]
+confidence: derived-from-code
+notes: >
+  Each item's tax is computed with TAX.CALC.TAX-AMOUNT precision independently (6.250 and
+  12.500). The per-item results are returned in item order.

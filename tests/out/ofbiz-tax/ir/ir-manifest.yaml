@@ -1,4 +1,6 @@
 # Airlift IR manifest for the OFBiz sales-tax seam.
+schema_version: "1.0"
+
 seam: sales-tax-calculation
 package: ofbiz-tax
 source_binding:
@@ -14,22 +16,22 @@ claims:
   - id: TAX.CALC.TAX-AMOUNT
     kind: behavior
     title: "Tax charged is the taxable amount times the rate percentage, at the configured precision."
-    status: extracted
+    status: verified
     priority: core
   - id: TAX.CALC.TAXABLE-BASE
     kind: behavior
     title: "Only taxable products are taxed; a zero taxable base yields no tax line."
-    status: extracted
+    status: verified
     priority: core
   - id: TAX.CONFIG.CALC-PRECISION
     kind: config
     title: "Intermediate tax amounts are computed at three decimal places, rounding half up."
-    status: extracted
+    status: verified
     priority: core
   - id: TAX.CONFIG.FINAL-PRECISION
     kind: config
     title: "Display totals are rounded to two decimal places, rounding half up."
-    status: extracted
+    status: verified
     priority: secondary
   - id: TAX.CONTRACT.CALC-TAX
     kind: contract
@@ -59,57 +61,57 @@ claims:
   - id: TAX.EXEMPT.EFFECTIVE-INFO
     kind: behavior
     title: "The party's most recent effective registration is used and its id recorded on the tax line."
-    status: extracted
+    status: verified
     priority: core
   - id: TAX.EXEMPT.GROUP-ROLLUP
     kind: behavior
     title: "A party inherits the tax exemptions of the parent groups it rolls up to."
-    status: pinned
+    status: verified
     priority: core
   - id: TAX.EXEMPT.JURISDICTION-INHERITANCE
     kind: behavior
     title: "An exemption in a parent jurisdiction also exempts tax of its child jurisdictions."
-    status: pinned
+    status: verified
     priority: core
   - id: TAX.EXEMPT.ZEROING
     kind: behavior
     title: "A valid exemption zeroes the tax and records the would-be tax as an exempt amount."
-    status: extracted
+    status: verified
     priority: core
   - id: TAX.JURIS.ADDRESS-REQUIRED
     kind: behavior
     title: "Tax calculation fails when the destination has no usable jurisdiction."
-    status: extracted
+    status: verified
     priority: core
   - id: TAX.JURIS.ADDRESS-TO-JURISDICTION
     kind: behavior
     title: "Taxing jurisdictions are derived from the destination address components."
-    status: extracted
+    status: verified
     priority: core
   - id: TAX.JURIS.CONTAINMENT
     kind: behavior
     title: "An authority applies to any destination within its region, even a smaller named area."
-    status: pinned
+    status: verified
     priority: edge
   - id: TAX.JURIS.FACILITY-FALLBACK
     kind: behavior
     title: "With no destination address, a face-to-face sale is taxed at the facility's address."
-    status: pinned
+    status: verified
     priority: edge
   - id: TAX.ORDER.FREIGHT-SPLIT
     kind: behavior
     title: "Order-level freight tax is split across items in proportion to their value."
-    status: pinned
+    status: verified
     priority: edge
   - id: TAX.ORDER.PER-ITEM
     kind: behavior
     title: "Each order line is taxed independently and receives its own tax adjustment."
-    status: extracted
+    status: verified
     priority: core
   - id: TAX.ORDER.PROMO-TAX
     kind: behavior
     title: "Order-level promotions produce a single order-level tax adjustment."
-    status: pinned
+    status: verified
     priority: edge
   - id: TAX.ORDER.VALUE-WEIGHT
     kind: behavior
@@ -119,52 +121,52 @@ claims:
   - id: TAX.RATE.AUTHORITY-MATCH
     kind: behavior
     title: "Rate rules considered are those of the resolved jurisdictions plus a default authority."
-    status: extracted
+    status: verified
     priority: core
   - id: TAX.RATE.CATEGORY-MATCH
     kind: behavior
     title: "A rate rule with a category applies only to products in that category."
-    status: pinned
+    status: verified
     priority: edge
   - id: TAX.RATE.PROMO-TAXABLE
     kind: behavior
     title: "Promotions are taxed only under rate rules that permit taxing promotions."
-    status: pinned
+    status: verified
     priority: edge
   - id: TAX.RATE.SHIPPING-TAXABLE
     kind: behavior
     title: "Freight is taxed only under rate rules that permit taxing shipping."
-    status: pinned
+    status: verified
     priority: edge
   - id: TAX.RATE.STORE-SCOPE
     kind: behavior
     title: "A rate rule applies only to its store, or everywhere when it is global."
-    status: extracted
+    status: verified
     priority: edge
   - id: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE
     kind: behavior
     title: "A rate rule with a minimum item price applies only at or above that unit price."
-    status: extracted
+    status: verified
     priority: edge
   - id: TAX.RATE.THRESHOLD-MIN-PURCHASE
     kind: behavior
     title: "A rate rule with a minimum purchase applies only at or above that line amount."
-    status: extracted
+    status: verified
     priority: edge
   - id: TAX.RATE.VARIANT-CATEGORY
     kind: behavior
     title: "A variant product matches its own and its virtual parent's tax categories."
-    status: extracted
+    status: verified
     priority: edge
   - id: TAX.VAT.DISCOUNT-CORRECTION
     kind: behavior
     title: "A discount on a tax-inclusive line produces a negative tax correction for the discounted portion."
-    status: pinned
+    status: verified
     priority: edge
   - id: TAX.VAT.PRICE-CORRECTION
     kind: behavior
     title: "A price-with-tax that disagrees with the computed total yields a rounding correction line."
-    status: pinned
+    status: verified
     priority: edge
   - id: TAX.VAT.PRICE-GROUP-SCOPE
     kind: behavior
@@ -174,12 +176,12 @@ claims:
   - id: TAX.VAT.PRICE-INCLUSIVE
     kind: behavior
     title: "When prices already include tax, the embedded tax is extracted rather than added."
-    status: pinned
+    status: verified
     priority: core
   - id: TAX.VAT.VARIANT-PRICE
     kind: behavior
     title: "A variant product falls back to its parent's tax-inclusive price record."
-    status: extracted
+    status: verified
     priority: edge
 
 # Claims with a green backfill test bound via @AirliftClaim (from backfill-report.yaml).

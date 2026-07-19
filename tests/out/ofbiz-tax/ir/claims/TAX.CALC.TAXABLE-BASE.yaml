@@ -1,7 +1,7 @@
 id: TAX.CALC.TAXABLE-BASE
 kind: behavior
 title: Only taxable products are taxed; a zero taxable base yields no tax line.
-status: extracted
+status: verified
 priority: core
 terms: [product, taxable-flag, line-amount, taxable-amount, tax-adjustment, tax-amount]
 depends_on: [TAX.RATE.AUTHORITY-MATCH]
@@ -40,3 +40,8 @@ confidence: derived-from-code
 notes: >
   An unset taxable-flag is treated as taxable. When the taxable-amount (taxable line-amount
   plus any taxable freight and promotions) is zero, no tax-adjustment is produced at all.
+attestations:
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

@@ -1,0 +1,32 @@
+id: TAX.DISPLAY.VAT-ONLY
+kind: behavior
+title: The display path reports tax only for jurisdictions that tax within the price.
+status: extracted
+priority: secondary
+terms: [display-price-with-tax, tax-inclusive-price, taxing-jurisdiction, vat-tax-line, tax-total]
+depends_on: [TAX.CONTRACT.DISPLAY-PRICE-WITH-TAX, TAX.VAT.PRICE-INCLUSIVE]
+behavior: |
+  Rule: Display considers only tax-in-price jurisdictions
+    Given a product with a tax-inclusive-price for one taxing-jurisdiction's tax-authority
+    And another taxing-jurisdiction whose tax-authority does not tax within the price
+    When the display price-with-tax is calculated for the product
+    Then only the tax-in-price jurisdiction contributes tax to the display
+scenarios:
+  - name: only-vat-jurisdiction-counts
+    given:
+      tax-inclusive-price: {price: "120.00", tax-inclusive: true, at: state}
+      other-jurisdiction: {taxes-in-price: false, at: county}
+      rate-rules:
+        - {under: state, rate-percentage: "20"}
+        - {under: county, rate-percentage: "2"}
+    expect:
+      vat-tax-lines:
+        - {kind: vat-tax-line, jurisdiction: state, included-tax: "20.00"}
+      excluded-jurisdictions: [county]
+outputs_affected: [tax-total, display-price-with-tax]
+observability: direct
+source_fragments: [F-TAS-007, F-TAS-041]
+confidence: derived-from-code
+notes: >
+  The display entry point filters to jurisdictions with tax-in-price configured for the
+  product. Pinned by a green backfill test.

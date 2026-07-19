@@ -1,0 +1,20 @@
+claim: TAX.EXEMPT.GROUP-ROLLUP
+summary: >
+  Rolling a party's exemption up through its parent groups (GROUP_ROLLUP relationship) is
+  present from the initial import. No later semantic change found.
+introduced:
+  commit: 94fe6d1cdaa176365cce77422f7ce2a8b1ad0534
+  date: "2006-07-01"
+  author: David E. Jones
+  message: "Initial OFBiz import from revision 7923"
+  confidence: inferred
+  note: >
+    The parent-group widening via the GROUP_ROLLUP party relationship is in the initial import;
+    its true origin predates this git history.
+changes: []
+provenance_method:
+  - "git log -S'GROUP_ROLLUP' -- applications/accounting/.../TaxAuthorityServices.java"
+confidence: inferred
+notes: >
+  Provenance-critical per the seam brief. Any exempt member of the widened party set (self plus
+  parent groups) zeroes the tax.

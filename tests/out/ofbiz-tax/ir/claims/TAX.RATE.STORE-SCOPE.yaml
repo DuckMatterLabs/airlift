@@ -1,7 +1,7 @@
 id: TAX.RATE.STORE-SCOPE
 kind: behavior
 title: A rate rule applies only to its store, or everywhere when it is global.
-status: extracted
+status: verified
 priority: edge
 terms: [rate-rule, store-scope, global-rule, tax-adjustment, tax-amount]
 depends_on: [TAX.RATE.AUTHORITY-MATCH]
@@ -32,3 +32,8 @@ confidence: derived-from-code
 notes: >
   A rate-rule scoped to another store yields no tax line at this store; a global-rule (no
   store-scope) matches regardless of which store sells.
+attestations:
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

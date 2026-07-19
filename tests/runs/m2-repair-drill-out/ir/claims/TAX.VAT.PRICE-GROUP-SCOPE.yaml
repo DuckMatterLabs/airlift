@@ -1,0 +1,22 @@
+id: TAX.VAT.PRICE-GROUP-SCOPE
+kind: behavior
+title: The tax-inclusive price used is the selling-store's price-group price, or the unscoped purchase-price when none.
+status: extracted
+priority: edge
+terms: [price-group, selling-store, purchase-price, tax-inclusive-price, calculation-date]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.VAT.PRICE-INCLUSIVE]
+behavior: |
+  Rule: Price selection follows the store's price-group
+    Given a product with configured prices for the taxing-jurisdiction's tax-authority
+    And a selling-store that either declares a price-group or declares none
+    When tax is calculated for the order
+    Then the price used is the one for the selling-store's price-group
+    And when the selling-store declares no price-group the unscoped purchase-price is used
+outputs_affected: [tax-line]
+observability: internal
+source_fragments: [F-TAS-049, F-PRODEM-003, F-PRODEM-005]
+confidence: derived-from-code
+notes: >
+  Internal: the price-group vs unscoped selection only changes which configured price feeds
+  the VAT branch and is not distinguishable at the calculation boundary (the tax-line shape is
+  identical). Recorded for completeness; not blind-testable through the contract.

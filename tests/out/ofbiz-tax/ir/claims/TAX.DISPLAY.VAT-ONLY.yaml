@@ -36,3 +36,8 @@ notes: >
   authority. It does NOT trigger the order-path tax-inclusive extraction (VAT_TAX) in
   rateProductTaxCalc/getTaxAdjustments, which is driven solely by the product's tax-inclusive
   catalog price record (see TAX.VAT.PRICE-INCLUSIVE).
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"

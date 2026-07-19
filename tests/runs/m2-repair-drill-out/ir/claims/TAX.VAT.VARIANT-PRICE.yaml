@@ -1,0 +1,20 @@
+id: TAX.VAT.VARIANT-PRICE
+kind: behavior
+title: A variant-product uses its virtual-parent-product's tax-inclusive price when it has none of its own.
+status: extracted
+priority: edge
+terms: [variant-product, virtual-parent-product, tax-inclusive-price, price-with-tax, vat-tax-line]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.VAT.PRICE-INCLUSIVE]
+behavior: |
+  Rule: Variants fall back to the parent's tax-in-price configuration
+    Given a variant-product with no configured price of its own for the taxing-jurisdiction's tax-authority
+    And its virtual-parent-product configured with a tax-inclusive-price for that tax-authority
+    When tax is calculated for the order
+    Then the variant-product's tax treatment follows the virtual-parent-product's tax-inclusive-price
+outputs_affected: [tax-line, included-tax]
+observability: direct
+source_fragments: [F-TAS-041]
+confidence: derived-from-code
+notes: >
+  On a price miss for the variant-product, the parent product's configured price is consulted
+  before deciding VAT treatment.

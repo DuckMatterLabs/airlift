@@ -1,0 +1,35 @@
+id: TAX.JURIS.CONTAINMENT
+kind: behavior
+title: An authority applies to any destination whose enclosing region contains the address.
+status: extracted
+priority: edge
+terms: [tax-calculation, destination-address, taxing-jurisdiction, region-containment,
+        tax-authority, rate-rule, tax-line, taxable-product]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.JURIS.ADDRESS-TO-JURISDICTION]
+behavior: |
+  Rule: Enclosing regions are taxed
+    Given a destination-address that names only an inner taxing-jurisdiction
+    And an outer taxing-jurisdiction whose region-containment encloses that inner area
+    And a rate-rule under the outer taxing-jurisdiction's tax-authority
+    And a taxable-product on the order-line
+    When tax is calculated for the order
+    Then a tax-line is produced for the enclosing outer taxing-jurisdiction
+scenarios:
+  - name: enclosing-authority-taxes-inner-address
+    given:
+      inner-jurisdiction: county
+      outer-jurisdiction: state
+      region-containment: {parent: state, child: county}
+      rate-rule: {under: state, rate-percentage: "5.00"}
+      destination-address: {county: county}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+    expect:
+      tax-line: {kind: sales-tax-line, jurisdiction: state, tax-amount: "5.000", rate-percentage: "5.00"}
+outputs_affected: [tax-line, taxing-jurisdiction]
+observability: direct
+source_fragments: [F-TAS-027, F-COMMONEM-002]
+confidence: derived-from-code
+notes: >
+  Containment is geographic (region rollup), distinct from exemption-inheritance
+  (TAX.EXEMPT.JURISDICTION-INHERITANCE) which is about a party's exemption climbing the
+  authority hierarchy. Pinned by a green backfill test.

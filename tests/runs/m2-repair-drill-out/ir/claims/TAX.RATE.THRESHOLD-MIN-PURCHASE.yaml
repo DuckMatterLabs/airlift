@@ -1,0 +1,28 @@
+id: TAX.RATE.THRESHOLD-MIN-PURCHASE
+kind: behavior
+title: A rate-rule applies only when the item-amount is at least its minimum-purchase-amount.
+status: extracted
+priority: edge
+terms: [rate-rule, minimum-purchase-amount, item-amount, tax-line, taxable-product]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.RATE.AUTHORITY-MATCH]
+behavior: |
+  Rule: The minimum-purchase-amount threshold gates a rate-rule
+    Given a rate-rule with a minimum-purchase-amount
+    And a taxable-product on the order-line
+    When tax is calculated for the order
+    Then the rate-rule produces no tax-line for an order-line whose item-amount is below the minimum-purchase-amount
+    And the rate-rule produces a tax-line for an order-line whose item-amount is at or above the minimum-purchase-amount
+decision_table:
+  columns: [minimum-purchase-amount, item-amount, rate-rule-applies]
+  rows:
+    - ["100.00", "99.99",  false]
+    - ["100.00", "100.00", true]
+    - ["100.00", "250.00", true]
+    - [unset,    "1.00",   true]
+outputs_affected: [tax-line]
+observability: direct
+source_fragments: [F-TAS-036, F-ACCTEM-006]
+confidence: derived-from-code
+notes: >
+  Provenance-critical threshold rule. Comparison is inclusive (item-amount >= minimum).
+  An unset minimum-purchase-amount imposes no lower bound.

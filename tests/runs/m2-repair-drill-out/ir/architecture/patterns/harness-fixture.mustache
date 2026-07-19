@@ -1,0 +1,21 @@
+# Mustache-parameterized harness fixture for a worked scenario.
+# Renders a claim scenario into fixture-DSL verb calls + assertions.
+scenario:
+  claim: {{claim_id}}
+  arrange:
+    {{#fixtures}}
+    - verb: {{verb}}                     # fx.* / taxAuthority / rate / store / product / ...
+      args: {{args}}
+    {{/fixtures}}
+  act:
+    call: {{entry}}                      # calcTax() | calcTaxForDisplay()
+    with:
+      {{#inputs}}
+      - {{key}}: {{value}}
+      {{/inputs}}
+  assert:
+    {{#expectations}}
+    - accessor: {{accessor}}             # amount | exemptAmount | includedTax | ratePercent | ...
+      matcher: assertDecimal
+      expected: "{{expected}}"
+    {{/expectations}}

@@ -1,7 +1,7 @@
 id: TAX.RATE.AUTHORITY-MATCH
 kind: behavior
 title: Rate rules considered are those of the resolved jurisdictions plus a default authority.
-status: extracted
+status: verified
 priority: core
 terms: [rate-rule, tax-authority, default-authority, taxing-jurisdiction, tax-adjustment, rate-percentage, jurisdiction-geo, tax-amount]
 depends_on: [TAX.JURIS.ADDRESS-TO-JURISDICTION]
@@ -29,3 +29,8 @@ confidence: derived-from-code
 notes: >
   The considered set always includes the default-authority in addition to the authorities
   resolved from the destination, so a globally-defined rate-rule can apply anywhere.
+attestations:
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

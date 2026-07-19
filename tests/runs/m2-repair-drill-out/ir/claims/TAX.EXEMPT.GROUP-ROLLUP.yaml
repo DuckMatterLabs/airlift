@@ -1,0 +1,34 @@
+id: TAX.EXEMPT.GROUP-ROLLUP
+kind: behavior
+title: A party inherits the exemptions of the parent-groups it rolls up to.
+status: extracted
+priority: core
+terms: [purchasing-party, parent-group, tax-exemption, tax-registration, taxing-jurisdiction,
+        tax-line, tax-amount, exempt-amount]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.EXEMPT.ZEROING]
+behavior: |
+  Rule: Group exemptions roll up to members
+    Given a purchasing-party that holds no exemption of its own
+    And the purchasing-party rolls up to a parent-group
+    And the parent-group holds an effective tax-exemption for the taxing-jurisdiction
+    And a taxable-product taxed under that jurisdiction
+    When tax is calculated for the order
+    Then the tax-line's tax-amount is zero
+    And the would-be tax is recorded as the exempt-amount
+scenarios:
+  - name: member-inherits-parent-group-exemption
+    given:
+      purchasing-party: {customer: member, rolls-up-to: parent-group}
+      parent-group-registration: {exempt: true, effective: current}
+      rate-rule: {rate-percentage: "6.25"}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+    expect:
+      tax-line: {kind: sales-tax-line, tax-amount: "0", exempt-amount: "6.250"}
+outputs_affected: [tax-amount, exempt-amount, tax-line]
+observability: direct
+source_fragments: [F-TAS-044, F-PARTYEM-002, F-ACCTEM-001]
+confidence: derived-from-code
+notes: >
+  Provenance-critical. The bill-to party's set is widened with its parent-groups before the
+  registration lookup; any member of the set being exempt zeroes the tax. Pinned by a green
+  backfill test.

@@ -1,0 +1,23 @@
+id: TAX.VAT.DISCOUNT-CORRECTION
+kind: behavior
+title: Discounting a tax-inclusive item emits the drop in included tax as a negative included-tax line.
+status: extracted
+priority: edge
+terms: [tax-inclusive-price, item-amount, quantity, rate-percentage, vat-tax-line,
+        included-tax, tax-line]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.VAT.PRICE-INCLUSIVE]
+behavior: |
+  Rule: A discount reduces the included tax by a negative adjustment
+    Given a product configured with a tax-inclusive-price
+    And an order-line whose item-amount is discounted below unit-price times quantity
+    When tax is calculated for the order
+    Then a vat-tax-line carries a negative included-tax reflecting the reduced tax on the discounted price
+outputs_affected: [tax-line, included-tax]
+observability: direct
+source_fragments: [F-TAS-042, F-TAS-045]
+confidence: derived-from-code
+notes: >
+  The negative adjustment is the net tax on the discounted price minus the tax contained in
+  the full (undiscounted) price; it is emitted only when that difference is negative. Exact
+  magnitude depends on the discounted item-amount and per-unit rounding at two decimals;
+  pinned by a green backfill test.

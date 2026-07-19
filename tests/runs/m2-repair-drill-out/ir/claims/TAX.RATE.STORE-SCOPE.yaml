@@ -1,0 +1,22 @@
+id: TAX.RATE.STORE-SCOPE
+kind: behavior
+title: A rate-rule applies when it targets the selling-store or is global.
+status: extracted
+priority: edge
+terms: [rate-rule, selling-store, global-rate-rule, tax-line, taxable-product]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.RATE.AUTHORITY-MATCH]
+behavior: |
+  Rule: Store scope gates a rate-rule
+    Given a rate-rule restricted to one selling-store
+    And a global-rate-rule with no store restriction
+    When tax is calculated for the order at that selling-store
+    Then the store-restricted rate-rule applies for its own selling-store
+    And the global-rate-rule applies for every selling-store
+    And a rate-rule restricted to a different selling-store does not apply
+outputs_affected: [tax-line]
+observability: direct
+source_fragments: [F-TAS-031]
+confidence: derived-from-code
+notes: >
+  Unset store scope means global (see domain-model). Store scoping is a query predicate;
+  its isolating effect was executed but not independently asserted in prior coverage.

@@ -1,7 +1,7 @@
 id: TAX.VAT.DISCOUNT-CORRECTION
 kind: behavior
 title: A discount on a tax-inclusive line produces a negative tax correction for the discounted portion.
-status: pinned
+status: verified
 priority: edge
 terms: [tax-inclusive-price, product, unit-price, line-amount, line-discount, rate-percentage, included-tax, vat-tax-line, tax-adjustment]
 depends_on: [TAX.VAT.PRICE-INCLUSIVE]
@@ -48,3 +48,12 @@ notes: >
   price = 107.50/3 = 35.83; net tax = (35.83 - 35.83/1.20 -> 29.86) * 3 = 5.97 * 3 = 17.91.
   Correction = 17.91 - 21.51 = -3.60, emitted as a separate negative-included-tax line so the
   charged tax reflects the discounted price. Emitted only when the correction is negative.
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

@@ -1,0 +1,35 @@
+id: TAX.CALC.TAX-AMOUNT
+kind: behavior
+title: The tax charged is the taxable-amount times the rate-percentage at the sales-tax-precision.
+status: extracted
+priority: core
+terms: [taxable-amount, rate-percentage, tax-amount, tax-line, sales-tax-precision]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX, TAX.CALC.TAXABLE-BASE, TAX.CONFIG.CALC-PRECISION]
+behavior: |
+  Rule: Tax equals base times rate, rounded at the sales-tax-precision
+    Given a taxable-amount and a matching rate-rule with a rate-percentage
+    When tax is calculated for the order
+    Then the tax-line's tax-amount is the taxable-amount multiplied by the rate-percentage as a fraction of one hundred
+    And the tax-amount is rounded to the sales-tax-precision
+    And the tax-line's rate-percentage equals the rate-rule's rate-percentage
+scenarios:
+  - name: six-and-a-quarter-percent-of-one-hundred
+    given:
+      rate-rule: {rate-percentage: "6.25"}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+    expect:
+      tax-line: {kind: sales-tax-line, tax-amount: "6.250", rate-percentage: "6.25"}
+  - name: rounding-half-up-at-three-decimals
+    given:
+      rate-rule: {rate-percentage: "8.25"}
+      order-line: {product: taxable, unit-price: "12.34", quantity: "1"}
+    expect:
+      # 12.34 * 8.25 / 100 = 1.01805 -> 1.018 at 3 decimals HALF_UP
+      tax-line: {kind: sales-tax-line, tax-amount: "1.018", rate-percentage: "8.25"}
+outputs_affected: [tax-amount, rate-percentage, tax-line]
+observability: direct
+source_fragments: [F-TAS-039, F-ARITH-001]
+confidence: derived-from-code
+notes: >
+  Arithmetic: tax-amount = round(taxable-amount * rate-percentage / 100, 3, HALF_UP).
+  1.01805 rounds HALF_UP at the third decimal to 1.018.

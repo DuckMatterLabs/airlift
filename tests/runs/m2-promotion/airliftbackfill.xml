@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="Mac-mini-2.local" name="airliftbackfill" skipped="0" tests="19" time="1.986" timestamp="2026-07-19T22:58:24">
+  <properties />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testPromotionsTaxedWhenRuleAllowsTaxingPromotions" time="1.722" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testNonVatStoreReturnsNoDisplayTax" time="0.012" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testMemberInheritsParentGroupExemption" time="0.018" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testCategoryRestrictedRuleTaxesProductInCategory" time="0.022" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testOrderPromotionsProduceOrderLevelTaxLine" time="0.012" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testEnclosingAuthorityAppliesToInnerAddress" time="0.011" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testPriceWithTaxRoundingReconciledByCorrectionLine" time="0.013" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testExemptionInheritedFromParentJurisdiction" time="0.014" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testFreightNotTaxedWhenRuleForbidsTaxingShipping" time="0.011" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testTaxInclusivePriceReportsIncludedTaxNotAdded" time="0.012" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testFacilityAddressTaxedWhenNoShippingDestination" time="0.014" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testPromotionsNotTaxedWhenRuleForbidsTaxingPromotions" time="0.011" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testOrderFreightTaxSplitByProductValue" time="0.014" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testDiscountedTaxInclusiveItemEmitsNegativeIncludedTax" time="0.011" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testDisplayPriceWithTaxSumsBaseShippingAndRates" time="0.009" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testDisplayAmountsRoundedToFinalScale" time="0.008" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testCategoryRestrictedRuleSkipsProductNotInCategory" time="0.008" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testFreightTaxedWhenRuleAllowsTaxingShipping" time="0.007" />
+  <testcase classname="org.apache.ofbiz.accounting.tax.test.backfill.BackfillTaxTests" name="testVatStoreReturnsTaxForConfiguredAuthority" time="0.008" />
+</testsuite>

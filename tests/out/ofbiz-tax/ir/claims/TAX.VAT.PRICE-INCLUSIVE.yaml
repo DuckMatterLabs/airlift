@@ -1,7 +1,7 @@
 id: TAX.VAT.PRICE-INCLUSIVE
 kind: behavior
 title: When prices already include tax, the embedded tax is extracted rather than added.
-status: pinned
+status: verified
 priority: core
 terms: [tax-inclusive-price, product, unit-price, line-amount, rate-percentage, included-tax, tax-adjustment, tax-amount, vat-tax-line]
 depends_on: [TAX.CALC.TAX-AMOUNT]
@@ -44,3 +44,12 @@ notes: >
   then scaled by quantity: with itemPrice 43.00 and rate 20%, per-unit tax = 43.00 - 43.00/1.20 =
   43.00 - 35.83 = 7.17; included-tax = 7.17 * 3 = 21.51. The charged tax-amount is zero because
   the tax is already inside the price.
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

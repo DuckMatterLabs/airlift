@@ -1,7 +1,7 @@
 id: TAX.RATE.VARIANT-CATEGORY
 kind: behavior
 title: A variant product matches its own and its virtual parent's tax categories.
-status: extracted
+status: verified
 priority: edge
 terms: [rate-rule, tax-category, variant-product, virtual-product, tax-adjustment, tax-amount]
 depends_on: [TAX.RATE.CATEGORY-MATCH]
@@ -32,3 +32,8 @@ confidence: derived-from-code
 notes: >
   When the product is a variant, its virtual parent's product id is added to the category
   lookup, so the parent's tax-categories count as the variant's for rate matching.
+attestations:
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

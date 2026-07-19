@@ -1,7 +1,7 @@
 id: TAX.EXEMPT.JURISDICTION-INHERITANCE
 kind: behavior
 title: An exemption in a parent jurisdiction also exempts tax of its child jurisdictions.
-status: pinned
+status: verified
 priority: core
 terms: [purchasing-party, tax-exemption, taxing-jurisdiction, jurisdiction-parent, tax-amount, exempt-amount, tax-adjustment, rate-percentage]
 depends_on: [TAX.EXEMPT.ZEROING]
@@ -36,3 +36,12 @@ notes: >
   When no exemption is found in the child jurisdiction, the parent jurisdiction is consulted
   (even absent a direct association). County tax 100.00*2% = 2.000 becomes the exempt-amount.
   Provenance-critical.
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"

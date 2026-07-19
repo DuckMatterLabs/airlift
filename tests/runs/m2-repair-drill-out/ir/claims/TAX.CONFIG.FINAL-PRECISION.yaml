@@ -1,0 +1,24 @@
+id: TAX.CONFIG.FINAL-PRECISION
+kind: config
+title: Display totals are finally rounded to two decimal places, half-up.
+status: extracted
+priority: edge
+terms: [display-precision, rounding-mode, tax-total, display-price-with-tax]
+depends_on: []
+behavior: |
+  Rule: Display-precision is two decimals, rounding half away from zero
+    Given a display tax-calculation
+    When the tax-total and display-price-with-tax are finalized
+    Then they are rounded to two decimal places
+    And ties are rounded half up (away from zero)
+scenarios:
+  - name: constants
+    given: {}
+    expect: {final-decimals: 2, rounding-mode: HALF_UP}
+outputs_affected: [tax-total, display-price-with-tax]
+observability: internal
+source_fragments: [F-ARITH-001, F-TAS-012]
+confidence: derived-from-code
+notes: >
+  Load-bearing constants: final decimals = 2, rounding mode = HALF_UP. Applied only on the
+  display path final rounding (TAX.DISPLAY.FINAL-ROUNDING).

@@ -1,0 +1,27 @@
+id: TAX.JURIS.ADDRESS-REQUIRED
+kind: behavior
+title: Tax is calculated only when the destination names a country, state, or postal-code.
+status: extracted
+priority: core
+terms: [tax-calculation, destination-address, taxing-jurisdiction, order, tax-line]
+depends_on: [TAX.CONTRACT.CALC-ORDER-TAX]
+behavior: |
+  Rule: A usable destination is required
+    Given an order whose destination-address names no country, no state, and no postal-code
+    When tax is calculated for the order
+    Then the calculation fails and returns an error instead of tax-lines
+scenarios:
+  - name: empty-destination-is-rejected
+    given:
+      destination-address: {country: unset, state: unset, county: unset, postal-code: unset}
+      order-line: {product: taxable, unit-price: "100.00", quantity: "1"}
+    expect:
+      outcome: error
+      tax-lines: none
+outputs_affected: [tax-line]
+observability: direct
+source_fragments: [F-TAS-018, F-PARTYEM-001]
+confidence: derived-from-code
+notes: >
+  A county-only address is also rejected: the guard accepts only country, state, or
+  postal-code as a usable jurisdiction identifier.

@@ -1,7 +1,7 @@
 id: TAX.ORDER.FREIGHT-SPLIT
 kind: behavior
 title: Order-level freight tax is split across items in proportion to their value.
-status: pinned
+status: verified
 priority: edge
 terms: [freight, value-weight, order-line, line-amount, rate-percentage, tax-adjustment, tax-amount, order-adjustments]
 depends_on: [TAX.ORDER.VALUE-WEIGHT, TAX.RATE.SHIPPING-TAXABLE]
@@ -35,3 +35,12 @@ notes: >
   10.00*(6.25*0.25)% = 10.00*1.5625% = 0.15625 -> 0.156 at calculation-precision. The two
   order-level adjustments sum to the full freight tax 0.625. Order-adjustment ordering is not
   guaranteed; assert as a set.
+attestations:
+  - tier: pinned
+    evidence: tests/runs/m2-promotion/airliftbackfill.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:24"
+  - tier: verified
+    evidence: tests/runs/m2-promotion/airliftblind.xml
+    sha: 1a7d91a2979ed366f617978441a20575dab12281
+    date: "2026-07-19T22:58:34"
