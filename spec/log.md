@@ -73,6 +73,8 @@ this log holds pointers, not content. A session that only reads appends nothing.
   path derivations and all doc references updated; scripts syntax-checked and path
   resolution verified. Note: OFBiz source was never in this repo — only our plugin
   and evidence.
+* Pushed to remote: `git@github.com:DuckMatterLabs/airlift.git` (`origin/main`,
+  SSH — HTTPS had no credential helper in this environment).
 
 **Open**
 * M3 scope tension flagged: measurement duties (cross-model E1, mutation sweep) live in
