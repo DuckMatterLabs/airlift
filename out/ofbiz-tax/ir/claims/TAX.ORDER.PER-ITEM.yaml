@@ -1,0 +1,36 @@
+id: TAX.ORDER.PER-ITEM
+kind: behavior
+title: Each order line is taxed independently and receives its own tax adjustment.
+status: extracted
+priority: core
+terms: [order-line, tax-adjustment, tax-amount, item-adjustments]
+depends_on: [TAX.CALC.TAX-AMOUNT]
+behavior: |
+  Rule: Tax is computed per order-line and returned as one set of adjustments per line
+    Given an order with several order-lines
+    When tax is calculated for the order
+    Then each order-line receives its own tax-adjustment computed from its own line-amount
+scenarios:
+  - name: two-lines-taxed-separately
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, rate-percentage: "6.25"}
+      order-lines:
+        - {product: taxable, unit-price: "100.00", quantity: "1"}
+        - {product: taxable, unit-price: "40.00", quantity: "1"}
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "6.250"}
+        - line: 1
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "2.500"}
+outputs_affected: [tax-amount]
+observability: direct
+source_fragments: [F-TAS-020, F-TAS-021]
+confidence: derived-from-code
+notes: >
+  The response is a list aligned with the order-lines, each element the adjustments for that
+  line: 100.00*6.25% = 6.250 and 40.00*6.25% = 2.500.

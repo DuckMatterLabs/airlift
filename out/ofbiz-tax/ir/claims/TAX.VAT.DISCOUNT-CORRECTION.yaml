@@ -1,0 +1,50 @@
+id: TAX.VAT.DISCOUNT-CORRECTION
+kind: behavior
+title: A discount on a tax-inclusive line produces a negative tax correction for the discounted portion.
+status: pinned
+priority: edge
+terms: [tax-inclusive-price, product, unit-price, line-amount, line-discount, rate-percentage, included-tax, vat-tax-line, tax-adjustment]
+depends_on: [TAX.VAT.PRICE-INCLUSIVE]
+behavior: |
+  Rule: A discount on a tax-inclusive line adds a negative adjustment for the tax on the discounted portion
+    Given a product with a tax-inclusive catalog price in the taxing jurisdiction, ordered on a line whose line-amount is discounted below unit-price x quantity
+    When tax is calculated for the order
+    Then the vat-tax-line reports the full-price embedded tax as its included-tax
+    And a second adjustment carries a negative included-tax for the tax on the discounted portion
+scenarios:
+  - name: half-discount-produces-negative-correction
+    given:
+      store: {in-default-store-group: true}
+      destination-address: {country: present, state: present}
+      tax-authority: {jurisdiction: state}
+      rate-rule: {jurisdiction: state, rate-percentage: "20"}
+      product-price:
+        product: taxable
+        authority: state
+        price: "35.83"
+        tax-in-price: true
+      order-lines:
+        - product: taxable
+          unit-price: "43.00"
+          quantity: "3"
+          line-amount: "107.50"
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: vat-tax-line, included-tax: "21.51"}
+            - {adjustment-type: vat-tax-line, included-tax: "-3.60"}
+outputs_affected: [included-tax]
+observability: direct
+source_fragments: [F-TAS-041, F-TAS-042, F-TAS-045, F-TAS-049]
+confidence: derived-from-code
+notes: >
+  As in TAX.VAT.PRICE-INCLUSIVE, the tax-inclusive path is triggered by the product's catalog
+  price record (taxInPrice = "Y") scoped to the matched tax-authority and store group, NOT by any
+  store VAT-display setting; the fixture must create it explicitly via
+  fx.price(product, authority).price("35.83").taxInPrice(true).create(). The discount is expressed
+  by overriding the line-amount below unit-price x quantity (itemWithAmount), not by a store flag.
+  Full-price embedded tax = (43.00 - 43.00/1.20 -> 35.83) * 3 = 21.51. Net (discounted) unit
+  price = 107.50/3 = 35.83; net tax = (35.83 - 35.83/1.20 -> 29.86) * 3 = 5.97 * 3 = 17.91.
+  Correction = 17.91 - 21.51 = -3.60, emitted as a separate negative-included-tax line so the
+  charged tax reflects the discounted price. Emitted only when the correction is negative.

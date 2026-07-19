@@ -1,0 +1,42 @@
+id: TAX.CALC.TAXABLE-BASE
+kind: behavior
+title: Only taxable products are taxed; a zero taxable base yields no tax line.
+status: extracted
+priority: core
+terms: [product, taxable-flag, line-amount, taxable-amount, tax-adjustment, tax-amount]
+depends_on: [TAX.RATE.AUTHORITY-MATCH]
+behavior: |
+  Rule: A product is taxed on its line-amount only when it is taxable
+    Given a product whose taxable-flag is set to not taxable
+    When tax is calculated for the order
+    Then that order-line receives no tax-adjustment
+    And a product whose taxable-flag is taxable is taxed on its line-amount
+scenarios:
+  - name: taxable-product-is-taxed
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, rate-percentage: "6.25"}
+      order-lines: [{product: {taxable: true}, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "6.250"}
+  - name: non-taxable-product-yields-no-line
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, rate-percentage: "6.25"}
+      order-lines: [{product: {taxable: false}, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments: []
+outputs_affected: [taxable-amount, tax-amount]
+observability: direct
+source_fragments: [F-TAS-038, F-PRODEM-004]
+confidence: derived-from-code
+notes: >
+  An unset taxable-flag is treated as taxable. When the taxable-amount (taxable line-amount
+  plus any taxable freight and promotions) is zero, no tax-adjustment is produced at all.

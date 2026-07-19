@@ -1,0 +1,38 @@
+id: TAX.EXEMPT.JURISDICTION-INHERITANCE
+kind: behavior
+title: An exemption in a parent jurisdiction also exempts tax of its child jurisdictions.
+status: pinned
+priority: core
+terms: [purchasing-party, tax-exemption, taxing-jurisdiction, jurisdiction-parent, tax-amount, exempt-amount, tax-adjustment, rate-percentage]
+depends_on: [TAX.EXEMPT.ZEROING]
+behavior: |
+  Rule: An exemption held in a parent jurisdiction zeroes tax charged by its child jurisdiction
+    Given a rate-rule of a child jurisdiction whose jurisdiction-parent is another jurisdiction
+    And the purchasing-party holds a currently-effective tax-exemption in the jurisdiction-parent only
+    When tax is calculated for the order
+    Then the tax-adjustment for the child jurisdiction has a tax-amount of zero
+    And the would-have-been tax appears as the exempt-amount
+scenarios:
+  - name: county-tax-exempt-via-state-exemption
+    given:
+      store: present
+      destination-address: {country: present, state: present, county: present}
+      rate-rule: {jurisdiction: county, jurisdiction-parent: state, rate-percentage: "2"}
+      purchasing-party:
+        billed: true
+        tax-registration: {jurisdiction: state, tax-registration-id: "EX-ST", exempt: true, effective: current}
+        own-exemption-in-county: none
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, jurisdiction: county, rate-percentage: "2", tax-amount: "0", exempt-amount: "2.000"}
+outputs_affected: [tax-amount, exempt-amount]
+observability: direct
+source_fragments: [F-TAS-056, F-TAS-055, F-ACCTEM-003]
+confidence: derived-from-code
+notes: >
+  When no exemption is found in the child jurisdiction, the parent jurisdiction is consulted
+  (even absent a direct association). County tax 100.00*2% = 2.000 becomes the exempt-amount.
+  Provenance-critical.

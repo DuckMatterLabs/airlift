@@ -1,0 +1,15 @@
+claim: TAX.EXEMPT.ZEROING
+history:
+  - commit: 94fe6d1cdaa176365cce77422f7ce2a8b1ad0534
+    date: 2006-07-01
+    summary: >
+      Present at the initial OFBiz import. handlePartyTaxExempt already zeroes the charged
+      amount (amount = 0) and records the would-have-been tax as exemptAmount when the party's
+      registration for the jurisdiction has isExempt = Y. Intent: preserve an audit trail of
+      the foregone tax while charging nothing.
+confidence: inferred
+notes: >
+  The zeroing-plus-recording shape predates the current git history (imported wholesale from
+  the old SVN repository), so the originating rationale is inferred from the code and the
+  surrounding comment "check to see if this party has a tax ID for this, and if the party is
+  tax exempt in the primary (most-local) jurisdiction".

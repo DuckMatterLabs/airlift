@@ -1,0 +1,271 @@
+# Airlift IR manifest for the OFBiz sales-tax seam.
+seam: sales-tax-calculation
+package: ofbiz-tax
+source_binding:
+  repo: ofbiz-framework
+  commit: b77897f330728cd65dc03853a78315799844ecce
+
+# All referenced source files verified byte-identical between the stage-2 fragment-map
+# commit (68b751ffe4b7012bcddc6f53de439183b35f292a) and this source_binding commit.
+
+claim_count: 34
+
+claims:
+  - id: TAX.CALC.TAX-AMOUNT
+    kind: behavior
+    title: "Tax charged is the taxable amount times the rate percentage, at the configured precision."
+    status: extracted
+    priority: core
+  - id: TAX.CALC.TAXABLE-BASE
+    kind: behavior
+    title: "Only taxable products are taxed; a zero taxable base yields no tax line."
+    status: extracted
+    priority: core
+  - id: TAX.CONFIG.CALC-PRECISION
+    kind: config
+    title: "Intermediate tax amounts are computed at three decimal places, rounding half up."
+    status: extracted
+    priority: core
+  - id: TAX.CONFIG.FINAL-PRECISION
+    kind: config
+    title: "Display totals are rounded to two decimal places, rounding half up."
+    status: extracted
+    priority: secondary
+  - id: TAX.CONTRACT.CALC-TAX
+    kind: contract
+    title: "Order tax calculation — what the caller supplies and what comes back."
+    status: extracted
+    priority: core
+  - id: TAX.CONTRACT.CALC-TAX-FOR-DISPLAY
+    kind: contract
+    title: "Single-product display tax calculation — inputs and returned totals."
+    status: extracted
+    priority: secondary
+  - id: TAX.DISPLAY.FINAL-ROUNDING
+    kind: behavior
+    title: "Display totals are rounded to the final display precision half-up."
+    status: pinned
+    priority: secondary
+  - id: TAX.DISPLAY.PRICE-WITH-TAX
+    kind: behavior
+    title: "Display tax sums all rate rules and folds per-unit tax into the shown price."
+    status: pinned
+    priority: secondary
+  - id: TAX.DISPLAY.VAT-ONLY
+    kind: behavior
+    title: "The display tax calculation charges tax only for VAT-inclusive stores."
+    status: pinned
+    priority: secondary
+  - id: TAX.EXEMPT.EFFECTIVE-INFO
+    kind: behavior
+    title: "The party's most recent effective registration is used and its id recorded on the tax line."
+    status: extracted
+    priority: core
+  - id: TAX.EXEMPT.GROUP-ROLLUP
+    kind: behavior
+    title: "A party inherits the tax exemptions of the parent groups it rolls up to."
+    status: pinned
+    priority: core
+  - id: TAX.EXEMPT.JURISDICTION-INHERITANCE
+    kind: behavior
+    title: "An exemption in a parent jurisdiction also exempts tax of its child jurisdictions."
+    status: pinned
+    priority: core
+  - id: TAX.EXEMPT.ZEROING
+    kind: behavior
+    title: "A valid exemption zeroes the tax and records the would-be tax as an exempt amount."
+    status: extracted
+    priority: core
+  - id: TAX.JURIS.ADDRESS-REQUIRED
+    kind: behavior
+    title: "Tax calculation fails when the destination has no usable jurisdiction."
+    status: extracted
+    priority: core
+  - id: TAX.JURIS.ADDRESS-TO-JURISDICTION
+    kind: behavior
+    title: "Taxing jurisdictions are derived from the destination address components."
+    status: extracted
+    priority: core
+  - id: TAX.JURIS.CONTAINMENT
+    kind: behavior
+    title: "An authority applies to any destination within its region, even a smaller named area."
+    status: pinned
+    priority: edge
+  - id: TAX.JURIS.FACILITY-FALLBACK
+    kind: behavior
+    title: "With no destination address, a face-to-face sale is taxed at the facility's address."
+    status: pinned
+    priority: edge
+  - id: TAX.ORDER.FREIGHT-SPLIT
+    kind: behavior
+    title: "Order-level freight tax is split across items in proportion to their value."
+    status: pinned
+    priority: edge
+  - id: TAX.ORDER.PER-ITEM
+    kind: behavior
+    title: "Each order line is taxed independently and receives its own tax adjustment."
+    status: extracted
+    priority: core
+  - id: TAX.ORDER.PROMO-TAX
+    kind: behavior
+    title: "Order-level promotions produce a single order-level tax adjustment."
+    status: pinned
+    priority: edge
+  - id: TAX.ORDER.VALUE-WEIGHT
+    kind: behavior
+    title: "Order-level freight is apportioned to items by each item's share of order value."
+    status: extracted
+    priority: edge
+  - id: TAX.RATE.AUTHORITY-MATCH
+    kind: behavior
+    title: "Rate rules considered are those of the resolved jurisdictions plus a default authority."
+    status: extracted
+    priority: core
+  - id: TAX.RATE.CATEGORY-MATCH
+    kind: behavior
+    title: "A rate rule with a category applies only to products in that category."
+    status: pinned
+    priority: edge
+  - id: TAX.RATE.PROMO-TAXABLE
+    kind: behavior
+    title: "Promotions are taxed only under rate rules that permit taxing promotions."
+    status: pinned
+    priority: edge
+  - id: TAX.RATE.SHIPPING-TAXABLE
+    kind: behavior
+    title: "Freight is taxed only under rate rules that permit taxing shipping."
+    status: pinned
+    priority: edge
+  - id: TAX.RATE.STORE-SCOPE
+    kind: behavior
+    title: "A rate rule applies only to its store, or everywhere when it is global."
+    status: extracted
+    priority: edge
+  - id: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE
+    kind: behavior
+    title: "A rate rule with a minimum item price applies only at or above that unit price."
+    status: extracted
+    priority: edge
+  - id: TAX.RATE.THRESHOLD-MIN-PURCHASE
+    kind: behavior
+    title: "A rate rule with a minimum purchase applies only at or above that line amount."
+    status: extracted
+    priority: edge
+  - id: TAX.RATE.VARIANT-CATEGORY
+    kind: behavior
+    title: "A variant product matches its own and its virtual parent's tax categories."
+    status: extracted
+    priority: edge
+  - id: TAX.VAT.DISCOUNT-CORRECTION
+    kind: behavior
+    title: "A discount on a tax-inclusive line produces a negative tax correction for the discounted portion."
+    status: pinned
+    priority: edge
+  - id: TAX.VAT.PRICE-CORRECTION
+    kind: behavior
+    title: "A price-with-tax that disagrees with the computed total yields a rounding correction line."
+    status: pinned
+    priority: edge
+  - id: TAX.VAT.PRICE-GROUP-SCOPE
+    kind: behavior
+    title: "The tax-inclusive price is looked up scoped to the store and taxing jurisdiction."
+    status: extracted
+    priority: edge
+  - id: TAX.VAT.PRICE-INCLUSIVE
+    kind: behavior
+    title: "When prices already include tax, the embedded tax is extracted rather than added."
+    status: pinned
+    priority: core
+  - id: TAX.VAT.VARIANT-PRICE
+    kind: behavior
+    title: "A variant product falls back to its parent's tax-inclusive price record."
+    status: extracted
+    priority: edge
+
+# Claims with a green backfill test bound via @AirliftClaim (from backfill-report.yaml).
+pinned_claims:
+  - id: TAX.DISPLAY.FINAL-ROUNDING
+    tests: [BackfillTaxTests#testDisplayAmountsRoundedToFinalScale]
+  - id: TAX.DISPLAY.PRICE-WITH-TAX
+    tests: [BackfillTaxTests#testDisplayPriceWithTaxSumsBaseShippingAndRates]
+  - id: TAX.DISPLAY.VAT-ONLY
+    tests: [BackfillTaxTests#testNonVatStoreReturnsNoDisplayTax, BackfillTaxTests#testVatStoreReturnsTaxForConfiguredAuthority]
+  - id: TAX.EXEMPT.GROUP-ROLLUP
+    tests: [BackfillTaxTests#testMemberInheritsParentGroupExemption]
+  - id: TAX.EXEMPT.JURISDICTION-INHERITANCE
+    tests: [BackfillTaxTests#testExemptionInheritedFromParentJurisdiction]
+  - id: TAX.JURIS.CONTAINMENT
+    tests: [BackfillTaxTests#testEnclosingAuthorityAppliesToInnerAddress]
+  - id: TAX.JURIS.FACILITY-FALLBACK
+    tests: [BackfillTaxTests#testFacilityAddressTaxedWhenNoShippingDestination]
+  - id: TAX.ORDER.FREIGHT-SPLIT
+    tests: [BackfillTaxTests#testOrderFreightTaxSplitByProductValue]
+  - id: TAX.ORDER.PROMO-TAX
+    tests: [BackfillTaxTests#testOrderPromotionsProduceOrderLevelTaxLine]
+  - id: TAX.RATE.CATEGORY-MATCH
+    tests: [BackfillTaxTests#testCategoryRestrictedRuleTaxesProductInCategory, BackfillTaxTests#testCategoryRestrictedRuleSkipsProductNotInCategory]
+  - id: TAX.RATE.PROMO-TAXABLE
+    tests: [BackfillTaxTests#testPromotionsTaxedWhenRuleAllowsTaxingPromotions, BackfillTaxTests#testPromotionsNotTaxedWhenRuleForbidsTaxingPromotions]
+  - id: TAX.RATE.SHIPPING-TAXABLE
+    tests: [BackfillTaxTests#testFreightTaxedWhenRuleAllowsTaxingShipping, BackfillTaxTests#testFreightNotTaxedWhenRuleForbidsTaxingShipping]
+  - id: TAX.VAT.DISCOUNT-CORRECTION
+    tests: [BackfillTaxTests#testDiscountedTaxInclusiveItemEmitsNegativeIncludedTax]
+  - id: TAX.VAT.PRICE-CORRECTION
+    tests: [BackfillTaxTests#testPriceWithTaxRoundingReconciledByCorrectionLine]
+  - id: TAX.VAT.PRICE-INCLUSIVE
+    tests: [BackfillTaxTests#testTaxInclusivePriceReportsIncludedTaxNotAdded]
+
+# Claims with no bound test yet (honest coverage gaps, schema section 8).
+unpinned_claims:
+  - TAX.CALC.TAX-AMOUNT
+  - TAX.CALC.TAXABLE-BASE
+  - TAX.CONFIG.CALC-PRECISION
+  - TAX.CONFIG.FINAL-PRECISION
+  - TAX.CONTRACT.CALC-TAX
+  - TAX.CONTRACT.CALC-TAX-FOR-DISPLAY
+  - TAX.EXEMPT.EFFECTIVE-INFO
+  - TAX.EXEMPT.ZEROING
+  - TAX.JURIS.ADDRESS-REQUIRED
+  - TAX.JURIS.ADDRESS-TO-JURISDICTION
+  - TAX.ORDER.PER-ITEM
+  - TAX.ORDER.VALUE-WEIGHT
+  - TAX.RATE.AUTHORITY-MATCH
+  - TAX.RATE.STORE-SCOPE
+  - TAX.RATE.THRESHOLD-MIN-ITEM-PRICE
+  - TAX.RATE.THRESHOLD-MIN-PURCHASE
+  - TAX.RATE.VARIANT-CATEGORY
+  - TAX.VAT.PRICE-GROUP-SCOPE
+  - TAX.VAT.VARIANT-PRICE
+
+descoped: []   # classify-never-discard: all catalog behaviors became claims
+
+catalog_deltas:
+  # Claims added relative to behavior-catalog.yaml (contract + config atoms the
+  # catalog did not enumerate but the schema requires). No catalog behaviors were
+  # merged, split, renamed, or dropped: claim IDs are 1:1 with catalog behavior IDs.
+  - id: TAX.CONFIG.CALC-PRECISION
+    change: added
+    kind: config
+    reason: >
+      Load-bearing precision/rounding configuration required to make worked scenarios
+      reproducible; not enumerated as a behavior in the catalog.
+  - id: TAX.CONFIG.FINAL-PRECISION
+    change: added
+    kind: config
+    reason: >
+      Load-bearing precision/rounding configuration required to make worked scenarios
+      reproducible; not enumerated as a behavior in the catalog.
+  - id: TAX.CONTRACT.CALC-TAX
+    change: added
+    kind: contract
+    reason: >
+      Seam request/response contract required by IR schema section 4/§ contract claims;
+      not enumerated as a behavior in the catalog.
+  - id: TAX.CONTRACT.CALC-TAX-FOR-DISPLAY
+    change: added
+    kind: contract
+    reason: >
+      Seam request/response contract required by IR schema section 4/§ contract claims;
+      not enumerated as a behavior in the catalog.
+
+catalog_corrections_applied: []   # backfill-report.yaml catalog_corrections was empty

@@ -1,0 +1,43 @@
+id: TAX.JURIS.CONTAINMENT
+kind: behavior
+title: An authority for an enclosing region applies to a destination named at a finer level.
+status: pinned
+priority: edge
+terms: [region-containment, taxing-jurisdiction, tax-authority, destination-address, country, state, jurisdiction-geo, tax-adjustment]
+depends_on: [TAX.JURIS.ADDRESS-TO-JURISDICTION, TAX.JURIS.ADDRESS-REQUIRED]
+behavior: |
+  Rule: A tax-authority for an enclosing region governs a destination named at a finer level through region-containment
+    Given a destination-address that names a state (which satisfies the address requirement of TAX.JURIS.ADDRESS-REQUIRED)
+    And that state has region-containment within a country
+    And a tax-authority for that enclosing country with a rate-rule
+    When tax is calculated for the order
+    Then a tax-adjustment appears whose jurisdiction-geo is that enclosing country
+scenarios:
+  - name: enclosing-country-authority-applies-to-state-named-address
+    given:
+      store: present
+      destination-address: {state: present}
+      region-containment: {state: within-country}
+      tax-authority: {jurisdiction: country, rate-percentage: "6.25"}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, jurisdiction-geo: country, tax-amount: "6.250"}
+outputs_affected: [jurisdiction-geo]
+observability: direct
+source_fragments: [F-TAS-027, F-COMMONEM-002]
+confidence: derived-from-code
+notes: >
+  Containment can only apply once the destination-address is itself accepted: the address guard
+  (getTaxAuthorities is reached only after rateProductTaxCalc's guard, F-TAS-018) requires the
+  address to name a country, a state, or a postal-code-area. A county alone is rejected before
+  containment is ever considered (see TAX.JURIS.ADDRESS-REQUIRED), so the licensing fact here is
+  that the address names a state. getTaxAuthorities then collects the address geos that are
+  present (country/state/county/postal) and GeoWorker.expandGeoRegionDeep walks UP the REGIONS
+  hierarchy to add the enclosing geos; a TaxAuthority for any resolved geo — including an
+  enclosing region such as the country above the named state — is matched, and its geo is
+  reported as the adjustment's jurisdiction-geo. A county named IN ADDITION to a state is added
+  to the geo set and participates in the same upward expansion, but a county is never required
+  to license containment and cannot license it on its own.

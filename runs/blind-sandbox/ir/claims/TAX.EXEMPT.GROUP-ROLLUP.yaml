@@ -1,0 +1,40 @@
+id: TAX.EXEMPT.GROUP-ROLLUP
+kind: behavior
+title: A party inherits the tax exemptions of the parent groups it rolls up to.
+status: pinned
+priority: core
+terms: [purchasing-party, party-group, group-rollup, tax-exemption, taxing-jurisdiction, tax-amount, exempt-amount, tax-adjustment]
+depends_on: [TAX.EXEMPT.ZEROING]
+behavior: |
+  Rule: A member's tax is zeroed when a parent party-group it rolls up to is exempt
+    Given a purchasing-party that rolls up into a party-group via group-rollup
+    And the party-group holds a currently-effective tax-exemption for the jurisdiction
+    And the purchasing-party holds no tax-exemption of its own
+    When tax is calculated for the order
+    Then the tax-adjustment's tax-amount is zero
+    And the would-have-been tax appears as the exempt-amount
+scenarios:
+  - name: member-inherits-parent-group-exemption
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, rate-percentage: "6.25"}
+      party-group:
+        tax-registration: {jurisdiction: state, tax-registration-id: "EX-GRP", exempt: true, effective: current}
+      purchasing-party:
+        billed: true
+        rolls-up-into: party-group
+        own-exemption: none
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "0", exempt-amount: "6.250"}
+outputs_affected: [tax-amount, exempt-amount, customer-tax-id]
+observability: direct
+source_fragments: [F-TAS-044, F-TAS-054, F-TAS-055, F-PARTYEM-002]
+confidence: derived-from-code
+notes: >
+  The exemption check considers the billed party together with all parent groups it rolls up
+  to; an exemption on any of them zeroes the tax. Provenance-critical.

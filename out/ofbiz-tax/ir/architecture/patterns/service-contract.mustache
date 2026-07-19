@@ -1,0 +1,27 @@
+{{! Public-contract boundary pattern (ADR-001).
+    Invoke a named OFBiz service through the service dispatcher with an IN context map and
+    read the OUT map. Parameters in {{double braces}} are filled per scenario. }}
+Map<String, Object> ctx = new HashMap<>();
+ctx.put("productStoreId", "{{productStoreId}}");
+ctx.put("payToPartyId", "{{payToPartyId}}");
+ctx.put("billToPartyId", "{{billToPartyId}}");
+ctx.put("itemProductList", {{itemProductList}});   // parallel lists, one entry per order-line
+ctx.put("itemAmountList", {{itemAmountList}});      // line-amount per line
+ctx.put("itemPriceList", {{itemPriceList}});        // unit-price per line
+ctx.put("itemQuantityList", {{itemQuantityList}});
+ctx.put("itemShippingList", {{itemShippingList}});  // optional per-line shipping
+ctx.put("orderShippingAmount", {{orderShippingAmount}});   // order-level freight
+ctx.put("orderPromotionsAmount", {{orderPromotionsAmount}});
+ctx.put("shippingAddress", {{shippingAddressValue}});      // PostalAddress GenericValue
+ctx.put("shippingContactMechId", "{{shippingContactMechId}}");
+
+Map<String, Object> out = dispatcher.runSync("{{serviceName}}", ctx);   // calcTax | calcTaxForDisplay
+
+// order path OUT: orderAdjustments (List), itemAdjustments (List of Lists)
+List<GenericValue> orderAdjustments = (List<GenericValue>) out.get("orderAdjustments");
+List<List<GenericValue>> itemAdjustments = (List<List<GenericValue>>) out.get("itemAdjustments");
+
+// display path OUT: taxTotal, taxPercentage, priceWithTax (BigDecimal)
+BigDecimal taxTotal      = (BigDecimal) out.get("taxTotal");
+BigDecimal taxPercentage = (BigDecimal) out.get("taxPercentage");
+BigDecimal priceWithTax  = (BigDecimal) out.get("priceWithTax");

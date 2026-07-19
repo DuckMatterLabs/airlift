@@ -1,0 +1,100 @@
+# Airlift blind test-generation summary for the ofbiz-tax seam.
+# Source of truth: ir/ (claim atoms) + harness-contract.md (DSL only).
+seam: sales-tax-calculation
+package: ofbiz-tax
+output:
+  test_class: org.apache.ofbiz.accounting.tax.test.blind.BlindTaxClaimTests
+  path: generated/BlindTaxClaimTests.java
+
+test_count: 35
+claims_covered_count: 27
+claims_skipped_count: 7
+
+# Each entry lists the test method(s) bound to the claim via @AirliftClaim.
+claims_covered:
+  - id: TAX.CALC.TAX-AMOUNT
+    tests: [testTaxAmountIsBaseTimesRate]
+  - id: TAX.CALC.TAXABLE-BASE
+    tests: [testTaxableProductIsTaxed, testNonTaxableProductYieldsNoLine]
+  - id: TAX.CONFIG.CALC-PRECISION
+    tests: [testCalcPrecisionHalfUpAtThirdDecimal]
+    note: >
+      Config claim asserted where its values shape numbers: 10.05*7% = 0.7035 rounds
+      half-up at 3 decimals to 0.704 on the order tax path.
+  - id: TAX.CONFIG.FINAL-PRECISION
+    tests: [testFinalPrecisionHalfUpAtSecondDecimal]
+    note: >
+      Config claim asserted via the display path (the only path whose values it shapes):
+      104.25*6% = 6.255 -> 6.26 and price 110.505 -> 110.51 at 2 decimals half-up.
+  - id: TAX.EXEMPT.EFFECTIVE-INFO
+    tests: [testEffectiveRegistrationIdRecordedNonExemptStillTaxed]
+  - id: TAX.EXEMPT.ZEROING
+    tests: [testExemptPartyPaysZero]
+  - id: TAX.EXEMPT.GROUP-ROLLUP
+    tests: [testMemberInheritsParentGroupExemption]
+  - id: TAX.EXEMPT.JURISDICTION-INHERITANCE
+    tests: [testCountyTaxExemptViaStateExemption]
+  - id: TAX.JURIS.ADDRESS-REQUIRED
+    tests: [testEmptyDestinationErrors]
+  - id: TAX.JURIS.ADDRESS-TO-JURISDICTION
+    tests: [testStateAddressYieldsStateJurisdiction]
+  - id: TAX.JURIS.CONTAINMENT
+    tests: [testEnclosingCountryAuthorityAppliesToStateNamedAddress]
+  - id: TAX.JURIS.FACILITY-FALLBACK
+    tests: [testFacilityAddressTaxedWhenNoShippingDestination]
+  - id: TAX.ORDER.FREIGHT-SPLIT
+    tests: [testOrderFreightTaxSplitByProductValue]
+  - id: TAX.ORDER.PER-ITEM
+    tests: [testTwoLinesTaxedSeparately]
+  - id: TAX.ORDER.PROMO-TAX
+    tests: [testOrderPromotionsProduceOrderLevelTaxLine]
+  - id: TAX.RATE.AUTHORITY-MATCH
+    tests: [testResolvedAuthorityRuleDrivesTheTaxLine]
+  - id: TAX.RATE.CATEGORY-MATCH
+    tests: [testCategoryRuleTaxesProductInCategory, testCategoryRuleSkipsProductNotInCategory]
+  - id: TAX.RATE.PROMO-TAXABLE
+    tests: [testPromotionsTaxedWhenRuleAllows, testPromotionsNotTaxedWhenRuleForbids]
+  - id: TAX.RATE.SHIPPING-TAXABLE
+    tests: [testFreightTaxedWhenRuleAllows, testFreightNotTaxedWhenRuleForbids]
+  - id: TAX.RATE.STORE-SCOPE
+    tests: [testStoreScopedRuleAppliesToItsStore]
+  - id: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE
+    tests: [testMinItemPriceAtThresholdIsTaxed, testMinItemPriceBelowThresholdIsNotTaxed, testMinItemPriceAboveThresholdIsTaxed]
+    note: Covers all three decision-table rows (50/50 taxed, 49.99/50 not, 100/50 taxed).
+  - id: TAX.RATE.THRESHOLD-MIN-PURCHASE
+    tests: [testMinPurchaseAtThresholdIsTaxed, testMinPurchaseBelowThresholdIsNotTaxed, testMinPurchaseAboveThresholdIsTaxed]
+    note: Covers all three decision-table rows (100/100 taxed, 99.99/100 not, 250/100 taxed).
+  - id: TAX.RATE.VARIANT-CATEGORY
+    tests: [testVariantTaxedViaParentCategory]
+  - id: TAX.VAT.PRICE-INCLUSIVE
+    tests: [testTaxInclusivePriceReportsIncludedTaxNotAdded]
+  - id: TAX.VAT.VARIANT-PRICE
+    tests: [testVariantUsesParentVatPrice]
+  - id: TAX.VAT.DISCOUNT-CORRECTION
+    tests: [testDiscountedTaxInclusiveItemEmitsNegativeIncludedTax]
+  - id: TAX.VAT.PRICE-CORRECTION
+    tests: [testPriceWithTaxRoundingReconciledByCorrectionLine]
+
+claims_skipped:
+  - id: TAX.CONTRACT.CALC-TAX
+    reason: >
+      kind=contract (not behavior/invariant). Out of scope per task rule 1; it describes the
+      seam request/response shape, which is exercised implicitly by every behavior test.
+  - id: TAX.CONTRACT.CALC-TAX-FOR-DISPLAY
+    reason: >
+      kind=contract (not behavior/invariant). Out of scope per task rule 1; the display
+      request/response shape is exercised by testFinalPrecisionHalfUpAtSecondDecimal.
+  - id: TAX.DISPLAY.FINAL-ROUNDING
+    reason: kind=behavior but priority=secondary (not core/edge). Out of scope per task rule 1.
+  - id: TAX.DISPLAY.PRICE-WITH-TAX
+    reason: kind=behavior but priority=secondary (not core/edge). Out of scope per task rule 1.
+  - id: TAX.DISPLAY.VAT-ONLY
+    reason: kind=behavior but priority=secondary (not core/edge). Out of scope per task rule 1.
+  - id: TAX.ORDER.VALUE-WEIGHT
+    reason: >
+      observability=internal. The value-weight ratio is not returned; its externally
+      observable effect is the per-item freight tax verified by TAX.ORDER.FREIGHT-SPLIT.
+  - id: TAX.VAT.PRICE-GROUP-SCOPE
+    reason: >
+      observability=internal. Which ProductPrice record is chosen is not independently
+      observable through returned adjustments; its effect is exercised by TAX.VAT.PRICE-INCLUSIVE.

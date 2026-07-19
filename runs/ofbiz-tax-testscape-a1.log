@@ -1,0 +1,213 @@
+[airlift] copilot stage=ofbiz-tax-testscape-a1 workdir=/Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework model=claude-opus-4-8
+I'll start by reading the input fragment map.
+
+● Read fragment-map.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/fragment-map.yaml
+  └ 1 line read
+
+● Read fragment-map.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/fragment-map.yaml
+  └ L1:120 (120 lines read)
+
+● List fragment ids and roles (shell)
+  │ grep -n "role:" /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/fragment-map.yaml | sort |
+  │ uniq -c; echo "---"; grep -nE "id:|role:|symbol:|block:"
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/fragment-map.yaml | head -400
+  └ 372 lines…
+
+Now I understand the fragments. The behavior-carrying ones (business-logic/fused) are what I must judge. Let me search the repo for tests exercising this seam. OFBiz uses multiple test idioms — let me discover them.
+
+● Search calcTax references (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework
+  │ echo "=== calcTax / rateProductTaxCalc references ==="
+  │ grep -rn "rateProductTaxCalc\|calcTaxForDisplay\|calcTax\b\|TaxAuthorityServices"
+  │ --include=*.java --include=*.xml --include=*.groovy --include=*.ftl -l | grep -iv
+  │ "TaxAuthorityServices.java\|services_tax.xml" | head -50
+  └ 17 lines…
+
+Found dedicated test files. Let me examine them and search for other test idioms.
+
+● Read SmokeTaxTests.java
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/SmokeTaxTests.java
+  └ 59 lines read
+
+● Inspect tax test dir and registration (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework
+  │ echo "=== tax test dir ==="; ls -la
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/
+  │ echo "=== all accounting test java ==="; find applications/accounting/src/test -type f | head
+  │ -50…
+  └ 65 lines…
+
+There are `backfill` and `blind` subdirs plus airlift testdefs. Let me inspect them and the fixture/harness.
+
+● Inspect backfill/blind dirs and airlift testdefs (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework
+  │ echo "=== backfill dir ==="; ls -la
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/backfill/
+  │ echo "=== blind dir ==="; ls -la
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/blind/…
+  └ 39 lines…
+
+Backfill/blind dirs are empty (future stages). Only SmokeTaxTests exists+registered. Let me read the harness and search for native OFBiz tests hitting the seam indirectly.
+
+● Read AirliftTaxTestCase.java
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/AirliftTaxTestCase.ja
+  │ va
+  └ 36 lines read
+
+● Search native tests hitting tax seam (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework
+  │ echo "=== native tests referencing calcTax service across repo (non-airlift) ==="
+  │ grep -rn "calcTax" --include=*.groovy --include=*.xml applications/ framework/ | grep -iv
+  │ "servicedef\|UiLabels\|controller\|airlift\|build/" | head -40
+  │ echo "=== groovy/xml tests invoking calcTax or tax in order component ==="…
+  └ 26 lines…
+
+● Check indirect coverage in groovy tests (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework
+  │ echo "=== SALES_TAX in AutoAcctgAdminTests ==="; grep -n "SALES_TAX\|calcTax\|OrderAdjustment"
+  │ applications/accounting/src/test/groovy/org/apache/ofbiz/accounting/accounting/AutoAcctgAdmin
+  │ Tests.groovy | head
+  │ echo "=== SALES_TAX in QuoteTests ==="; grep -n "SALES_TAX\|calcTax" …
+  └ 17 lines…
+
+● Inspect OrderTests and QuoteTests context (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework
+  │ echo "=== OrderTests.groovy service calls ==="; grep -n "run
+  │ service\|createOrder\|storeOrder\|Tax\|tax"
+  │ applications/order/src/test/groovy/org/apache/ofbiz/order/order/test/OrderTests.groovy | head
+  │ -30…
+  └ 34 lines…
+
+● Exhaustive search for seam invocation in tests (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework
+  │ echo "=== [A] rateProductTaxCalc across all test scopes ==="
+  │ grep -rln "rateProductTaxCalc" applications/*/src/test applications/*/testdef
+  │ framework/*/src/test framework/*/testdef 2>/dev/null
+  │ echo "=== [B] calcTax invocation in any test (groovy/xml) ==="…
+  └ 18 lines…
+
+Confirmed: only the Airlift harness tests touch the seam. Let me read TaxFixture's `calcTax` runner to know which service fires and which fragments the two smoke tests exercise.
+
+● Inspect TaxFixture calcTax builder (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework
+  │ grep -n "runSync\|run service\|calcTax\|rateProductTaxCalc\|def \|String \|class
+  │ \|itemProductList\|itemAmountList\|shippingAddress\|payToPartyId\|billToPartyId\|orderShipping
+  │ Amount\|orderPromotionsAmount"
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/TaxFixture.java | …
+  └ 82 lines…
+
+● Read Calc.run() service invocation (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework
+  │ sed -n '609,720p'
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/TaxFixture.java
+  └ 113 lines…
+
+The harness fires the `calcTax` service (→`rateProductTaxCalc`). Now I must precisely map which fragments execute/are observed by the two smoke tests. Let me read the key seam code to judge conditional vs always-executed branches.
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L300:470 (171 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L470:600 (131 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L600:772 (173 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L190:300 (111 lines read)
+
+● Check TaxCalcResult field mapping (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework
+  │ grep -n "get(\|amount\|ratePercent\|sourcePercentage\|exemptAmount\|customer\|jurisdiction\|prim
+  │ aryGeoId\|taxAuthGeoId\|type()"
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/TaxCalcResult.java
+  └ 26 lines…
+
+I now have a complete, evidence-based picture. Let me write the output file.
+
+● Create coverage-gaps.yaml +230
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/coverage-gaps.yaml
+
+Let me validate the YAML is well-formed.
+
+● Validate YAML structure and counts (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax && python3 -c "import yaml,sys;
+  │ d=yaml.safe_load(open('coverage-gaps.yaml')); print('OK keys:', list(d.keys()));
+  │ print('coverage entries:', len(d['coverage'])); print('bare:', sum(1 for c in d['coverage'] if
+  │ c['status']=='bare')); print('covered:', sum(1 for c in d['coverage'] if
+  │ c['status']!='bare')); print('summary:', d['summary']['bare_count'], …
+  └ 7 lines…
+
+● Validate YAML after installing pyyaml (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax && pip install pyyaml -q 2>/dev/null;
+  │ python3 -c "import yaml; d=yaml.safe_load(open('coverage-gaps.yaml')); print('keys:',
+  │ list(d.keys())); c=d['coverage']; print('coverage entries:', len(c)); print('bare:', sum(1 for
+  │ x in c if x['status']=='bare')); print('covered:', sum(1 for x in c if x['status']!='bare'));
+  │ print('summary bare/covered:', d['summary']['bare_count'], d['summary']['covered_count']); …
+  └ 7 lines…
+
+● Install pyyaml user and validate (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax
+  │ python3 -m pip install --user pyyaml -q 2>&1 | tail -1
+  │ python3 - <<'EOF'
+  │ import yaml
+  │ d=yaml.safe_load(open('coverage-gaps.yaml'))…
+  └ 13 lines…
+
+✗ Validate YAML in venv (shell)
+  │ cd /tmp && python3 -m venv v && ./v/bin/pip install pyyaml -q && cd
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax && /tmp/v/bin/python - <<'EOF'
+  │ import yaml
+  │ d=yaml.safe_load(open('coverage-gaps.yaml'))
+  │ c=d['coverage']…
+  └ Permission denied and could not request permission from user
+
+✗ Create venv in workspace and validate (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax && python3 -m venv
+  │ /Volumes/Dancer/Develop/AIRLIFT/.venv 2>&1 | tail -1 &&
+  │ /Volumes/Dancer/Develop/AIRLIFT/.venv/bin/pip install pyyaml -q 2>&1 | tail -1 &&
+  │ /Volumes/Dancer/Develop/AIRLIFT/.venv/bin/python - <<'EOF'
+  │ import yaml…
+  └ Permission denied and could not request permission from user
+
+venv blocked by permissions. Let me do a lightweight structural check instead.
+
+● Structural sanity check of YAML (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax
+  │ echo "coverage fragments:"; grep -c "^  - fragment:" coverage-gaps.yaml
+  │ echo "status bare:"; grep -c "status: bare" coverage-gaps.yaml
+  │ echo "status covered-asserted:"; grep -c "status: covered-asserted" coverage-gaps.yaml
+  │ echo "status covered-incidental:"; grep -c "status: covered-incidental" coverage-gaps.yaml…
+  └ 28 lines…
+
+/ Search (grep)
+  │ "\t" (/Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/coverage-gaps.yaml)
+  └ No matches found
+
+No tabs, structure is valid, and counts reconcile (36 behavior-carrying fragments = 15 bare + 12 asserted + 9 incidental = 21 covered).
+
+## Done
+
+Wrote `/Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/coverage-gaps.yaml`.
+
+**Findings — the honest test landscape of the sales-tax seam:**
+
+- **No native OFBiz test exercises the seam.** Exhaustive searches (JUnit/OFBizTestCase, Groovy service tests, and declarative `testdef`/`test-suite` XML registered in `ofbiz-component.xml`) return **0 hits** for `calcTax`/`rateProductTaxCalc`/`TaxAuthorityServices` outside the tax test package. Order/checkout/quote suites never drive a shipping address into the engine (the 6 `SALES_TAX` hits are seed data or GL posting types, not seam output).
+- **Only executable coverage = the Airlift harness self-test** `SmokeTaxTests` (2 methods) invoking the real `calcTax` service and asserting a basic sales-tax calc and party-exemption zeroing. `backfill`/`blind` testdefs are registered but point at classes that don't exist yet (empty dirs).
+- **Of 36 behavior-carrying fragments:** 12 covered-asserted, 9 covered-incidental (executed with empty data, no assertion), **15 bare**.
+- **Provenance-critical gaps:** only exemption zeroing (F-TAS-055) is truly pinned. Group-rollup exemption (F-TAS-044 rollup), jurisdiction exemption inheritance (F-TAS-056 / TaxAuthorityAssoc), and the minItemPrice/minPurchase threshold rules (F-TAS-036) execute at most incidentally and are never asserted. The entire display/VAT-in-price family and order-level freight/promotions tax are bare.
+
+Each covered claim cites the assertion line; each absence is backed by the logged searches.
+
+
+
+Changes    +230 -0
+Duration   6m 37s
+Tokens     ↑ 1.5m (1.4m cached, 70.6k written) • ↓ 28.2k (12.6k reasoning)
+Resume     copilot --resume=b7af20d0-fbf7-4408-bfdb-a069b4e2e6ed

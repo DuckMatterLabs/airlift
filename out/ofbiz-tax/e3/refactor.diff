@@ -1,0 +1,675 @@
+diff --git a/applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java b/applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+index 8da503732c..8a4440d663 100644
+--- a/applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
++++ b/applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+@@ -104,20 +104,7 @@ public class TaxAuthorityServices {
+ 
+             // AIRLIFT: F-TAS-007
+             if ("Y".equals(productStore.getString("showPricesWithVatTax"))) {
+-                Set<GenericValue> taxAuthoritySet = new HashSet<>();
+-                if (productStore.get("vatTaxAuthPartyId") == null) {
+-                    List<GenericValue> taxAuthorityRawList = EntityQuery.use(delegator)
+-                            .from("TaxAuthority")
+-                            .where("taxAuthGeoId", productStore.get("vatTaxAuthGeoId"))
+-                            .cache()
+-                            .queryList();
+-                    taxAuthoritySet.addAll(taxAuthorityRawList);
+-                } else {
+-                    GenericValue taxAuthority = EntityQuery.use(delegator).from("TaxAuthority").where("taxAuthGeoId",
+-                            productStore.get("vatTaxAuthGeoId"), "taxAuthPartyId", productStore.get(
+-                                    "vatTaxAuthPartyId")).cache().queryOne();
+-                    taxAuthoritySet.add(taxAuthority);
+-                }
++                Set<GenericValue> taxAuthoritySet = resolveVatTaxAuthorities(delegator, productStore);
+ 
+                 if (taxAuthoritySet.isEmpty()) {
+                     throw new IllegalArgumentException("Could not find any Tax Authories for store with ID ["
+@@ -372,40 +359,14 @@ public class TaxAuthorityServices {
+ 
+         // AIRLIFT: F-TAS-031
+         // store expr
+-        EntityCondition storeCond = null;
+-        if (productStore != null) {
+-            storeCond = EntityCondition.makeCondition(
+-                    EntityCondition.makeCondition("productStoreId", EntityOperator.EQUALS, productStore.get(
+-                            "productStoreId")),
+-                    EntityOperator.OR,
+-                    EntityCondition.makeCondition("productStoreId", EntityOperator.EQUALS, null));
+-        } else {
+-            storeCond = EntityCondition.makeCondition("productStoreId", EntityOperator.EQUALS, null);
+-        }
++        EntityCondition storeCond = buildProductStoreCondition(productStore);
+ 
+         // AIRLIFT: F-TAS-032
+         // build the TaxAuthority expressions (taxAuthGeoId, taxAuthPartyId)
+-        List<EntityCondition> taxAuthCondOrList = new LinkedList<>();
+-        // start with the _NA_ TaxAuthority...
+-        taxAuthCondOrList.add(EntityCondition.makeCondition(
+-                EntityCondition.makeCondition("taxAuthPartyId", EntityOperator.EQUALS, "_NA_"),
+-                EntityOperator.AND,
+-                EntityCondition.makeCondition("taxAuthGeoId", EntityOperator.EQUALS, "_NA_")));
+-
+-        for (GenericValue taxAuthority : taxAuthoritySet) {
+-            EntityCondition taxAuthCond = EntityCondition.makeCondition(
+-                    EntityCondition.makeCondition("taxAuthPartyId", EntityOperator.EQUALS, taxAuthority.getString(
+-                            "taxAuthPartyId")),
+-                    EntityOperator.AND,
+-                    EntityCondition.makeCondition("taxAuthGeoId", EntityOperator.EQUALS, taxAuthority.getString(
+-                            "taxAuthGeoId")));
+-            taxAuthCondOrList.add(taxAuthCond);
+-        }
+-        EntityCondition taxAuthoritiesCond = EntityCondition.makeCondition(taxAuthCondOrList, EntityOperator.OR);
++        EntityCondition taxAuthoritiesCond = buildTaxAuthoritiesCondition(taxAuthoritySet);
+ 
+         try {
+-            EntityCondition productCategoryCond;
+-            productCategoryCond = setProductCategoryCond(delegator, product);
++            EntityCondition productCategoryCond = setProductCategoryCond(delegator, product);
+ 
+             // AIRLIFT: F-TAS-034
+             if (product == null && shippingAmount != null) {
+@@ -431,242 +392,386 @@ public class TaxAuthorityServices {
+ 
+             // AIRLIFT: F-TAS-036
+             // build the main condition clause
+-            List<EntityCondition> mainExprs = UtilMisc.toList(storeCond, taxAuthoritiesCond, productCategoryCond);
+-            mainExprs.add(EntityCondition.makeCondition(EntityCondition.makeCondition("minItemPrice",
+-                    EntityOperator.EQUALS, null), EntityOperator.OR, EntityCondition.makeCondition("minItemPrice",
+-                            EntityOperator.LESS_THAN_EQUAL_TO, itemPrice)));
+-            mainExprs.add(EntityCondition.makeCondition(EntityCondition.makeCondition("minPurchase",
+-                    EntityOperator.EQUALS, null), EntityOperator.OR, EntityCondition.makeCondition("minPurchase",
+-                            EntityOperator.LESS_THAN_EQUAL_TO, itemAmount)));
+-            EntityCondition mainCondition = EntityCondition.makeCondition(mainExprs, EntityOperator.AND);
++            EntityCondition mainCondition = buildRateRuleLookupCondition(storeCond, taxAuthoritiesCond,
++                    productCategoryCond, itemPrice, itemAmount);
+ 
+             // finally ready... do the rate query
+-            List<GenericValue> lookupList = EntityQuery.use(delegator).from("TaxAuthorityRateProduct")
++            List<GenericValue> rateRuleList = EntityQuery.use(delegator).from("TaxAuthorityRateProduct")
+                     .where(mainCondition).orderBy("minItemPrice", "minPurchase", "fromDate").filterByDate().queryList();
+ 
+-            if (lookupList.isEmpty()) {
++            if (rateRuleList.isEmpty()) {
+                 Debug.logWarning("In TaxAuthority Product Rate no records were found for condition:" + mainCondition.toString(), MODULE);
+                 return adjustments;
+             }
+ 
+             // AIRLIFT: F-TAS-038
+             // find the right entry(s) based on purchase amount
+-            for (GenericValue taxAuthorityRateProduct : lookupList) {
+-                BigDecimal taxRate = taxAuthorityRateProduct.get("taxPercentage") != null ? taxAuthorityRateProduct
+-                        .getBigDecimal("taxPercentage") : ZERO_BASE;
+-                taxRate = taxRate.multiply(weight);
+-                BigDecimal taxable = ZERO_BASE;
+-
+-                if (product != null && (product.get("taxable") == null || (product.get("taxable") != null && product
+-                        .getBoolean("taxable")))) {
+-                    taxable = taxable.add(itemAmount);
+-                }
+-                if (shippingAmount != null && (taxAuthorityRateProduct.get("taxShipping") == null
+-                        || (taxAuthorityRateProduct.get("taxShipping") != null && taxAuthorityRateProduct.getBoolean(
+-                        "taxShipping")))) {
+-                    taxable = taxable.add(shippingAmount);
+-                }
+-                if (orderPromotionsAmount != null && (taxAuthorityRateProduct.get("taxPromotions") == null
+-                        || (taxAuthorityRateProduct.get("taxPromotions") != null && taxAuthorityRateProduct.getBoolean(
+-                        "taxPromotions")))) {
+-                    taxable = taxable.add(orderPromotionsAmount);
+-                }
++            for (GenericValue taxAuthorityRateProduct : rateRuleList) {
++                adjustments.addAll(buildTaxAdjustmentsForRateRule(delegator, taxAuthorityRateProduct, product,
++                        productStore, payToPartyId, billToPartyId, itemPrice, itemQuantity, itemAmount,
++                        shippingAmount, orderPromotionsAmount, weight, nowTimestamp));
++            }
++        } catch (GenericEntityException e) {
++            Debug.logError(e, "Problems looking up tax rates", MODULE);
++            return new LinkedList<>();
++        }
+ 
+-                if (taxable.compareTo(BigDecimal.ZERO) == 0) {
+-                    // this should make it less confusing if the taxable flag on the product is not
+-                    // Y/true, and there is no shipping and such
+-                    continue;
+-                }
++        return adjustments;
++    }
+ 
+-                // AIRLIFT: F-TAS-039
+-                // taxRate is in percentage, so needs to be divided by 100
+-                BigDecimal taxAmount = (taxable.multiply(taxRate)).divide(PERCENT_SCALE, TAX_SCALE,
+-                        TAX_ROUNDING);
+-
+-                String taxAuthGeoId = taxAuthorityRateProduct.getString("taxAuthGeoId");
+-                String taxAuthPartyId = taxAuthorityRateProduct.getString("taxAuthPartyId");
+-
+-                // get glAccountId from TaxAuthorityGlAccount entity using the payToPartyId as
+-                // the organizationPartyId
+-                GenericValue taxAuthorityGlAccount = EntityQuery.use(delegator).from("TaxAuthorityGlAccount")
+-                        .where("taxAuthPartyId", taxAuthPartyId, "taxAuthGeoId", taxAuthGeoId, "organizationPartyId", payToPartyId).queryOne();
+-                String taxAuthGlAccountId = null;
+-                if (taxAuthorityGlAccount != null) {
+-                    taxAuthGlAccountId = taxAuthorityGlAccount.getString("glAccountId");
+-                } else {
+-                    // TODO: what to do if no TaxAuthorityGlAccount found? Use some default, or is that done elsewhere later on?
+-                    Debug.logVerbose("what to do if no TaxAuthorityGlAccount found?", MODULE);
+-                }
++    // AIRLIFT: F-TAS-031
++    // store expr: match rate rules scoped to this ProductStore or store-agnostic (null) rules
++    private static EntityCondition buildProductStoreCondition(GenericValue productStore) {
++        if (productStore != null) {
++            return EntityCondition.makeCondition(
++                    EntityCondition.makeCondition("productStoreId", EntityOperator.EQUALS, productStore.get(
++                            "productStoreId")),
++                    EntityOperator.OR,
++                    EntityCondition.makeCondition("productStoreId", EntityOperator.EQUALS, null));
++        }
++        return EntityCondition.makeCondition("productStoreId", EntityOperator.EQUALS, null);
++    }
+ 
+-                // AIRLIFT: F-TAS-041
+-                GenericValue productPrice = null;
+-                if (product != null && taxAuthPartyId != null && taxAuthGeoId != null) {
+-                    // find a ProductPrice for the productId and taxAuth* values, and see if it has
+-                    // a priceWithTax value
+-                    productPrice = getProductPrice(delegator, product, productStore, taxAuthGeoId, taxAuthPartyId);
+-                    if (productPrice == null) {
+-                        GenericValue virtualProduct = ProductWorker.getParentProduct(product.getString("productId"), delegator);
+-                        if (virtualProduct != null) {
+-                            productPrice = getProductPrice(delegator, virtualProduct, productStore, taxAuthGeoId, taxAuthPartyId);
+-                        }
+-                    }
+-                }
+-                // AIRLIFT: F-TAS-042
+-                GenericValue taxAdjValue = delegator.makeValue("OrderAdjustment");
+-
+-                BigDecimal discountedSalesTax = BigDecimal.ZERO;
+-                taxAdjValue.set("orderAdjustmentTypeId", "SALES_TAX");
+-                if (productPrice != null && "Y".equals(productPrice.getString("taxInPrice"))
+-                        && itemQuantity != BigDecimal.ZERO) {
+-                    // For example product price is 43 with 20% VAT(means product actual price is
+-                    // 35.83).
+-                    // itemPrice = 43;
+-                    // itemQuantity = 3;
+-                    // taxAmountIncludedInFullPrice = (43-(43/(1+(20/100))))*3 = 21.51
+-                    taxAdjValue.set("orderAdjustmentTypeId", "VAT_TAX");
+-                    BigDecimal taxAmountIncludedInFullPrice = itemPrice.subtract(itemPrice.divide(BigDecimal.ONE.add(
+-                            taxRate.divide(PERCENT_SCALE, 4, RoundingMode.HALF_UP)), 2, RoundingMode.HALF_UP)).multiply(
+-                                    itemQuantity);
+-                    // If 1 quantity has 50% discount then itemAmount = 107.5 otherwise 129 (In case
+-                    // of no discount)
+-                    // Net price for each item
+-                    // netItemPrice = itemAmount / quantity = 107.5 / 3 = 35.833333333
+-                    BigDecimal netItemPrice = itemAmount.divide(itemQuantity, RoundingMode.HALF_UP);
+-                    // Calculate tax on the discounted price, be sure to round to 2 decimal places
+-                    // before multiplying by quantity
+-                    // netTax = (netItemPrice - netItemPrice / (1 + (taxRate/100))) * quantity
+-                    // netTax = (35.833333333-(35.833333333/(1+(20/100))))*3 = 17.92
+-                    BigDecimal netTax = netItemPrice.subtract(netItemPrice.divide(BigDecimal.ONE.add(taxRate.divide(
+-                            PERCENT_SCALE, 4, RoundingMode.HALF_UP)), 2, RoundingMode.HALF_UP)).multiply(itemQuantity);
+-                    // Subtract net tax from base tax (taxAmountIncludedFullPrice) to get the
+-                    // negative promotion tax adjustment amount
+-                    // discountedSalesTax = 17.92 - 21.51 = −3.59 (If no discounted item quantity
+-                    // then discountedSalesTax will be ZERO)
+-                    discountedSalesTax = netTax.subtract(taxAmountIncludedInFullPrice);
+-                    taxAdjValue.set("amountAlreadyIncluded", taxAmountIncludedInFullPrice);
+-                    taxAdjValue.set("amount", BigDecimal.ZERO);
+-                } else {
+-                    taxAdjValue.set("amount", taxAmount);
+-                }
++    // AIRLIFT: F-TAS-032
++    // build the TaxAuthority expressions (taxAuthGeoId, taxAuthPartyId), always including the _NA_ authority
++    private static EntityCondition buildTaxAuthoritiesCondition(Set<GenericValue> taxAuthoritySet) {
++        List<EntityCondition> taxAuthCondOrList = new LinkedList<>();
++        // start with the _NA_ TaxAuthority...
++        taxAuthCondOrList.add(EntityCondition.makeCondition(
++                EntityCondition.makeCondition("taxAuthPartyId", EntityOperator.EQUALS, "_NA_"),
++                EntityOperator.AND,
++                EntityCondition.makeCondition("taxAuthGeoId", EntityOperator.EQUALS, "_NA_")));
+ 
+-                taxAdjValue.set("sourcePercentage", taxRate);
+-                taxAdjValue.set("taxAuthorityRateSeqId", taxAuthorityRateProduct.getString("taxAuthorityRateSeqId"));
+-                // the primary Geo should be the main jurisdiction that the tax is for, and the
+-                // secondary would just be to define a parent or wrapping jurisdiction of the
+-                // primary
+-                taxAdjValue.set("primaryGeoId", taxAuthGeoId);
+-                taxAdjValue.set("comments", taxAuthorityRateProduct.getString("description"));
+-                if (taxAuthPartyId != null) {
+-                    taxAdjValue.set("taxAuthPartyId", taxAuthPartyId);
+-                }
+-                if (taxAuthGlAccountId != null) {
+-                    taxAdjValue.set("overrideGlAccountId", taxAuthGlAccountId);
+-                }
+-                if (taxAuthGeoId != null) {
+-                    taxAdjValue.set("taxAuthGeoId", taxAuthGeoId);
+-                }
++        for (GenericValue taxAuthority : taxAuthoritySet) {
++            EntityCondition taxAuthCond = EntityCondition.makeCondition(
++                    EntityCondition.makeCondition("taxAuthPartyId", EntityOperator.EQUALS, taxAuthority.getString(
++                            "taxAuthPartyId")),
++                    EntityOperator.AND,
++                    EntityCondition.makeCondition("taxAuthGeoId", EntityOperator.EQUALS, taxAuthority.getString(
++                            "taxAuthGeoId")));
++            taxAuthCondOrList.add(taxAuthCond);
++        }
++        return EntityCondition.makeCondition(taxAuthCondOrList, EntityOperator.OR);
++    }
+ 
+-                // AIRLIFT: F-TAS-044
+-                // check to see if this party has a tax ID for this, and if the party is tax
+-                // exempt in the primary (most-local) jurisdiction
+-                if (UtilValidate.isNotEmpty(billToPartyId) && UtilValidate.isNotEmpty(taxAuthGeoId)) {
+-                    // see if partyId is a member of any groups, if so honor their tax exemptions
+-                    // look for PartyRelationship with partyRelationshipTypeId=GROUP_ROLLUP, the
+-                    // partyIdTo is the group member, so the partyIdFrom is the groupPartyId
+-                    Set<String> billToPartyIdSet = new HashSet<>();
+-                    billToPartyIdSet.add(billToPartyId);
+-                    List<GenericValue> partyRelationshipList = EntityQuery.use(delegator).from("PartyRelationship")
+-                            .where("partyIdTo", billToPartyId, "partyRelationshipTypeId", "GROUP_ROLLUP")
+-                            .cache().filterByDate().queryList();
+-
+-                    for (GenericValue partyRelationship : partyRelationshipList) {
+-                        billToPartyIdSet.add(partyRelationship.getString("partyIdFrom"));
+-                    }
+-                    handlePartyTaxExempt(taxAdjValue, billToPartyIdSet, taxAuthGeoId, taxAuthPartyId, taxAmount,
+-                            nowTimestamp, delegator);
+-                } else {
+-                    Debug.logInfo("NOTE: A tax calculation was done without a billToPartyId or taxAuthGeoId, so no tax exemptions or tax IDs "
+-                            + "considered; billToPartyId=[" + billToPartyId + "] taxAuthGeoId=[" + taxAuthGeoId + "]", MODULE);
+-                }
+-                // AIRLIFT: F-TAS-045
+-                if (discountedSalesTax.compareTo(BigDecimal.ZERO) < 0) {
+-                    GenericValue taxAdjValueNegative = delegator.makeValue("OrderAdjustment");
+-                    taxAdjValueNegative.setFields(taxAdjValue);
+-                    taxAdjValueNegative.set("amountAlreadyIncluded", discountedSalesTax);
+-                    adjustments.add(taxAdjValueNegative);
+-                }
+-                adjustments.add(taxAdjValue);
+-
+-                // AIRLIFT: F-TAS-046
+-                if (productPrice != null && itemQuantity != null
+-                        && productPrice.getBigDecimal("priceWithTax") != null
+-                        && !"Y".equals(productPrice.getString("taxInPrice"))) {
+-                    BigDecimal priceWithTax = productPrice.getBigDecimal("priceWithTax");
+-                    BigDecimal price = productPrice.getBigDecimal("price");
+-                    BigDecimal baseSubtotal = price.multiply(itemQuantity);
+-                    BigDecimal baseTaxAmount = (baseSubtotal.multiply(taxRate)).divide(PERCENT_SCALE,
+-                            TAX_SCALE, TAX_ROUNDING);
+-
+-                    // tax is not already in price so we want to add it in, but this is a VAT
+-                    // situation so adjust to make it as accurate as possible
+-
+-                    // for VAT taxes if the calculated total item price plus calculated taxes is
+-                    // different from what would be
+-                    // expected based on the original entered price with taxes (if the price was
+-                    // entered this way), then create
+-                    // an adjustment that corrects for the difference, and this correction will be
+-                    // effectively subtracted from the
+-                    // price and not from the tax (the tax is meant to be calculated based on Tax
+-                    // Authority rules and so should
+-                    // not be shorted)
+-
+-                    // TODO (don't think this is needed, but just to keep it in mind): get this to
+-                    // work with multiple VAT tax authorities instead of just one (right now will
+-                    // get incorrect totals if there are multiple taxes included in the price)
+-                    // TODO add constraint to ProductPrice lookup by any productStoreGroupId
+-                    // associated with the current productStore
+-
+-                    BigDecimal enteredTotalPriceWithTax = priceWithTax.multiply(itemQuantity);
+-                    BigDecimal calcedTotalPriceWithTax = (baseSubtotal).add(baseTaxAmount);
+-                    if (!enteredTotalPriceWithTax.equals(calcedTotalPriceWithTax)) {
+-                        // if the calculated amount is higher than the entered amount we want the value
+-                        // to be negative
+-                        // to get it down to match the entered amount
+-                        // so, subtract the calculated amount from the entered amount (ie: correction =
+-                        // entered - calculated)
+-                        BigDecimal correctionAmount = enteredTotalPriceWithTax.subtract(calcedTotalPriceWithTax);
+-
+-                        GenericValue correctionAdjValue = delegator.makeValue("OrderAdjustment");
+-                        correctionAdjValue.set("taxAuthorityRateSeqId", taxAuthorityRateProduct.getString(
+-                                "taxAuthorityRateSeqId"));
+-                        correctionAdjValue.set("amount", correctionAmount);
+-                        // don't set this, causes a doubling of the tax rate because calling code adds
+-                        // up all tax rates: correctionAdjValue.set("sourcePercentage", taxRate);
+-                        correctionAdjValue.set("orderAdjustmentTypeId", "VAT_PRICE_CORRECT");
+-                        // the primary Geo should be the main jurisdiction that the tax is for, and the
+-                        // secondary would just be to define a parent or wrapping jurisdiction of the
+-                        // primary
+-                        correctionAdjValue.set("primaryGeoId", taxAuthGeoId);
+-                        correctionAdjValue.set("comments", taxAuthorityRateProduct.getString("description"));
+-                        if (taxAuthPartyId != null) {
+-                            correctionAdjValue.set("taxAuthPartyId", taxAuthPartyId);
+-                        }
+-                        if (taxAuthGlAccountId != null) {
+-                            correctionAdjValue.set("overrideGlAccountId", taxAuthGlAccountId);
+-                        }
+-                        if (taxAuthGeoId != null) {
+-                            correctionAdjValue.set("taxAuthGeoId", taxAuthGeoId);
+-                        }
+-                        adjustments.add(correctionAdjValue);
+-                    }
+-                }
++    // AIRLIFT: F-TAS-036
++    // combine store, authority and category predicates with the minimum-item-price and
++    // minimum-purchase threshold rules (a null threshold means "no threshold")
++    private static EntityCondition buildRateRuleLookupCondition(EntityCondition storeCond,
++            EntityCondition taxAuthoritiesCond, EntityCondition productCategoryCond, BigDecimal itemPrice,
++            BigDecimal itemAmount) {
++        List<EntityCondition> mainExprs = UtilMisc.toList(storeCond, taxAuthoritiesCond, productCategoryCond);
++        mainExprs.add(EntityCondition.makeCondition(EntityCondition.makeCondition("minItemPrice",
++                EntityOperator.EQUALS, null), EntityOperator.OR, EntityCondition.makeCondition("minItemPrice",
++                        EntityOperator.LESS_THAN_EQUAL_TO, itemPrice)));
++        mainExprs.add(EntityCondition.makeCondition(EntityCondition.makeCondition("minPurchase",
++                EntityOperator.EQUALS, null), EntityOperator.OR, EntityCondition.makeCondition("minPurchase",
++                        EntityOperator.LESS_THAN_EQUAL_TO, itemAmount)));
++        return EntityCondition.makeCondition(mainExprs, EntityOperator.AND);
++    }
++
++    // AIRLIFT: F-TAS-007
++    // resolve the VAT tax authorities configured on the store for showing prices with VAT
++    private static Set<GenericValue> resolveVatTaxAuthorities(Delegator delegator, GenericValue productStore)
++            throws GenericEntityException {
++        Set<GenericValue> taxAuthoritySet = new HashSet<>();
++        if (productStore.get("vatTaxAuthPartyId") == null) {
++            List<GenericValue> taxAuthorityRawList = EntityQuery.use(delegator)
++                    .from("TaxAuthority")
++                    .where("taxAuthGeoId", productStore.get("vatTaxAuthGeoId"))
++                    .cache()
++                    .queryList();
++            taxAuthoritySet.addAll(taxAuthorityRawList);
++        } else {
++            GenericValue taxAuthority = EntityQuery.use(delegator).from("TaxAuthority").where("taxAuthGeoId",
++                    productStore.get("vatTaxAuthGeoId"), "taxAuthPartyId", productStore.get(
++                            "vatTaxAuthPartyId")).cache().queryOne();
++            taxAuthoritySet.add(taxAuthority);
++        }
++        return taxAuthoritySet;
++    }
++
++    // AIRLIFT: F-TAS-038
++    // apply one matched rate rule: figure the taxable base, compute the tax, and build the
++    // resulting OrderAdjustment(s) (main tax, optional negative VAT-discount, optional VAT price correction)
++    private static List<GenericValue> buildTaxAdjustmentsForRateRule(Delegator delegator,
++            GenericValue taxAuthorityRateProduct, GenericValue product, GenericValue productStore,
++            String payToPartyId, String billToPartyId, BigDecimal itemPrice, BigDecimal itemQuantity,
++            BigDecimal itemAmount, BigDecimal shippingAmount, BigDecimal orderPromotionsAmount,
++            BigDecimal weight, Timestamp nowTimestamp) throws GenericEntityException {
++        List<GenericValue> ruleAdjustments = new LinkedList<>();
++
++        BigDecimal taxRate = taxAuthorityRateProduct.get("taxPercentage") != null ? taxAuthorityRateProduct
++                .getBigDecimal("taxPercentage") : ZERO_BASE;
++        taxRate = taxRate.multiply(weight);
++
++        BigDecimal taxable = computeTaxableAmount(product, taxAuthorityRateProduct, itemAmount, shippingAmount,
++                orderPromotionsAmount);
++
++        if (taxable.compareTo(BigDecimal.ZERO) == 0) {
++            // this should make it less confusing if the taxable flag on the product is not
++            // Y/true, and there is no shipping and such
++            return ruleAdjustments;
++        }
++
++        // AIRLIFT: F-TAS-039
++        // taxRate is in percentage, so needs to be divided by 100
++        BigDecimal taxAmount = (taxable.multiply(taxRate)).divide(PERCENT_SCALE, TAX_SCALE,
++                TAX_ROUNDING);
++
++        String taxAuthGeoId = taxAuthorityRateProduct.getString("taxAuthGeoId");
++        String taxAuthPartyId = taxAuthorityRateProduct.getString("taxAuthPartyId");
++
++        // get glAccountId from TaxAuthorityGlAccount entity using the payToPartyId as
++        // the organizationPartyId
++        String taxAuthGlAccountId = resolveTaxAuthGlAccountId(delegator, taxAuthPartyId, taxAuthGeoId, payToPartyId);
++
++        // AIRLIFT: F-TAS-041
++        GenericValue productPrice = null;
++        if (product != null && taxAuthPartyId != null && taxAuthGeoId != null) {
++            // find a ProductPrice for the productId and taxAuth* values, and see if it has
++            // a priceWithTax value
++            productPrice = resolveTaxProductPrice(delegator, product, productStore, taxAuthGeoId, taxAuthPartyId);
++        }
++
++        // AIRLIFT: F-TAS-042
++        GenericValue taxAdjValue = delegator.makeValue("OrderAdjustment");
++        BigDecimal discountedSalesTax = applyVatInPriceAdjustment(taxAdjValue, productPrice, itemPrice,
++                itemQuantity, itemAmount, taxRate, taxAmount);
++
++        taxAdjValue.set("sourcePercentage", taxRate);
++        taxAdjValue.set("taxAuthorityRateSeqId", taxAuthorityRateProduct.getString("taxAuthorityRateSeqId"));
++        // the primary Geo should be the main jurisdiction that the tax is for, and the
++        // secondary would just be to define a parent or wrapping jurisdiction of the
++        // primary
++        taxAdjValue.set("primaryGeoId", taxAuthGeoId);
++        taxAdjValue.set("comments", taxAuthorityRateProduct.getString("description"));
++        if (taxAuthPartyId != null) {
++            taxAdjValue.set("taxAuthPartyId", taxAuthPartyId);
++        }
++        if (taxAuthGlAccountId != null) {
++            taxAdjValue.set("overrideGlAccountId", taxAuthGlAccountId);
++        }
++        if (taxAuthGeoId != null) {
++            taxAdjValue.set("taxAuthGeoId", taxAuthGeoId);
++        }
++
++        // AIRLIFT: F-TAS-044
++        // check to see if this party has a tax ID for this, and if the party is tax
++        // exempt in the primary (most-local) jurisdiction
++        if (UtilValidate.isNotEmpty(billToPartyId) && UtilValidate.isNotEmpty(taxAuthGeoId)) {
++            applyPartyTaxExemptions(delegator, taxAdjValue, billToPartyId, taxAuthGeoId, taxAuthPartyId, taxAmount,
++                    nowTimestamp);
++        } else {
++            Debug.logInfo("NOTE: A tax calculation was done without a billToPartyId or taxAuthGeoId, so no tax exemptions or tax IDs "
++                    + "considered; billToPartyId=[" + billToPartyId + "] taxAuthGeoId=[" + taxAuthGeoId + "]", MODULE);
++        }
++        // AIRLIFT: F-TAS-045
++        if (discountedSalesTax.compareTo(BigDecimal.ZERO) < 0) {
++            GenericValue taxAdjValueNegative = delegator.makeValue("OrderAdjustment");
++            taxAdjValueNegative.setFields(taxAdjValue);
++            taxAdjValueNegative.set("amountAlreadyIncluded", discountedSalesTax);
++            ruleAdjustments.add(taxAdjValueNegative);
++        }
++        ruleAdjustments.add(taxAdjValue);
++
++        // AIRLIFT: F-TAS-046
++        GenericValue correctionAdjValue = buildVatPriceCorrection(delegator, taxAuthorityRateProduct, productPrice,
++                itemQuantity, taxRate, taxAuthGeoId, taxAuthPartyId, taxAuthGlAccountId);
++        if (correctionAdjValue != null) {
++            ruleAdjustments.add(correctionAdjValue);
++        }
++
++        return ruleAdjustments;
++    }
++
++    // AIRLIFT: F-TAS-038
++    // sum the taxable base: item amount when the product is taxable, plus shipping and/or
++    // promotion amounts when the rate rule says those are taxable (a null flag means "taxable")
++    private static BigDecimal computeTaxableAmount(GenericValue product, GenericValue taxAuthorityRateProduct,
++            BigDecimal itemAmount, BigDecimal shippingAmount, BigDecimal orderPromotionsAmount) {
++        BigDecimal taxable = ZERO_BASE;
++
++        if (product != null && (product.get("taxable") == null || (product.get("taxable") != null && product
++                .getBoolean("taxable")))) {
++            taxable = taxable.add(itemAmount);
++        }
++        if (shippingAmount != null && (taxAuthorityRateProduct.get("taxShipping") == null
++                || (taxAuthorityRateProduct.get("taxShipping") != null && taxAuthorityRateProduct.getBoolean(
++                "taxShipping")))) {
++            taxable = taxable.add(shippingAmount);
++        }
++        if (orderPromotionsAmount != null && (taxAuthorityRateProduct.get("taxPromotions") == null
++                || (taxAuthorityRateProduct.get("taxPromotions") != null && taxAuthorityRateProduct.getBoolean(
++                "taxPromotions")))) {
++            taxable = taxable.add(orderPromotionsAmount);
++        }
++        return taxable;
++    }
++
++    // get glAccountId from TaxAuthorityGlAccount entity using the payToPartyId as
++    // the organizationPartyId
++    private static String resolveTaxAuthGlAccountId(Delegator delegator, String taxAuthPartyId, String taxAuthGeoId,
++            String payToPartyId) throws GenericEntityException {
++        GenericValue taxAuthorityGlAccount = EntityQuery.use(delegator).from("TaxAuthorityGlAccount")
++                .where("taxAuthPartyId", taxAuthPartyId, "taxAuthGeoId", taxAuthGeoId, "organizationPartyId", payToPartyId).queryOne();
++        if (taxAuthorityGlAccount != null) {
++            return taxAuthorityGlAccount.getString("glAccountId");
++        }
++        // TODO: what to do if no TaxAuthorityGlAccount found? Use some default, or is that done elsewhere later on?
++        Debug.logVerbose("what to do if no TaxAuthorityGlAccount found?", MODULE);
++        return null;
++    }
++
++    // AIRLIFT: F-TAS-041
++    // find a ProductPrice for the productId and taxAuth* values, falling back to the parent
++    // (virtual) product when the variant itself has none
++    private static GenericValue resolveTaxProductPrice(Delegator delegator, GenericValue product,
++            GenericValue productStore, String taxAuthGeoId, String taxAuthPartyId) throws GenericEntityException {
++        GenericValue productPrice = getProductPrice(delegator, product, productStore, taxAuthGeoId, taxAuthPartyId);
++        if (productPrice == null) {
++            GenericValue virtualProduct = ProductWorker.getParentProduct(product.getString("productId"), delegator);
++            if (virtualProduct != null) {
++                productPrice = getProductPrice(delegator, virtualProduct, productStore, taxAuthGeoId, taxAuthPartyId);
+             }
+-        } catch (GenericEntityException e) {
+-            Debug.logError(e, "Problems looking up tax rates", MODULE);
+-            return new LinkedList<>();
+         }
++        return productPrice;
++    }
+ 
+-        return adjustments;
++    // AIRLIFT: F-TAS-042
++    // when the price already includes VAT, record the included tax and the discount-adjusted
++    // sales tax; otherwise set the plain sales-tax amount. Returns the (negative or zero)
++    // discountedSalesTax used to build a corrective adjustment.
++    private static BigDecimal applyVatInPriceAdjustment(GenericValue taxAdjValue, GenericValue productPrice,
++            BigDecimal itemPrice, BigDecimal itemQuantity, BigDecimal itemAmount, BigDecimal taxRate,
++            BigDecimal taxAmount) {
++        BigDecimal discountedSalesTax = BigDecimal.ZERO;
++        taxAdjValue.set("orderAdjustmentTypeId", "SALES_TAX");
++        if (productPrice != null && "Y".equals(productPrice.getString("taxInPrice"))
++                && itemQuantity != BigDecimal.ZERO) {
++            // For example product price is 43 with 20% VAT(means product actual price is
++            // 35.83).
++            // itemPrice = 43;
++            // itemQuantity = 3;
++            // taxAmountIncludedInFullPrice = (43-(43/(1+(20/100))))*3 = 21.51
++            taxAdjValue.set("orderAdjustmentTypeId", "VAT_TAX");
++            BigDecimal taxAmountIncludedInFullPrice = itemPrice.subtract(itemPrice.divide(BigDecimal.ONE.add(
++                    taxRate.divide(PERCENT_SCALE, 4, RoundingMode.HALF_UP)), 2, RoundingMode.HALF_UP)).multiply(
++                            itemQuantity);
++            // If 1 quantity has 50% discount then itemAmount = 107.5 otherwise 129 (In case
++            // of no discount)
++            // Net price for each item
++            // netItemPrice = itemAmount / quantity = 107.5 / 3 = 35.833333333
++            BigDecimal netItemPrice = itemAmount.divide(itemQuantity, RoundingMode.HALF_UP);
++            // Calculate tax on the discounted price, be sure to round to 2 decimal places
++            // before multiplying by quantity
++            // netTax = (netItemPrice - netItemPrice / (1 + (taxRate/100))) * quantity
++            // netTax = (35.833333333-(35.833333333/(1+(20/100))))*3 = 17.92
++            BigDecimal netTax = netItemPrice.subtract(netItemPrice.divide(BigDecimal.ONE.add(taxRate.divide(
++                    PERCENT_SCALE, 4, RoundingMode.HALF_UP)), 2, RoundingMode.HALF_UP)).multiply(itemQuantity);
++            // Subtract net tax from base tax (taxAmountIncludedFullPrice) to get the
++            // negative promotion tax adjustment amount
++            // discountedSalesTax = 17.92 - 21.51 = −3.59 (If no discounted item quantity
++            // then discountedSalesTax will be ZERO)
++            discountedSalesTax = netTax.subtract(taxAmountIncludedInFullPrice);
++            taxAdjValue.set("amountAlreadyIncluded", taxAmountIncludedInFullPrice);
++            taxAdjValue.set("amount", BigDecimal.ZERO);
++        } else {
++            taxAdjValue.set("amount", taxAmount);
++        }
++        return discountedSalesTax;
++    }
++
++    // AIRLIFT: F-TAS-046
++    // when the tax is NOT already in the price but a price-with-tax was entered, build a
++    // VAT_PRICE_CORRECT adjustment for the difference between the entered and calculated totals
++    private static GenericValue buildVatPriceCorrection(Delegator delegator, GenericValue taxAuthorityRateProduct,
++            GenericValue productPrice, BigDecimal itemQuantity, BigDecimal taxRate, String taxAuthGeoId,
++            String taxAuthPartyId, String taxAuthGlAccountId) {
++        if (productPrice == null || itemQuantity == null
++                || productPrice.getBigDecimal("priceWithTax") == null
++                || "Y".equals(productPrice.getString("taxInPrice"))) {
++            return null;
++        }
++        BigDecimal priceWithTax = productPrice.getBigDecimal("priceWithTax");
++        BigDecimal price = productPrice.getBigDecimal("price");
++        BigDecimal baseSubtotal = price.multiply(itemQuantity);
++        BigDecimal baseTaxAmount = (baseSubtotal.multiply(taxRate)).divide(PERCENT_SCALE,
++                TAX_SCALE, TAX_ROUNDING);
++
++        // tax is not already in price so we want to add it in, but this is a VAT
++        // situation so adjust to make it as accurate as possible
++
++        // for VAT taxes if the calculated total item price plus calculated taxes is
++        // different from what would be
++        // expected based on the original entered price with taxes (if the price was
++        // entered this way), then create
++        // an adjustment that corrects for the difference, and this correction will be
++        // effectively subtracted from the
++        // price and not from the tax (the tax is meant to be calculated based on Tax
++        // Authority rules and so should
++        // not be shorted)
++
++        // TODO (don't think this is needed, but just to keep it in mind): get this to
++        // work with multiple VAT tax authorities instead of just one (right now will
++        // get incorrect totals if there are multiple taxes included in the price)
++        // TODO add constraint to ProductPrice lookup by any productStoreGroupId
++        // associated with the current productStore
++
++        BigDecimal enteredTotalPriceWithTax = priceWithTax.multiply(itemQuantity);
++        BigDecimal calcedTotalPriceWithTax = (baseSubtotal).add(baseTaxAmount);
++        if (enteredTotalPriceWithTax.equals(calcedTotalPriceWithTax)) {
++            return null;
++        }
++        // if the calculated amount is higher than the entered amount we want the value
++        // to be negative
++        // to get it down to match the entered amount
++        // so, subtract the calculated amount from the entered amount (ie: correction =
++        // entered - calculated)
++        BigDecimal correctionAmount = enteredTotalPriceWithTax.subtract(calcedTotalPriceWithTax);
++
++        GenericValue correctionAdjValue = delegator.makeValue("OrderAdjustment");
++        correctionAdjValue.set("taxAuthorityRateSeqId", taxAuthorityRateProduct.getString(
++                "taxAuthorityRateSeqId"));
++        correctionAdjValue.set("amount", correctionAmount);
++        // don't set this, causes a doubling of the tax rate because calling code adds
++        // up all tax rates: correctionAdjValue.set("sourcePercentage", taxRate);
++        correctionAdjValue.set("orderAdjustmentTypeId", "VAT_PRICE_CORRECT");
++        // the primary Geo should be the main jurisdiction that the tax is for, and the
++        // secondary would just be to define a parent or wrapping jurisdiction of the
++        // primary
++        correctionAdjValue.set("primaryGeoId", taxAuthGeoId);
++        correctionAdjValue.set("comments", taxAuthorityRateProduct.getString("description"));
++        if (taxAuthPartyId != null) {
++            correctionAdjValue.set("taxAuthPartyId", taxAuthPartyId);
++        }
++        if (taxAuthGlAccountId != null) {
++            correctionAdjValue.set("overrideGlAccountId", taxAuthGlAccountId);
++        }
++        if (taxAuthGeoId != null) {
++            correctionAdjValue.set("taxAuthGeoId", taxAuthGeoId);
++        }
++        return correctionAdjValue;
++    }
++
++    // AIRLIFT: F-TAS-044
++    // see if partyId is a member of any groups, if so honor their tax exemptions
++    // look for PartyRelationship with partyRelationshipTypeId=GROUP_ROLLUP, the
++    // partyIdTo is the group member, so the partyIdFrom is the groupPartyId
++    private static void applyPartyTaxExemptions(Delegator delegator, GenericValue taxAdjValue, String billToPartyId,
++            String taxAuthGeoId, String taxAuthPartyId, BigDecimal taxAmount, Timestamp nowTimestamp)
++            throws GenericEntityException {
++        Set<String> billToPartyIdSet = new HashSet<>();
++        billToPartyIdSet.add(billToPartyId);
++        List<GenericValue> partyRelationshipList = EntityQuery.use(delegator).from("PartyRelationship")
++                .where("partyIdTo", billToPartyId, "partyRelationshipTypeId", "GROUP_ROLLUP")
++                .cache().filterByDate().queryList();
++
++        for (GenericValue partyRelationship : partyRelationshipList) {
++            billToPartyIdSet.add(partyRelationship.getString("partyIdFrom"));
++        }
++        handlePartyTaxExempt(taxAdjValue, billToPartyIdSet, taxAuthGeoId, taxAuthPartyId, taxAmount,
++                nowTimestamp, delegator);
+     }
+ 
+     /**

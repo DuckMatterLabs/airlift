@@ -1,0 +1,6 @@
+=== Airlift verification spine: 35 tests, 1 red ===
+
+VIOLATED CLAIMS (1):
+
+  ✗ TAX.EXEMPT.GROUP-ROLLUP — A party inherits the tax exemptions of the parent groups it rolls up to.
+      test testMemberInheritsParentGroupExemption: expected 0 but was 6.250

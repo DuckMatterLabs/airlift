@@ -1,0 +1,26 @@
+id: TAX.VAT.PRICE-GROUP-SCOPE
+kind: behavior
+title: The tax-inclusive price is looked up scoped to the store and taxing jurisdiction.
+status: extracted
+priority: edge
+terms: [product, tax-inclusive-price, store, store-price-group, taxing-jurisdiction, authority-party]
+depends_on: [TAX.VAT.PRICE-INCLUSIVE]
+behavior: |
+  Rule: The tax-inclusive catalog price record is selected for the product scoped to the store's price group and the tax authority (geo + party)
+    Given a product with a catalog price record scoped to the store's price group and the taxing-jurisdiction's authority (geo + party)
+    When tax is calculated for the order
+    Then the catalog price record matching that store price group and authority is used to drive tax-inclusive handling
+outputs_affected: [included-tax]
+observability: internal
+source_fragments: [F-TAS-041, F-TAS-049, F-PRODEM-003]
+confidence: derived-from-code
+notes: >
+  getProductPrice (F-TAS-049) looks up ProductPrice by productId, productPricePurposeId =
+  "PURCHASE", the matched authority's taxAuthGeoId and taxAuthPartyId, and — when the store has a
+  primaryStoreGroupId — the store's price group; otherwise the group constraint is omitted. It is
+  the resolved ProductPrice record (with taxInPrice = "Y") that triggers tax-inclusive handling,
+  NOT the store's VAT-display setting. The fixture expresses this via
+  fx.price(product, authority).taxInPrice(true).create() together with an in-default-store-group
+  store. This scoping is not independently observable through the returned adjustments beyond
+  which price record is chosen, so it is marked observability internal; its effect is exercised
+  indirectly by TAX.VAT.PRICE-INCLUSIVE.

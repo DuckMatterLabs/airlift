@@ -1,0 +1,36 @@
+id: TAX.EXEMPT.EFFECTIVE-INFO
+kind: behavior
+title: The party's most recent effective registration is used and its id recorded on the tax line.
+status: extracted
+priority: core
+terms: [purchasing-party, tax-registration, tax-registration-id, effective-date-range, taxing-jurisdiction, customer-tax-id, tax-adjustment, tax-amount]
+depends_on: [TAX.RATE.AUTHORITY-MATCH]
+behavior: |
+  Rule: The currently-effective tax-registration for the jurisdiction stamps its id on the tax line
+    Given a purchasing-party with a currently-effective tax-registration for the jurisdiction
+    When tax is calculated for the order
+    Then the tax-adjustment carries that registration's tax-registration-id as its customer-tax-id
+    And a tax-registration whose effective-date-range has expired is ignored
+scenarios:
+  - name: effective-registration-id-recorded-nonexempt-still-taxed
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, rate-percentage: "6.25"}
+      purchasing-party:
+        billed: true
+        tax-registration: {jurisdiction: state, tax-registration-id: "EX-001", exempt: false, effective: current}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "6.250", customer-tax-id: "EX-001"}
+outputs_affected: [customer-tax-id, tax-amount]
+observability: direct
+source_fragments: [F-TAS-054, F-TAS-055, F-ACCTEM-001]
+confidence: derived-from-code
+notes: >
+  When more than one registration exists for the jurisdiction, the most recent by start date
+  is used. A non-exempt registration records its id but does not zero the tax; exemption
+  zeroing is TAX.EXEMPT.ZEROING.

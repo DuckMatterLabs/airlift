@@ -1,0 +1,32 @@
+id: TAX.CALC.TAX-AMOUNT
+kind: behavior
+title: Tax charged is the taxable amount times the rate percentage, at the configured precision.
+status: extracted
+priority: core
+terms: [taxable-amount, rate-percentage, tax-amount, calculation-precision, tax-adjustment]
+depends_on: [TAX.CALC.TAXABLE-BASE, TAX.CONFIG.CALC-PRECISION]
+behavior: |
+  Rule: The tax-amount is the taxable-amount multiplied by the rate-percentage at the calculation-precision
+    Given a taxable-amount and a rate-rule with a rate-percentage
+    When tax is calculated for the order
+    Then the tax-adjustment's tax-amount is the taxable-amount times the rate-percentage
+    And the reported rate-percentage equals the rate-rule's rate-percentage
+scenarios:
+  - name: six-point-two-five-percent-of-one-hundred
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, rate-percentage: "6.25"}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "6.250", rate-percentage: "6.25"}
+outputs_affected: [tax-amount, rate-percentage]
+observability: direct
+source_fragments: [F-TAS-039, F-ARITH-001]
+confidence: derived-from-code
+notes: >
+  100.00 * 6.25% = 6.2500, rendered as 6.250 at the calculation-precision (three decimals,
+  round-half-up). See TAX.CONFIG.CALC-PRECISION for rounding.

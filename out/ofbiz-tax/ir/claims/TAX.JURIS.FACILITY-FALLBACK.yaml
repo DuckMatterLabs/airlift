@@ -1,0 +1,33 @@
+id: TAX.JURIS.FACILITY-FALLBACK
+kind: behavior
+title: With no destination address, a face-to-face sale is taxed at the facility's address.
+status: pinned
+priority: edge
+terms: [destination-address, facility, taxing-jurisdiction, jurisdiction-geo, tax-adjustment]
+depends_on: [TAX.JURIS.ADDRESS-TO-JURISDICTION]
+behavior: |
+  Rule: The facility's own address supplies the jurisdiction when no destination-address is given
+    Given no destination-address is supplied
+    And a facility located within a state
+    And a tax-authority for that state with a rate-rule
+    When tax is calculated for the order
+    Then a tax-adjustment appears whose jurisdiction-geo is the facility's state
+scenarios:
+  - name: facility-address-taxed-when-no-shipping-destination
+    given:
+      store: present
+      facility: {located-in: state}
+      tax-authority: {jurisdiction: state, rate-percentage: "6.25"}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, jurisdiction-geo: state, tax-amount: "6.250"}
+outputs_affected: [jurisdiction-geo]
+observability: direct
+source_fragments: [F-TAS-017, F-PRODEM-002]
+confidence: derived-from-code
+notes: >
+  Applies only when no destination-address is present but a facility is; the facility's
+  origin/primary location address is used as if it were the destination.

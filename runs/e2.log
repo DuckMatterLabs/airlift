@@ -1,0 +1,29 @@
+=== E2 mutation M1-exempt-flip ===
+applied M1-exempt-flip: Exemption test inverted: exempt parties charged, non-exempt zeroed [expect: TAX.EXEMPT]
+reverted
+M1-exempt-flip: CAUGHT — violated: TAX.EXEMPT.EFFECTIVE-INFO — The party's most recent effective registration is used and its id recorded on the tax line.;TAX.EXEMPT.GROUP-ROLLUP — A party inherits the tax exemptions of the parent groups it rolls up to.;TAX.EXEMPT.JURISDICTION-INHERITANCE — An exemption in a parent jurisdiction also exempts tax of its child jurisdictions.;TAX.EXEMPT.ZEROING — A valid exemption zeroes the tax and records the would-be tax as an exempt amount.
+=== E2 mutation M2-min-price-boundary ===
+applied M2-min-price-boundary: Minimum-item-price threshold made exclusive: item exactly at minimum no longer taxed [expect: TAX.RATE]
+reverted
+M2-min-price-boundary: CAUGHT — violated: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE — A rate rule with a minimum item price applies only at or above that unit price.
+=== E2 mutation M3-item-amount-untaxed ===
+applied M3-item-amount-untaxed: Item amount dropped from taxable base [expect: TAX.BASE]
+reverted
+M3-item-amount-untaxed: CAUGHT — violated: TAX.CALC.TAX-AMOUNT — Tax charged is the taxable amount times the rate percentage, at the configured precision.;TAX.CALC.TAXABLE-BASE — Only taxable products are taxed; a zero taxable base yields no tax line.;TAX.CONFIG.CALC-PRECISION — Intermediate tax amounts are computed at three decimal places, rounding half up.;TAX.CONFIG.FINAL-PRECISION — Display totals are rounded to two decimal places, rounding half up.;TAX.EXEMPT.EFFECTIVE-INFO — The party's most recent effective registration is used and its id recorded on the tax line.;TAX.EXEMPT.GROUP-ROLLUP — A party inherits the tax exemptions of the parent groups it rolls up to.;TAX.EXEMPT.JURISDICTION-INHERITANCE — An exemption in a parent jurisdiction also exempts tax of its child jurisdictions.;TAX.EXEMPT.ZEROING — A valid exemption zeroes the tax and records the would-be tax as an exempt amount.;TAX.JURIS.ADDRESS-TO-JURISDICTION — Taxing jurisdictions are derived from the destination address components.;TAX.JURIS.CONTAINMENT — An authority for an enclosing region applies to a destination named at a finer level.;TAX.JURIS.FACILITY-FALLBACK — With no destination address, a face-to-face sale is taxed at the facility's address.;TAX.ORDER.PER-ITEM — Each order line is taxed independently and receives its own tax adjustment.;TAX.RATE.AUTHORITY-MATCH — Rate rules considered are those of the resolved jurisdictions plus a default authority.;TAX.RATE.CATEGORY-MATCH — A rate rule with a category applies only to products in that category.;TAX.RATE.STORE-SCOPE — A rate rule applies only to its store, or everywhere when it is global.;TAX.RATE.THRESHOLD-MIN-ITEM-PRICE — A rate rule with a minimum item price applies only at or above that unit price.;TAX.RATE.THRESHOLD-MIN-PURCHASE — A rate rule with a minimum purchase applies only at or above that line amount.;TAX.RATE.VARIANT-CATEGORY — A variant product matches its own and its virtual parent's tax categories.;TAX.VAT.DISCOUNT-CORRECTION — A discount on a tax-inclusive line produces a negative tax correction for the discounted portion.;TAX.VAT.PRICE-CORRECTION — A price-with-tax that disagrees with the computed total yields a rounding correction line.;TAX.VAT.PRICE-INCLUSIVE — When prices already include tax, the embedded tax is extracted rather than added.;TAX.VAT.VARIANT-PRICE — A variant product falls back to its parent's tax-inclusive price record.
+=== E2 mutation M4-shipping-untaxed ===
+applied M4-shipping-untaxed: Shipping never added to taxable base [expect: TAX.SHIP]
+reverted
+M4-shipping-untaxed: CAUGHT — violated: TAX.ORDER.FREIGHT-SPLIT — Order-level freight tax is split across items in proportion to their value.;TAX.RATE.SHIPPING-TAXABLE — Freight is taxed only under rate rules that permit taxing shipping.
+=== E2 mutation M5-rollup-direction ===
+applied M5-rollup-direction: Group-membership rollup walks the wrong direction: group exemptions ignored [expect: TAX.EXEMPT]
+reverted
+M5-rollup-direction: CAUGHT — violated: TAX.EXEMPT.GROUP-ROLLUP — A party inherits the tax exemptions of the parent groups it rolls up to.
+=== E2 mutation M6-inheritance-cut ===
+applied M6-inheritance-cut: Exemption inheritance association never found: parent-jurisdiction exemptions ignored [expect: TAX.EXEMPT]
+reverted
+M6-inheritance-cut: CAUGHT — violated: TAX.EXEMPT.JURISDICTION-INHERITANCE — An exemption in a parent jurisdiction also exempts tax of its child jurisdictions.
+=== E2 mutation M7-exempt-amount-zero ===
+applied M7-exempt-amount-zero: Forgone tax no longer recorded on exempt adjustments [expect: TAX.EXEMPT]
+reverted
+M7-exempt-amount-zero: CAUGHT — violated: TAX.EXEMPT.GROUP-ROLLUP — A party inherits the tax exemptions of the parent groups it rolls up to.;TAX.EXEMPT.JURISDICTION-INHERITANCE — An exemption in a parent jurisdiction also exempts tax of its child jurisdictions.;TAX.EXEMPT.ZEROING — A valid exemption zeroes the tax and records the would-be tax as an exempt amount.
+=== E2 RESULT: 7/7 mutations caught ===

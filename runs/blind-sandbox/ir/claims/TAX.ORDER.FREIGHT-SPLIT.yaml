@@ -1,0 +1,37 @@
+id: TAX.ORDER.FREIGHT-SPLIT
+kind: behavior
+title: Order-level freight tax is split across items in proportion to their value.
+status: pinned
+priority: edge
+terms: [freight, value-weight, order-line, line-amount, rate-percentage, tax-adjustment, tax-amount, order-adjustments]
+depends_on: [TAX.ORDER.VALUE-WEIGHT, TAX.RATE.SHIPPING-TAXABLE]
+behavior: |
+  Rule: Order-level freight tax is produced per item, weighted by each item's value-weight
+    Given an order with several taxable order-lines and an order-level freight amount
+    When tax is calculated for the order
+    Then one order-level tax-adjustment is produced per item
+    And each such tax-adjustment taxes the whole freight at the rate scaled by that item's value-weight
+scenarios:
+  - name: freight-split-three-quarters-one-quarter
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, rate-percentage: "6.25", shipping-taxable-flag: true}
+      order-lines:
+        - {product: taxable, unit-price: "30.00", quantity: "1"}
+        - {product: taxable, unit-price: "10.00", quantity: "1"}
+      order-freight: "10.00"
+    expect:
+      order-adjustments:
+        - {adjustment-type: sales-tax-line, tax-amount: "0.469"}
+        - {adjustment-type: sales-tax-line, tax-amount: "0.156"}
+outputs_affected: [tax-amount]
+observability: direct
+source_fragments: [F-TAS-022, F-TAS-023, F-TAS-038, F-TAS-039]
+confidence: derived-from-code
+notes: >
+  value-weights: 30/40 = 0.75 and 10/40 = 0.25. Freight tax per item taxes the full freight at
+  the rate scaled by the weight: 10.00*(6.25*0.75)% = 10.00*4.6875% = 0.46875 -> 0.469, and
+  10.00*(6.25*0.25)% = 10.00*1.5625% = 0.15625 -> 0.156 at calculation-precision. The two
+  order-level adjustments sum to the full freight tax 0.625. Order-adjustment ordering is not
+  guaranteed; assert as a set.

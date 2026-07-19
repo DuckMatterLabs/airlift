@@ -1,0 +1,48 @@
+id: TAX.RATE.THRESHOLD-MIN-PURCHASE
+kind: behavior
+title: A rate rule with a minimum purchase applies only at or above that line amount.
+status: extracted
+priority: edge
+terms: [rate-rule, minimum-purchase, line-amount, tax-adjustment, tax-amount]
+depends_on: [TAX.RATE.AUTHORITY-MATCH]
+behavior: |
+  Rule: A rate-rule applies only when the order-line line-amount is at least its minimum-purchase
+    Given a rate-rule with a minimum-purchase
+    When tax is calculated for an order-line whose line-amount is below the minimum-purchase
+    Then that order-line receives no tax-adjustment from the rate-rule
+    But when the line-amount is at or above the minimum-purchase the order-line is taxed
+decision_table:
+  columns: [line-amount, minimum-purchase, taxed]
+  rows:
+    - ["100.00", "100.00", true]
+    - ["99.99", "100.00", false]
+    - ["250.00", "100.00", true]
+scenarios:
+  - name: at-threshold-is-taxed
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, minimum-purchase: "100.00", rate-percentage: "6.25"}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "6.250"}
+  - name: below-threshold-is-not-taxed
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, minimum-purchase: "100.00", rate-percentage: "6.25"}
+      order-lines: [{product: taxable, unit-price: "99.99", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments: []
+outputs_affected: [tax-amount]
+observability: direct
+source_fragments: [F-TAS-036, F-TAS-037, F-ACCTEM-006]
+confidence: derived-from-code
+notes: >
+  The threshold is inclusive (at-or-above) and compares against the order-line line-amount
+  (unit-price times quantity). A rate-rule with no minimum-purchase imposes no floor.

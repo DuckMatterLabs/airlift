@@ -1,0 +1,41 @@
+id: TAX.RATE.SHIPPING-TAXABLE
+kind: behavior
+title: Freight is taxed only under rate rules that permit taxing shipping.
+status: pinned
+priority: edge
+terms: [freight, rate-rule, shipping-taxable-flag, tax-adjustment, tax-amount]
+depends_on: [TAX.ORDER.FREIGHT-SPLIT]
+behavior: |
+  Rule: Order-level freight yields tax only under a rate-rule whose shipping-taxable-flag permits it
+    Given an order with an order-level freight amount
+    When tax is calculated for the order under a rate-rule that permits taxing shipping
+    Then an order-level tax-adjustment appears for the freight
+    But under a rate-rule that forbids taxing shipping no freight tax-adjustment appears
+scenarios:
+  - name: freight-taxed-when-rule-allows
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, rate-percentage: "6.25", shipping-taxable-flag: true}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+      order-freight: "10.00"
+    expect:
+      order-adjustments:
+        - {adjustment-type: sales-tax-line, tax-amount: "0.625"}
+  - name: freight-not-taxed-when-rule-forbids
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, rate-percentage: "6.25", shipping-taxable-flag: false}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+      order-freight: "10.00"
+    expect:
+      order-adjustments: []
+outputs_affected: [tax-amount]
+observability: direct
+source_fragments: [F-TAS-034, F-TAS-038]
+confidence: derived-from-code
+notes: >
+  With a single product carrying the whole order value its value-weight is one, so freight
+  tax is 10.00*6.25% = 0.625. A rate-rule with an unset shipping-taxable-flag is treated as
+  permitting shipping tax.

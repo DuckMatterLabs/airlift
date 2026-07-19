@@ -1,0 +1,45 @@
+id: TAX.RATE.CATEGORY-MATCH
+kind: behavior
+title: A rate rule with a category applies only to products in that category.
+status: pinned
+priority: edge
+terms: [rate-rule, tax-category, product, tax-adjustment, tax-amount]
+depends_on: [TAX.RATE.AUTHORITY-MATCH]
+behavior: |
+  Rule: A category-restricted rate-rule taxes only products in its tax-category
+    Given a rate-rule restricted to a tax-category
+    And a product that belongs to that tax-category
+    And another product that belongs to no tax-category
+    When tax is calculated for the order
+    Then the product in the tax-category receives a tax-adjustment
+    And the product in no tax-category receives no tax-adjustment
+scenarios:
+  - name: category-rule-taxes-product-in-category
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, tax-category: cat-1, rate-percentage: "6.25"}
+      order-lines: [{product: {taxable: true, in-category: cat-1}, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "6.250"}
+  - name: category-rule-skips-product-not-in-category
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, tax-category: cat-1, rate-percentage: "6.25"}
+      order-lines: [{product: {taxable: true, in-category: none}, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments: []
+outputs_affected: [tax-amount]
+observability: direct
+source_fragments: [F-TAS-051, F-TAS-052, F-ACCTEM-004, F-PRODEM-001]
+confidence: derived-from-code
+notes: >
+  A rate-rule with no tax-category taxes every product; a category-restricted rule matches
+  only when the product belongs to that category. Variant products also match on their
+  virtual parent's categories (see TAX.RATE.VARIANT-CATEGORY).

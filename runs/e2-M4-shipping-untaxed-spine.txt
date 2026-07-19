@@ -1,0 +1,9 @@
+=== Airlift verification spine: 35 tests, 2 red ===
+
+VIOLATED CLAIMS (2):
+
+  ✗ TAX.ORDER.FREIGHT-SPLIT — Order-level freight tax is split across items in proportion to their value.
+      test testOrderFreightTaxSplitByProductValue: expected:<2> but was:<0>
+
+  ✗ TAX.RATE.SHIPPING-TAXABLE — Freight is taxed only under rate rules that permit taxing shipping.
+      test testFreightTaxedWhenRuleAllows: expected exactly 1 order adjustment but got 0: []

@@ -1,0 +1,34 @@
+id: TAX.RATE.VARIANT-CATEGORY
+kind: behavior
+title: A variant product matches its own and its virtual parent's tax categories.
+status: extracted
+priority: edge
+terms: [rate-rule, tax-category, variant-product, virtual-product, tax-adjustment, tax-amount]
+depends_on: [TAX.RATE.CATEGORY-MATCH]
+behavior: |
+  Rule: A category-restricted rate-rule taxes a variant-product when its virtual-product carries the tax-category
+    Given a virtual-product that belongs to a tax-category
+    And a variant-product of that virtual-product that belongs to no tax-category of its own
+    And a rate-rule restricted to that tax-category
+    When tax is calculated for the order for the variant-product
+    Then the variant-product receives a tax-adjustment
+scenarios:
+  - name: variant-taxed-via-parent-category
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      virtual-product: {in-category: cat-1}
+      rate-rule: {jurisdiction: state, tax-category: cat-1, rate-percentage: "6.25"}
+      order-lines: [{product: {variant-of: virtual-product, in-category: none, taxable: true}, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "6.250"}
+outputs_affected: [tax-amount]
+observability: direct
+source_fragments: [F-TAS-051, F-TAS-052]
+confidence: derived-from-code
+notes: >
+  When the product is a variant, its virtual parent's product id is added to the category
+  lookup, so the parent's tax-categories count as the variant's for rate matching.

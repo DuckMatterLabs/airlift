@@ -1,0 +1,38 @@
+{{! Integration-test harness pattern (ADR-003).
+    One test method == one claim (@AirliftClaim). Seed fixtures via fx.* verbs, run the
+    service, assert over the typed adjustment view with assertDecimal at the config precision.
+    Parameters in {{double braces}} are filled from a claim's scenarios: block. }}
+@Test
+@AirliftClaim("{{claimId}}")
+public void {{testMethodName}}() {
+    // --- seed fixtures (given:) ---
+    fx.store("{{storeId}}"){{#vatInclusive}}.showsPricesWithVatTax("{{vatTaxAuthGeoId}}"){{/vatInclusive}};
+    fx.geo("{{countryGeoId}}", "{{stateGeoId}}", "{{countyGeoId}}");     // + GeoAssoc containment
+    fx.taxAuthority("{{taxAuthGeoId}}", "{{taxAuthPartyId}}");
+    fx.rateRule("{{taxAuthGeoId}}", "{{taxAuthPartyId}}")
+        .ratePercent("{{ratePercentage}}")
+        .minItemPrice("{{minItemPrice}}")
+        .minPurchase("{{minPurchase}}")
+        .taxShipping({{shippingTaxable}})
+        .taxPromotions({{promotionsTaxable}});
+    fx.party("{{billToPartyId}}")
+        .registration("{{taxAuthGeoId}}", "{{customerTaxId}}", /*exempt*/ {{exempt}});
+    // optional: fx.groupRollup("{{memberPartyId}}", "{{groupPartyId}}");
+    // optional: fx.exemptInherit("{{childGeoId}}", "{{parentGeoId}}");
+
+    // --- invoke (when:) ---
+    var result = fx.calcTax()
+        .store("{{storeId}}").payTo("{{payToPartyId}}").billTo("{{billToPartyId}}")
+        .shipTo("{{shippingAddressId}}")
+        {{#lines}}.item("{{productId}}", "{{unitPrice}}", "{{quantity}}"){{/lines}}
+        {{#orderShipping}}.orderShipping("{{orderShipping}}"){{/orderShipping}}
+        {{#orderPromotions}}.orderPromotions("{{orderPromotions}}"){{/orderPromotions}}
+        .run();
+
+    // --- assert (then:) ---
+    var adj = result.itemAdjustment({{lineIndex}}, {{adjIndex}});
+    assertEquals("{{adjustmentType}}", adj.type());
+    assertDecimal("{{expectedTaxAmount}}", adj.amount());
+    assertDecimal("{{expectedIncludedTax}}", adj.includedTax());
+    assertDecimal("{{expectedExemptAmount}}", adj.exemptAmount());
+}

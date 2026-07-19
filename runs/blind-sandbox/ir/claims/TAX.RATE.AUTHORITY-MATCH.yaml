@@ -1,0 +1,31 @@
+id: TAX.RATE.AUTHORITY-MATCH
+kind: behavior
+title: Rate rules considered are those of the resolved jurisdictions plus a default authority.
+status: extracted
+priority: core
+terms: [rate-rule, tax-authority, default-authority, taxing-jurisdiction, tax-adjustment, rate-percentage, jurisdiction-geo, tax-amount]
+depends_on: [TAX.JURIS.ADDRESS-TO-JURISDICTION]
+behavior: |
+  Rule: The rate-rules applied belong to a resolved tax-authority or to the default-authority
+    Given a tax-authority resolved from the destination with a rate-rule
+    When tax is calculated for the order
+    Then the tax-adjustment's rate-percentage and jurisdiction-geo come from that authority's rate-rule
+scenarios:
+  - name: resolved-authority-rule-drives-the-tax-line
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      tax-authority: {jurisdiction: state, rate-percentage: "6.25"}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, rate-percentage: "6.25", jurisdiction-geo: state, tax-amount: "6.250"}
+outputs_affected: [rate-percentage, jurisdiction-geo, tax-amount, authority-party]
+observability: direct
+source_fragments: [F-TAS-032, F-TAS-037, F-ACCTEM-006]
+confidence: derived-from-code
+notes: >
+  The considered set always includes the default-authority in addition to the authorities
+  resolved from the destination, so a globally-defined rate-rule can apply anywhere.

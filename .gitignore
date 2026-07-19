@@ -1,0 +1,9 @@
+# secrets — never commit (Anthropic BYOK key lives here)
+.env
+
+# local tooling state
+.idea/
+.claude/
+.venv/
+.DS_Store
+__pycache__/

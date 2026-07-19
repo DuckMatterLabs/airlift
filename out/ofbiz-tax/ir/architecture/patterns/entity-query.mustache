@@ -1,0 +1,37 @@
+{{! Persistence pattern (ADR-002).
+    (a) A returned tax line is an in-memory OrderAdjustment GenericValue.
+    (b) Rate-rule matching is one date-filtered EntityCondition over TaxAuthorityRateProduct.
+    Parameters in {{double braces}} are filled per fixture/scenario. }}
+
+{{! --- (a) the output shape: one tax-adjustment --- }}
+GenericValue taxAdjustment = delegator.makeValue("OrderAdjustment");
+taxAdjustment.set("orderAdjustmentTypeId", "{{adjustmentType}}");  // SALES_TAX | VAT_TAX | VAT_PRICE_CORRECT
+taxAdjustment.set("amount", {{amount}});                          // charged tax-amount
+taxAdjustment.set("amountAlreadyIncluded", {{includedTax}});      // VAT included-tax (0/negative allowed)
+taxAdjustment.set("exemptAmount", {{exemptAmount}});              // would-be tax when exempt
+taxAdjustment.set("sourcePercentage", {{ratePercent}});          // rate-percentage
+taxAdjustment.set("primaryGeoId", "{{jurisdictionGeoId}}");
+taxAdjustment.set("taxAuthGeoId", "{{taxAuthGeoId}}");
+taxAdjustment.set("taxAuthPartyId", "{{taxAuthPartyId}}");
+taxAdjustment.set("customerReferenceId", "{{customerTaxId}}");
+
+{{! --- (b) rate-rule match as a query predicate (rule == condition) --- }}
+EntityCondition rateMatch = EntityCondition.makeCondition(UtilMisc.toList(
+    EntityCondition.makeCondition("productStoreId", EntityOperator.IN,
+        UtilMisc.toList("{{productStoreId}}", null)),
+    EntityCondition.makeCondition("taxAuthGeoId", EntityOperator.IN, {{taxAuthGeoIds}}),
+    EntityCondition.makeCondition(
+        EntityCondition.makeCondition("minItemPrice", EntityOperator.EQUALS, null),
+        EntityOperator.OR,
+        EntityCondition.makeCondition("minItemPrice", EntityOperator.LESS_THAN_EQUAL_TO, {{unitPrice}})),
+    EntityCondition.makeCondition(
+        EntityCondition.makeCondition("minPurchase", EntityOperator.EQUALS, null),
+        EntityOperator.OR,
+        EntityCondition.makeCondition("minPurchase", EntityOperator.LESS_THAN_EQUAL_TO, {{lineAmount}}))
+), EntityOperator.AND);
+
+List<GenericValue> rules = EntityQuery.use(delegator).from("TaxAuthorityRateProduct")
+    .where(rateMatch)
+    .orderBy("minItemPrice", "minPurchase", "fromDate")
+    .filterByDate()
+    .queryList();

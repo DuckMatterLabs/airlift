@@ -1,0 +1,12 @@
+=== Airlift verification spine: 35 tests, 3 red ===
+
+VIOLATED CLAIMS (3):
+
+  ✗ TAX.EXEMPT.GROUP-ROLLUP — A party inherits the tax exemptions of the parent groups it rolls up to.
+      test testMemberInheritsParentGroupExemption: expected 6.250 but was 0
+
+  ✗ TAX.EXEMPT.JURISDICTION-INHERITANCE — An exemption in a parent jurisdiction also exempts tax of its child jurisdictions.
+      test testCountyTaxExemptViaStateExemption: expected 2.000 but was 0
+
+  ✗ TAX.EXEMPT.ZEROING — A valid exemption zeroes the tax and records the would-be tax as an exempt amount.
+      test testExemptPartyPaysZero: expected 6.250 but was 0

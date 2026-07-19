@@ -1,0 +1,30 @@
+id: TAX.ORDER.PROMO-TAX
+kind: behavior
+title: Order-level promotions produce a single order-level tax adjustment.
+status: pinned
+priority: edge
+terms: [promotions, rate-rule, rate-percentage, tax-adjustment, tax-amount, order-adjustments]
+depends_on: [TAX.RATE.PROMO-TAXABLE]
+behavior: |
+  Rule: An order-level promotions amount yields one order-level tax-adjustment taxing that amount
+    Given an order with an order-level promotions amount
+    When tax is calculated for the order under a rate-rule that permits taxing promotions
+    Then a single order-level tax-adjustment taxes the promotions amount at the rate-percentage
+scenarios:
+  - name: promotions-produce-order-level-tax-line
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, rate-percentage: "6.25", promotions-taxable-flag: true}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+      order-promotions: "100.00"
+    expect:
+      order-adjustments:
+        - {adjustment-type: sales-tax-line, tax-amount: "6.250"}
+outputs_affected: [tax-amount]
+observability: direct
+source_fragments: [F-TAS-024, F-TAS-035, F-TAS-039]
+confidence: derived-from-code
+notes: >
+  Unlike freight, the promotions call is made once for the whole order (no per-item split), so
+  a single order-level adjustment is produced: 100.00*6.25% = 6.250 at calculation-precision.

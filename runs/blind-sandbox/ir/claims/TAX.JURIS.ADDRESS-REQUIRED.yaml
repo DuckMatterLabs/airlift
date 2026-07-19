@@ -1,0 +1,28 @@
+id: TAX.JURIS.ADDRESS-REQUIRED
+kind: behavior
+title: Tax calculation fails when the destination has no usable jurisdiction.
+status: extracted
+priority: core
+terms: [destination-address, country, state, postal-code-area, tax-calculation]
+depends_on: []
+behavior: |
+  Rule: A destination must name at least a country, a state, or a postal-code-area
+    Given a destination-address that names no country and no state and no postal-code-area
+    When tax is calculated for the order
+    Then the calculation fails with an error instead of returning tax lines
+scenarios:
+  - name: empty-destination-errors
+    given:
+      store: present
+      destination-address: {country: absent, state: absent, county: absent, postal-code-area: absent}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+    expect:
+      error: true
+outputs_affected: []
+observability: direct
+source_fragments: [F-TAS-018]
+confidence: derived-from-code
+notes: >
+  A county alone is not sufficient: the guard only accepts a country, a state, or a
+  postal-code-area. A face-to-face sale substitutes the facility address before this guard
+  (see TAX.JURIS.FACILITY-FALLBACK).

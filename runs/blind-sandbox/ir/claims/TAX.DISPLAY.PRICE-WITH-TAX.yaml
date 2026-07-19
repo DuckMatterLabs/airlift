@@ -1,0 +1,39 @@
+id: TAX.DISPLAY.PRICE-WITH-TAX
+kind: behavior
+title: Display tax sums all rate rules and folds per-unit tax into the shown price.
+status: pinned
+priority: secondary
+terms: [display-tax-calculation, vat-inclusive-store, base-price, shipping-price, display-tax-total, display-tax-percentage, display-price-with-tax, rate-percentage]
+depends_on: [TAX.DISPLAY.VAT-ONLY]
+behavior: |
+  Rule: Display tax totals every applicable rate and adds the per-unit tax to the shown price
+    Given a vat-inclusive-store with more than one applicable rate-rule
+    When display tax is calculated for the product
+    Then the display-tax-total is the sum of all rate-rule taxes on the taxable base
+    And the display-tax-percentage is the sum of the applicable rate-percentages
+    And the display-price-with-tax is the base-price plus shipping-price plus the per-unit tax
+scenarios:
+  - name: two-rates-with-shipping
+    given:
+      store: {vat-inclusive: true}
+      product: taxable
+      base-price: "100.00"
+      quantity: "2"
+      shipping-price: "10.00"
+      rate-rules:
+        - {jurisdiction: country, rate-percentage: "6"}
+        - {jurisdiction: state, rate-percentage: "4"}
+    expect:
+      display-tax-total: "21.00"
+      display-tax-percentage: "10"
+      display-price-with-tax: "120.50"
+outputs_affected: [display-tax-total, display-tax-percentage, display-price-with-tax]
+observability: direct
+source_fragments: [F-TAS-009, F-TAS-010]
+confidence: derived-from-code
+notes: >
+  taxable base = amount (100.00*2 = 200.00) + shipping-price (10.00) = 210.00. Tax at 6% =
+  12.600 and at 4% = 8.400; display-tax-total = 21.000 -> 21.00. display-tax-percentage =
+  6 + 4 = 10. Per-unit tax added to price = (12.600 + 8.400)/quantity(2) = 6.300 + 4.200;
+  display-price-with-tax = base-price(100.00) + shipping-price(10.00) + 10.500 = 120.500 ->
+  120.50.

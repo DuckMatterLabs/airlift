@@ -1,0 +1,23 @@
+=== E4: flipping the tax-exemption rule ===
+applied M1-exempt-flip: Exemption test inverted: exempt parties charged, non-exempt zeroed [expect: TAX.EXEMPT]
+=== Airlift verification spine: 35 tests, 4 red ===
+
+VIOLATED CLAIMS (4):
+
+  ✗ TAX.EXEMPT.EFFECTIVE-INFO — The party's most recent effective registration is used and its id recorded on the tax line.
+      test testEffectiveRegistrationIdRecordedNonExemptStillTaxed: expected 6.250 but was 0
+
+  ✗ TAX.EXEMPT.GROUP-ROLLUP — A party inherits the tax exemptions of the parent groups it rolls up to.
+      test testMemberInheritsParentGroupExemption: expected 0 but was 6.250
+
+  ✗ TAX.EXEMPT.JURISDICTION-INHERITANCE — An exemption in a parent jurisdiction also exempts tax of its child jurisdictions.
+      test testCountyTaxExemptViaStateExemption: expected 0 but was 2.000
+
+  ✗ TAX.EXEMPT.ZEROING — A valid exemption zeroes the tax and records the would-be tax as an exempt amount.
+      test testExemptPartyPaysZero: expected 0 but was 6.250
+reverted
+E4 RESULT: PASSED — bad change caught and the violated exemption claim named:
+  ✗ TAX.EXEMPT.EFFECTIVE-INFO — The party's most recent effective registration is used and its id recorded on the tax line.
+  ✗ TAX.EXEMPT.GROUP-ROLLUP — A party inherits the tax exemptions of the parent groups it rolls up to.
+  ✗ TAX.EXEMPT.JURISDICTION-INHERITANCE — An exemption in a parent jurisdiction also exempts tax of its child jurisdictions.
+  ✗ TAX.EXEMPT.ZEROING — A valid exemption zeroes the tax and records the would-be tax as an exempt amount.

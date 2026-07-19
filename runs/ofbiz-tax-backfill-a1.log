@@ -1,0 +1,224 @@
+[airlift] copilot stage=ofbiz-tax-backfill-a1 workdir=/Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework model=claude-opus-4-8
+I'll start by reading all the input files to understand the task.
+
+● Read harness contract (shell)
+  │ cat /Volumes/Dancer/Develop/AIRLIFT/airlift/targets/ofbiz-tax/harness/harness-contract.md
+  └ 156 lines…
+
+● Read behavior catalog (shell)
+  │ cat /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/behavior-catalog.yaml
+  └ 317 lines…
+
+Now let me read the fragment map and the source code, plus check the harness classes.
+
+● Read fragment map (shell)
+  │ cat /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/fragment-map.yaml
+  └ 20 lines…
+
+● List harness test dir (shell)
+  │ ls -la /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework/applications/accounting/src/test/java/org
+  │ /apache/ofbiz/accounting/tax/test/ 2>/dev/null; echo "---backfill dir---"; ls -la
+  │ /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework/applications/accounting/src/test/java/org/apache
+  │ /ofbiz/accounting/tax/test/backfill/ 2>/dev/null
+  └ 15 lines…
+
+Let me read the harness classes and the source file.
+
+● Read TaxFixture.java
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/TaxFixture.java
+  └ 1 line read
+
+● Read TaxCalcResult.java
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/TaxCalcResult.java
+  └ 136 lines read
+
+● Read AirliftTaxTestCase.java
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/AirliftTaxTestCase.ja
+  │ va
+  └ 36 lines read
+
+● Read SmokeTaxTests.java
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/SmokeTaxTests.java
+  └ 59 lines read
+
+Let me read the TaxFixture in sections.
+
+● Read TaxFixture.java
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/TaxFixture.java
+  └ L1:120 (119 lines read)
+
+● Read TaxFixture.java
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/TaxFixture.java
+  └ L120:340 (221 lines read)
+
+● Read TaxFixture.java
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/TaxFixture.java
+  └ L340:600 (261 lines read)
+
+● Read TaxFixture.java
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/TaxFixture.java
+  └ L600:800 (161 lines read)
+
+Now let me read the source file to derive expected behaviors.
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ 1 line read
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L1:130 (130 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L130:330 (201 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L330:560 (231 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L560:772 (213 lines read)
+
+Now let me check arithmetic.properties and the service definitions.
+
+● Read arithmetic properties (shell)
+  │ cat /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework/applications/accounting/config/arithmetic.pr
+  │ operties | grep -i salestax
+  └ 4 lines…
+
+● Find tax service defs (shell)
+  │ grep -n "calcTax\|calcTaxForDisplay" /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework/application
+  │ s/accounting/servicedef/services_tax.xml | head -30
+  └ 7 lines…
+
+Let me verify `expandGeoRegionDeep` behavior and check the services_tax.xml for context.
+
+● Find expandGeoRegionDeep (shell)
+  │ grep -n "expandGeoRegionDeep\|expandGeoRegion" /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework/f
+  │ ramework/common/src/main/java/org/apache/ofbiz/common/geo/GeoWorker.java
+  └ 3 lines…
+
+● Read GeoWorker.java
+  │ framework/common/src/main/java/org/apache/ofbiz/common/geo/GeoWorker.java
+  └ L87:112 (26 lines read)
+
+I have a complete understanding. Let me set up tracking and write the test class. First, my analysis of which behaviors are `bare` + `direct`:
+
+● Track bare+direct behaviors (sql)
+  │ CREATE TABLE IF NOT EXISTS behaviors (id TEXT PRIMARY KEY, coverage TEXT, obs TE…
+  └ Executed 2 statement(s)
+
+15 behaviors to pin, all `bare`+`direct`. Now let me write the test class.
+
+● Create BackfillTaxTests.java +503
+  └ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/backfill/BackfillTaxT
+    ests.java
+
+Now let me check how the test suite `airliftbackfill` is registered.
+
+● Find test suite registration (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework; grep -rn
+  │ "airliftbackfill\|airlift\|SmokeTaxTests\|BackfillTaxTests" applications/accounting/testdef/
+  │ applications/accounting/ofbiz-component.xml 2>/dev/null; echo "---testdef files---"; ls
+  │ applications/accounting/testdef/
+  └ 23 lines…
+
+Suite is registered. Let me do a compile check first.
+
+● Compile test java (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework; ./gradlew compileTestJava -x checkstyleMain
+  │ -x checkstyleTest --console=plain 2>&1 | tail -30
+  └ 31 lines…
+
+Compiles. Now let me run the backfill suite.
+
+● Run airliftbackfill suite (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework; ./gradlew "ofbiz --test component=accounting
+  │ --test suitename=airliftbackfill" --console=plain 2>&1 | tail -60
+  └ 61 lines…
+
+Let me examine the detailed test results.
+
+● Inspect test result XML (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework; grep -E "testcase name|<failure|<error"
+  │ runtime/logs/test-results/airliftbackfill.xml 2>/dev/null | head -60; echo "=== summary ===";
+  │ grep -E "testsuite " runtime/logs/test-results/airliftbackfill.xml | head
+  └ 4 lines…
+
+One failure: display shipping is taxed too. The code passes `shippingPrice` as the taxable shipping amount to `getTaxAdjustments`, so the base is 210, not 200. Let me recompute and fix: taxTotal = 210×6% + 210×4% = 12.600 + 8.400 = 21.000 → 21.00; priceWithTax = 110 + 6.300 + 4.200 = 120.50.
+
+● Edit BackfillTaxTests.java +7 -5
+  └ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/backfill/BackfillTaxT
+    ests.java
+
+● Re-run airliftbackfill suite (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework; ./gradlew "ofbiz --test component=accounting
+  │ --test suitename=airliftbackfill" --console=plain 2>&1 | tail -25
+  └ 26 lines…
+
+BUILD SUCCESSFUL. Let me verify the report shows all green.
+
+● Confirm green results (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework; grep -E "testsuite "
+  │ runtime/logs/test-results/airliftbackfill.xml | head; echo "=== test methods ==="; grep -oE
+  │ 'testcase name="[^"]+"' runtime/logs/test-results/airliftbackfill.xml
+  └ 3 lines…
+
+19 tests, 0 failures, 0 errors — green. Let me confirm the test method names present.
+
+● List test methods run (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework; grep -oE 'name="test[A-Za-z]+"'
+  │ runtime/logs/test-results/airliftbackfill.xml | sort -u
+  └ 20 lines…
+
+All 19 test methods pass, covering all 15 bare+direct behaviors. Now let me write the backfill report.
+
+● Create backfill-report.yaml +102
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/backfill-report.yaml
+
+Let me verify no production source was modified.
+
+● Check git status (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework; git status --short
+  └ 3 lines…
+
+● Inspect security.properties diff (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework; git --no-pager diff
+  │ framework/security/config/security.properties
+  └ 23 lines…
+
+That change is an auto-generated secret key created by the OFBiz test container at startup — not something I edited, and unrelated to the tax seam. I'll revert it to keep the working copy clean.
+
+● Revert auto-generated secret key change (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework; git checkout
+  │ framework/security/config/security.properties && git status --short
+  └ 3 lines…
+
+The only remaining change is the new backfill test class. Task complete.
+
+## Summary
+
+I wrote code-in-hand integration tests pinning all **15** sales-tax behaviors that are both `coverage: bare` and `observability: direct`, using only the harness-contract fixture DSL.
+
+**Deliverables:**
+- `applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/backfill/BackfillTaxTests.java` — 19 test methods, each bound via `@AirliftClaim`, extending `AirliftTaxTestCase`.
+- `/Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/backfill-report.yaml` — pinned/untestable/gaps/corrections/run.
+
+**Run result (green):**
+`./gradlew "ofbiz --test component=accounting --test suitename=airliftbackfill"` → `tests="19" failures="0" errors="0"`.
+
+**Notes:**
+- All expected values derived by reading `TaxAuthorityServices.java` (calc.decimals=3, final.decimals=2, HALF_UP) — no tolerances.
+- The two `internal` behaviors (`TAX.VAT.PRICE-GROUP-SCOPE`, `TAX.ORDER.VALUE-WEIGHT`) were recorded under `untestable`, not forced.
+- One expected value was corrected during iteration (display taxes shipping too → taxable base 210, taxTotal 21.00, priceWithTax 120.50). This matches the catalog statement ("base price plus any shipping"), so **no catalog correction** was needed.
+- **No harness gaps** — the DSL expressed every fixture and assertion.
+- **No production source modified** (reverted an unrelated auto-generated secret-key file the test container touched at startup).
+
+
+
+Changes    +612 -5
+Duration   9m 14s
+Tokens     ↑ 2.4m (2.3m cached, 103.7k written) • ↓ 42.6k (23.7k reasoning)
+Resume     copilot --resume=ba7167b6-7b83-4024-8514-53b13160ae61

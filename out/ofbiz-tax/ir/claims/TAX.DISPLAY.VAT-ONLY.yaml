@@ -1,0 +1,38 @@
+id: TAX.DISPLAY.VAT-ONLY
+kind: behavior
+title: The display tax calculation charges tax only for VAT-inclusive stores.
+status: pinned
+priority: secondary
+terms: [display-tax-calculation, vat-inclusive-store, store, base-price, display-tax-total, display-tax-percentage, display-price-with-tax]
+depends_on: [TAX.CONTRACT.CALC-TAX-FOR-DISPLAY]
+behavior: |
+  Rule: The display tax calculation returns tax only when the store shows prices with VAT tax
+    Given a store that does not show prices with VAT tax
+    When display tax is calculated for the product
+    Then the display-tax-total is zero and the display-price-with-tax equals the base-price
+    But a store that shows prices with VAT tax has its configured jurisdiction's tax applied
+scenarios:
+  - name: non-vat-store-returns-zero-tax
+    given:
+      store: {vat-inclusive: false}
+      product: taxable
+      base-price: "100.00"
+      quantity: "1"
+    expect:
+      display-tax-total: "0.00"
+      display-tax-percentage: "0"
+      display-price-with-tax: "100.00"
+outputs_affected: [display-tax-total, display-tax-percentage, display-price-with-tax]
+observability: direct
+source_fragments: [F-TAS-007, F-PRODEM-005]
+confidence: derived-from-code
+notes: >
+  When the store does not show prices with VAT tax, the tax lookup is skipped entirely: the
+  display-tax-total is 0.00, display-tax-percentage is 0 and display-price-with-tax is just the
+  base-price (plus shipping-price if supplied). See TAX.DISPLAY.PRICE-WITH-TAX for the
+  VAT-inclusive path. Scope note: the store's VAT-display setting (showPricesWithVatTax, set via
+  fx.store().vatDisplay(authority)) governs ONLY this display-price path (rateProductTaxCalcForDisplay,
+  F-TAS-007) — it gates whether display tax is computed and names the store's configured VAT
+  authority. It does NOT trigger the order-path tax-inclusive extraction (VAT_TAX) in
+  rateProductTaxCalc/getTaxAdjustments, which is driven solely by the product's tax-inclusive
+  catalog price record (see TAX.VAT.PRICE-INCLUSIVE).

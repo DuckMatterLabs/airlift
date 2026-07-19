@@ -1,0 +1,356 @@
+[airlift] copilot stage=ir-clarity-repair workdir=/Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework model=claude-opus-4-8
+I'll start by exploring the IR directory and understanding the current state of the claims.
+
+● Read harness-contract.md
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/targets/ofbiz-tax/harness/harness-contract.md
+  └ 155 lines read
+
+● List directory /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir
+  └ 7 files found
+
+● Read domain-model.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/domain-model.yaml
+  └ 231 lines read
+
+● List directory /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims
+  └ 34 files found
+
+● Read TAX.JURIS.ADDRESS-REQUIRED.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.JURIS.ADDRESS-REQUIRED.yaml
+  └ 28 lines read
+
+● Read TAX.VAT.PRICE-INCLUSIVE.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-INCLUSIVE.yaml
+  └ 34 lines read
+
+● Read TAX.VAT.DISCOUNT-CORRECTION.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.DISCOUNT-CORRECTION.yaml
+  └ 39 lines read
+
+● Read TAX.JURIS.CONTAINMENT.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.JURIS.CONTAINMENT.yaml
+  └ 35 lines read
+
+● Read TAX.VAT.PRICE-GROUP-SCOPE.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-GROUP-SCOPE.yaml
+  └ 21 lines read
+
+● Read TAX.DISPLAY.VAT-ONLY.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.DISPLAY.VAT-ONLY.yaml
+  └ 33 lines read
+
+● Read TAX.VAT.PRICE-CORRECTION.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-CORRECTION.yaml
+  └ 41 lines read
+
+● Read TAX.VAT.VARIANT-PRICE.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.VARIANT-PRICE.yaml
+  └ 39 lines read
+
+Now let me look at the source fragments and provenance to understand the actual code behavior.
+
+● Read glossary.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+  └ 1 line read
+
+● List directory /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/provenance
+  └ 7 files found
+
+✗ Find fragment map files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift && find . -name "*.yaml" -o -name "*.md" -o -name
+  │ "*.json" | grep -iE "fragment|manifest" | head -50; echo "---manifest---"; cat
+  │ out/ofbiz-tax/ir/ir-manifest.yaml | head -60
+  └ Permission denied and could not request permission from user
+
+✗ List airlift output and target dirs (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift && ls out/ofbiz-tax/ && echo "===" && ls
+  │ targets/ofbiz-tax/
+  └ Permission denied and could not request permission from user
+
+✗ Search (glob)
+  │ "**/fragment*" in /Volumes/Dancer/Develop/AIRLIFT/airlift
+  └ Permission denied and could not request permission from user
+
+● Read ir-manifest.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/ir-manifest.yaml
+  └ 271 lines read
+
+Let me examine the actual OFBiz source code to confirm the behavior. Let me find the tax service file.
+
+● Read TAX.JURIS.ADDRESS-TO-JURISDICTION.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/provenance/TAX.JURIS.ADDRESS-TO-JURISDI
+  │ CTION.yaml
+  └ 19 lines read
+
+/ Search (glob)
+  │ "**/TaxAuthorityServices.java"
+  └ 1 file found
+
+/ Search (grep)
+  │ "getTaxAuthorities|countyGeoId|stateProvinceGeoId|countryGeoId|postalCodeGeoId|primaryGeoId" (ap
+  │ plications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java)
+  └ 18 lines found
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L220:360 (141 lines read)
+
+The containment behavior is confirmed. Now let me examine the VAT/product-price resolution in `getTaxAdjustments`.
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L360:470 (111 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L470:665 (196 lines read)
+
+This confirms the critical fact: the VAT tax-inclusive branch (line 519) is triggered by the **ProductPrice record's `taxInPrice="Y"` flag**, scoped to the tax authority — NOT the store's VAT-display setting. Let me check `getProductPrice` and the display path.
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L665:760 (96 lines read)
+
+Now let me look at the display-tax path (store VAT-display setting) to confirm its true role.
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L70:175 (106 lines read)
+
+Now let me check the backfill test for CONTAINMENT to align my repair with the pinned green test.
+
+/ Search (glob)
+  │ "**/BackfillTaxTests.java"
+  └ 1 file found
+
+/ Search (grep)
+  │ "testEnclosingAuthorityAppliesToInnerAddress|testTaxInclusivePriceReportsIncludedTaxNotAdded|tes
+  │ tDiscountedTaxInclusiveItemEmitsNegativeIncludedTax|testPriceWithTaxRoundingReconciledByCorrecti
+  │ onLine" (applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/backfill/Bac
+  │ kfillTaxTests.java)
+  └ 4 lines found
+
+● Read BackfillTaxTests.java
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/backfill/BackfillTaxT
+  │ ests.java
+  └ L28:60 (33 lines read)
+
+● Read BackfillTaxTests.java
+  │ applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/backfill/BackfillTaxT
+  │ ests.java
+  └ L278:375 (98 lines read)
+
+I now have full ground truth. Let me review the glossary terms relevant to these claims.
+
+● Grep glossary for relevant terms (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir && grep -n
+  │ "tax-in-price-store\|tax-inclusive-price\|vat-inclusive-store\|region-containment\|price-with-ta
+  │ x\|vat-display\|showPricesWithVatTax" glossary.yaml
+  └ 24 lines…
+
+● Read glossary.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+  └ L56:70 (15 lines read)
+
+● Read glossary.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+  └ L296:320 (24 lines read)
+
+● Read glossary.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+  └ L441:520 (80 lines read)
+
+● Find claims referencing tax-in-price-store (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir && grep -rln "tax-in-price-store"
+  │ claims/ && echo "---traceability---" && grep -n "tax-in-price-store\|tax-inclusive-price"
+  │ traceability.yaml
+  └ 5 lines…
+
+I have complete ground truth. Let me create a plan and begin repairs. First, the CONTAINMENT claim.
+
+● Edit TAX.JURIS.CONTAINMENT.yaml +24 -16
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.JURIS.CONTAINMENT.yaml
+
+Now the VAT.PRICE-INCLUSIVE claim:
+
+✗ Edit TAX.VAT.PRICE-INCLUSIVE.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-INCLUSIVE.yaml
+  └ No match found
+
+● Read TAX.VAT.PRICE-INCLUSIVE.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-INCLUSIVE.yaml
+  └ L6:26 (21 lines read)
+
+● Edit TAX.VAT.PRICE-INCLUSIVE.yaml +12 -6
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-INCLUSIVE.yaml
+
+● Edit TAX.VAT.PRICE-INCLUSIVE.yaml +10 -4
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-INCLUSIVE.yaml
+
+Now the DISCOUNT-CORRECTION claim:
+
+● Edit TAX.VAT.DISCOUNT-CORRECTION.yaml +11 -5
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.DISCOUNT-CORRECTION.yaml
+
+● Edit TAX.VAT.DISCOUNT-CORRECTION.yaml +5
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.DISCOUNT-CORRECTION.yaml
+
+Now the PRICE-CORRECTION claim:
+
+● Edit TAX.VAT.PRICE-CORRECTION.yaml +15 -10
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-CORRECTION.yaml
+
+● Edit TAX.VAT.PRICE-CORRECTION.yaml +8 -4
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-CORRECTION.yaml
+
+Now the VARIANT-PRICE claim:
+
+● Edit TAX.VAT.VARIANT-PRICE.yaml +20 -11
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.VARIANT-PRICE.yaml
+
+Now the PRICE-GROUP-SCOPE claim:
+
+● Edit TAX.VAT.PRICE-GROUP-SCOPE.yaml +13 -8
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-GROUP-SCOPE.yaml
+
+Now clarify DISPLAY.VAT-ONLY's note about the store setting's true role:
+
+● Edit TAX.DISPLAY.VAT-ONLY.yaml +6 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.DISPLAY.VAT-ONLY.yaml
+
+Now update the domain-model.yaml per task item 3. Let me view the exact regions to edit.
+
+● Read domain-model.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/domain-model.yaml
+  └ L19:37 (18 lines read)
+
+● Edit domain-model.yaml +10 -2
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/domain-model.yaml
+
+● Edit domain-model.yaml +5 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/domain-model.yaml
+
+● Edit domain-model.yaml +14
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/domain-model.yaml
+
+Now update the glossary. First, view the tax-in-price-store block and neighbors precisely.
+
+● Read glossary.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+  └ L485:516 (31 lines read)
+
+● Edit glossary.yaml -9
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+
+● Edit glossary.yaml +3 -2
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+
+Now enhance the `tax-inclusive-price`, `vat-inclusive-store`, and `region-containment` glossary terms:
+
+● Edit glossary.yaml +9 -3
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+
+● Edit glossary.yaml +4 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+
+● Edit glossary.yaml +8 -3
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+
+Let me validate the YAML files parse and check for any remaining store-triggered references.
+
+● Validate YAML and check dangling refs (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir && for f in glossary.yaml
+  │ domain-model.yaml claims/TAX.JURIS.CONTAINMENT.yaml claims/TAX.VAT.PRICE-INCLUSIVE.yaml
+  │ claims/TAX.VAT.DISCOUNT-CORRECTION.yaml claims/TAX.VAT.PRICE-CORRECTION.yaml
+  │ claims/TAX.VAT.VARIANT-PRICE.yaml claims/TAX.VAT.PRICE-GROUP-SCOPE.yaml
+  │ claims/TAX.DISPLAY.VAT-ONLY.yaml; do python3 -c "import yaml,sys; yaml.safe_load(open('$f')); …
+  └ 14 lines…
+
+Let me verify all terms referenced in the edited claims exist in the glossary, and check traceability for consistency.
+
+● Check claim terms exist in glossary (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir && python3 - <<'EOF'
+  │ import yaml, glob, os
+  │ # collect canonical glossary terms + aliases
+  │ g = yaml.safe_load(open('glossary.yaml'))
+  │ terms=set()…
+  └ 19 lines…
+
+● Confirm key terms present as canonical (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir && python3 - <<'EOF'
+  │ import yaml
+  │ g=yaml.safe_load(open('glossary.yaml'))
+  │ print("top-level type:", type(g).__name__, "keys:", list(g.keys()) if isinstance(g,dict) else
+  │ "list")…
+  └ 16 lines…
+
+Let me check traceability.yaml for any references that need updating for the edited claims.
+
+● Check traceability references (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir && grep -n
+  │ "CONTAINMENT\|PRICE-INCLUSIVE\|DISCOUNT-CORRECTION\|PRICE-CORRECTION\|VARIANT-PRICE\|PRICE-GROUP
+  │ -SCOPE\|within-state\|county:" traceability.yaml | head -40
+  └ 7 lines…
+
+● Read traceability.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/traceability.yaml
+  └ L368:412 (42 lines read)
+
+The DISCOUNT-CORRECTION claim now explicitly relies on the catalog-price lookup (F-TAS-041/F-TAS-049). Let me add those fragments to both the claim and traceability for consistency.
+
+● Read TAX.VAT.DISCOUNT-CORRECTION.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.DISCOUNT-CORRECTION.yaml
+  └ L33:40 (8 lines read)
+
+● Edit TAX.VAT.DISCOUNT-CORRECTION.yaml +1 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.DISCOUNT-CORRECTION.yaml
+
+● Edit traceability.yaml +1 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/traceability.yaml
+
+Let me do a final review of the two most-changed claim files to ensure correctness.
+
+● Read TAX.VAT.PRICE-INCLUSIVE.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-INCLUSIVE.yaml
+  └ 46 lines read
+
+● Read TAX.JURIS.CONTAINMENT.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.JURIS.CONTAINMENT.yaml
+  └ 43 lines read
+
+All changes look correct. Let me run a final validation across the entire IR directory.
+
+✗ Validate all IR YAML and confirm scope (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir && ok=1; for f in $(find . -name
+  │ '*.yaml'); do python3 -c "import yaml; yaml.safe_load(open('$f'))" 2>/dev/null || { echo "FAIL
+  │ $f"; ok=0; }; done; [ $ok -eq 1 ] && echo "ALL YAML VALID"; echo "--- git status (ir only
+  │ expected) ---"; cd /Volumes/Dancer/Develop/AIRLIFT/airlift && git status --porcelain 2>/dev/null
+  │ | head; echo "(airlift not a git repo or clean-check n/a)"
+  └ Permission denied and could not request permission from user
+
+● Validate all IR YAML files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir && ok=1; for f in $(find . -name
+  │ '*.yaml'); do python3 -c "import yaml; yaml.safe_load(open('$f'))" 2>/dev/null || { echo "FAIL
+  │ $f"; ok=0; }; done; [ $ok -eq 1 ] && echo "ALL YAML VALID"
+  └ 2 lines…
+
+All IR YAML is valid and every change was confined to the `ir/` directory. Repairs complete.
+
+## Summary
+
+I verified the OFBiz source (`TaxAuthorityServices.java`) and green backfill tests, then clarified the ambiguous claims to match the **code**:
+
+**1. TAX.JURIS.CONTAINMENT** — Rewrote so the destination address names a **state** (satisfying `TAX.JURIS.ADDRESS-REQUIRED`'s guard at line 226–227), which is region-contained in a **country**; a **country-level (enclosing) authority** then applies and its geo is the reported `jurisdiction-geo`. Notes now spell out that a county alone is rejected before containment, and that a county named *in addition* to a state participates in `expandGeoRegionDeep`'s upward expansion but never licenses containment on its own. Added `TAX.JURIS.ADDRESS-REQUIRED` to `depends_on`.
+
+**2. VAT claims** — Confirmed the tax-inclusive branch (line 519) is triggered **solely** by a `ProductPrice` record scoped to the matched authority (`taxAuthGeoId`+`taxAuthPartyId`) with `taxInPrice="Y"` (via `getProductPrice`), **not** the store's VAT-display setting. Repaired **PRICE-INCLUSIVE, DISCOUNT-CORRECTION, PRICE-CORRECTION, VARIANT-PRICE, PRICE-GROUP-SCOPE**: each `given:` now includes an explicit `product-price` fixture (net price, tax-in-price flag, jurisdiction/authority); stores use `in-default-store-group` and all store-triggered wording was removed. **DISPLAY.VAT-ONLY** now states the VAT-display setting governs only the display-price path.
+
+**3. domain-model.yaml** — The `product-price` concept maps explicitly to `price(product, authority) … taxInPrice(true) … create()` as the sole order-path trigger; the containment note requires the address still name a state/country; the `selling-store` VAT-display note is scoped to display only.
+
+**Glossary** — Removed the misleading `tax-in-price-store` term; sharpened `tax-inclusive-price`, `vat-inclusive-store`, `region-containment`, and `line-discount`. Kept all claim IDs stable and traceability consistent.
+
+
+
+Changes    +179 -88
+Duration   8m 39s
+Tokens     ↑ 4.2m (4.0m cached, 96.0k written) • ↓ 37.3k (13.1k reasoning)
+Resume     copilot --resume=b4a61a03-9f46-4a43-8312-043d9d98a05a

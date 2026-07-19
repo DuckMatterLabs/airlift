@@ -1,0 +1,50 @@
+id: TAX.VAT.PRICE-CORRECTION
+kind: behavior
+title: A price-with-tax that disagrees with the computed total yields a rounding correction line.
+status: pinned
+priority: edge
+terms: [product, price-with-tax, unit-price, rate-percentage, tax-amount, tax-adjustment, price-correction-line, calculation-precision]
+depends_on: [TAX.CALC.TAX-AMOUNT]
+behavior: |
+  Rule: When a product's catalog price record carries a price-with-tax but is NOT tax-inclusive, the difference from the computed gross total is emitted as a correction
+    Given a product with a catalog price record in the taxing jurisdiction that carries both a net price and a price-with-tax, flagged NOT tax-inclusive
+    When tax is calculated for the order
+    Then the ordinary tax-adjustment charges tax on the net-price base
+    And a price-correction-line carries the difference between the entered gross and the computed gross
+scenarios:
+  - name: rounding-difference-becomes-correction
+    given:
+      store: {in-default-store-group: true}
+      destination-address: {country: present, state: present}
+      tax-authority: {jurisdiction: state}
+      rate-rule: {jurisdiction: state, rate-percentage: "20"}
+      product-price:
+        product: taxable
+        authority: state
+        price: "35.83"
+        price-with-tax: "43.00"
+        tax-in-price: false
+      order-lines:
+        - product: taxable
+          unit-price: "35.83"
+          quantity: "3"
+          line-amount: "107.49"
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "21.498"}
+            - {adjustment-type: price-correction-line, tax-amount: "0.012"}
+outputs_affected: [tax-amount]
+observability: direct
+source_fragments: [F-TAS-046, F-TAS-049, F-PRODEM-003]
+confidence: derived-from-code
+notes: >
+  base subtotal = price*3 = 35.83*3 = 107.49 (price is read from the catalog price record, F-TAS-046);
+  computed tax = 107.49*20% = 21.498 (calculation-precision); computed gross = 107.49 + 21.498 =
+  128.988; entered gross = priceWithTax*3 = 43.00*3 = 129.00; correction = 129.00 - 128.988 = 0.012.
+  Emitted only when entered and computed gross differ. This path is triggered by a ProductPrice
+  record for the product (scoped to the matched authority + store group) that carries a
+  priceWithTax value AND is NOT flagged tax-inclusive (taxInPrice != "Y"), NOT by any store
+  VAT-display setting. Create it via
+  fx.price(product, authority).price("35.83").priceWithTax("43.00").taxInPrice(false).create().

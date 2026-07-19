@@ -1,0 +1,15 @@
+claim: TAX.EXEMPT.GROUP-ROLLUP
+history:
+  - commit: 94fe6d1cdaa176365cce77422f7ce2a8b1ad0534
+    date: 2006-07-01
+    summary: >
+      Present at the initial OFBiz import. Before checking exemptions the code gathers the
+      billed party together with every party it is a GROUP_ROLLUP member of (PartyRelationship
+      partyRelationshipTypeId = GROUP_ROLLUP, partyIdTo = member, partyIdFrom = group) and
+      passes the whole set to the exemption lookup. Intent: let an exemption held by a parent
+      buying group cover its members.
+confidence: inferred
+notes: >
+  The GROUP_ROLLUP handling predates the current git history (SVN import). Rationale inferred
+  from the code and its comment "see if partyId is a member of any groups, if so honor their
+  tax exemptions".

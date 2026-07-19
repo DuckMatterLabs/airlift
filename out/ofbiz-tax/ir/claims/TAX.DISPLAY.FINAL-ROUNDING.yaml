@@ -1,0 +1,33 @@
+id: TAX.DISPLAY.FINAL-ROUNDING
+kind: behavior
+title: Display totals are rounded to the final display precision half-up.
+status: pinned
+priority: secondary
+terms: [display-tax-calculation, vat-inclusive-store, base-price, display-tax-total, display-price-with-tax, display-precision]
+depends_on: [TAX.DISPLAY.PRICE-WITH-TAX, TAX.CONFIG.FINAL-PRECISION]
+behavior: |
+  Rule: The display-tax-total and display-price-with-tax are rounded to the display-precision, half-up
+    Given a vat-inclusive-store and a taxable base whose tax has a third-decimal digit of five
+    When display tax is calculated for the product
+    Then the display-tax-total and display-price-with-tax are rounded to two decimals, rounding half-up
+scenarios:
+  - name: half-up-at-final-precision
+    given:
+      store: {vat-inclusive: true}
+      product: taxable
+      base-price: "104.25"
+      quantity: "1"
+      rate-rules:
+        - {jurisdiction: country, rate-percentage: "6"}
+    expect:
+      display-tax-total: "6.26"
+      display-tax-percentage: "6"
+      display-price-with-tax: "110.51"
+outputs_affected: [display-tax-total, display-price-with-tax]
+observability: direct
+source_fragments: [F-TAS-010, F-TAS-012, F-ARITH-001]
+confidence: derived-from-code
+notes: >
+  taxable base = 104.25. Tax at 6% = 6.2550 -> 6.255 at calculation-precision. Rounded to the
+  display-precision half-up: display-tax-total 6.255 -> 6.26. display-price-with-tax =
+  104.25 + 6.255 = 110.505 -> 110.51. Demonstrates round-half-up at the final two-decimal step.

@@ -1,0 +1,19 @@
+claim: TAX.JURIS.ADDRESS-TO-JURISDICTION
+history:
+  - commit: 94fe6d1cdaa176365cce77422f7ce2a8b1ad0534
+    date: 2006-07-01
+    summary: >
+      Present at the initial OFBiz import: taxing jurisdictions are resolved from the shipping
+      address country/state and postal-code geos.
+  - commit: ee7f36d98979b7ad2d1cb80c9e7b434f07622cd2
+    date: 2006-08-08
+    summary: >
+      Added countyGeoId to PostalAddress and changed the tax rate calc code to use it when
+      populated, extending jurisdiction resolution to support county-level taxes. Intent
+      (per commit message): support county-level taxes; note the commit deliberately omits UI
+      or a background service to populate countyGeoId.
+confidence: inferred
+notes: >
+  County support (relevant to TAX.EXEMPT.JURISDICTION-INHERITANCE's county example) was added
+  after the initial import. Marked inferred because the exact fixture expectations are
+  reconstructed from code.

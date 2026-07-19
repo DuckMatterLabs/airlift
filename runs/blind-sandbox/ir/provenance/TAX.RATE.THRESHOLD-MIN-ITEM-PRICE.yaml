@@ -1,0 +1,16 @@
+claim: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE
+history:
+  - commit: 94fe6d1cdaa176365cce77422f7ce2a8b1ad0534
+    date: 2006-07-01
+    summary: >
+      Present at the initial OFBiz import. The rate lookup filters rate rules by
+      (minItemPrice is null OR minItemPrice <= itemPrice), i.e. a rule with a minimum item
+      (unit) price only applies at or above that unit price; results are ordered by
+      minItemPrice, minPurchase, fromDate. Intent: support rate rules that only apply above a
+      per-item price floor.
+confidence: inferred
+notes: >
+  Threshold semantics predate the current git history (SVN import). The at-or-above (inclusive)
+  behaviour is inferred directly from the LESS_THAN_EQUAL_TO condition in the rate query.
+  Companion claim TAX.RATE.THRESHOLD-MIN-PURCHASE covers the parallel minPurchase floor, which
+  compares against the order-line amount rather than the unit price.

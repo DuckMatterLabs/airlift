@@ -1,0 +1,20 @@
+id: TAX.ORDER.VALUE-WEIGHT
+kind: behavior
+title: Order-level freight is apportioned to items by each item's share of order value.
+status: extracted
+priority: edge
+terms: [order-line, line-amount, value-weight, freight, order-total]
+depends_on: [TAX.ORDER.PER-ITEM]
+behavior: |
+  Rule: Each order-line's value-weight is its line-amount divided by the order-total
+    Given an order with several taxable order-lines and an order-level freight amount
+    When tax is calculated for the order
+    Then each order-line's share of the freight is proportional to its line-amount over the order-total
+outputs_affected: [taxable-amount]
+observability: internal
+source_fragments: [F-TAS-021, F-TAS-022]
+confidence: derived-from-code
+notes: >
+  The value-weight is an internal apportioning ratio (line-amount / order-total) used to
+  split order-level freight across items; it is not itself returned. Its externally observable
+  effect is the per-item freight tax verified in TAX.ORDER.FREIGHT-SPLIT.

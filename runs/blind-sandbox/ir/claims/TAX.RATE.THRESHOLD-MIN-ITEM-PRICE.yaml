@@ -1,0 +1,48 @@
+id: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE
+kind: behavior
+title: A rate rule with a minimum item price applies only at or above that unit price.
+status: extracted
+priority: edge
+terms: [rate-rule, minimum-item-price, unit-price, tax-adjustment, tax-amount]
+depends_on: [TAX.RATE.AUTHORITY-MATCH]
+behavior: |
+  Rule: A rate-rule applies only when the order-line unit-price is at least its minimum-item-price
+    Given a rate-rule with a minimum-item-price
+    When tax is calculated for an order-line whose unit-price is below the minimum-item-price
+    Then that order-line receives no tax-adjustment from the rate-rule
+    But when the unit-price is at or above the minimum-item-price the order-line is taxed
+decision_table:
+  columns: [unit-price, minimum-item-price, taxed]
+  rows:
+    - ["50.00", "50.00", true]
+    - ["49.99", "50.00", false]
+    - ["100.00", "50.00", true]
+scenarios:
+  - name: at-threshold-is-taxed
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, minimum-item-price: "50.00", rate-percentage: "6.25"}
+      order-lines: [{product: taxable, unit-price: "50.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "3.125"}
+  - name: below-threshold-is-not-taxed
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, minimum-item-price: "50.00", rate-percentage: "6.25"}
+      order-lines: [{product: taxable, unit-price: "49.99", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments: []
+outputs_affected: [tax-amount]
+observability: direct
+source_fragments: [F-TAS-036, F-TAS-037, F-ACCTEM-006]
+confidence: derived-from-code
+notes: >
+  The threshold is inclusive (at-or-above). A rate-rule with no minimum-item-price imposes no
+  floor. 50.00*6.25% = 3.125 at the calculation-precision.

@@ -1,0 +1,6 @@
+=== Airlift verification spine: 35 tests, 1 red ===
+
+VIOLATED CLAIMS (1):
+
+  ✗ TAX.EXEMPT.JURISDICTION-INHERITANCE — An exemption in a parent jurisdiction also exempts tax of its child jurisdictions.
+      test testCountyTaxExemptViaStateExemption: expected 0 but was 2.000

@@ -1,0 +1,27 @@
+id: TAX.CONFIG.FINAL-PRECISION
+kind: config
+title: Display totals are rounded to two decimal places, rounding half up.
+status: extracted
+priority: secondary
+terms: [display-precision, rounding-mode, display-tax-total, display-price-with-tax]
+depends_on: []
+behavior: |
+  Rule: The display calculation's final amounts are rounded to the display-precision
+    Given the display-precision is two decimal places
+    And the rounding-mode is round-half-up
+    When display tax is calculated for the product
+    Then the display-tax-total is rounded to two decimal places using round-half-up
+    And the display-price-with-tax is rounded to two decimal places using round-half-up
+scenarios:
+  - name: half-up-at-second-decimal
+    given: {base-price: "104.25", quantity: "1", rate-percentage: "6"}
+    expect: {display-tax-total: "6.26", display-price-with-tax: "110.51"}
+    # 104.25*6/100 = 6.255 (3dp) accumulates; final round to 2dp half-up -> 6.26
+outputs_affected: [display-tax-total, display-price-with-tax]
+observability: direct
+source_fragments: [F-ARITH-001, F-TAS-002, F-TAS-012]
+confidence: derived-from-code
+notes: >
+  The display-precision (two final decimals, round-half-up) is applied only on the
+  single-product display path, after intermediate amounts are accumulated at the
+  calculation-precision. See TAX.CONFIG.CALC-PRECISION for the intermediate scale.

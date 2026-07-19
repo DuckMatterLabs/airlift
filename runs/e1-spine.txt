@@ -1,0 +1,2 @@
+=== Airlift verification spine: 35 tests, 0 red ===
+ALL CLAIMS HELD: every bound test is green.

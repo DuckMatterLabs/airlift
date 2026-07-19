@@ -1,0 +1,14 @@
+claim: TAX.CONFIG.CALC-PRECISION
+history:
+  - commit: 1d823d274cea94e7d6f6eb0809c8e0fa7a1dff4e
+    date: 2007-09-13
+    summary: >
+      Replaced a hard-coded "3, BigDecimal.ROUND_CEILING" in TaxAuthorityServices with the
+      configured salestax calc decimals and rounding mode (read from arithmetic.properties),
+      making the calculation precision and rounding mode configuration-driven rather than
+      compiled in.
+confidence: inferred
+notes: >
+  Confirms that the calculation precision (three decimals) and rounding (round-half-up) are
+  load-bearing configuration, not incidental constants. Earlier code rounded up (CEILING) at a
+  fixed three decimals; the switch to round-half-up is why the worked scenarios use half-up.

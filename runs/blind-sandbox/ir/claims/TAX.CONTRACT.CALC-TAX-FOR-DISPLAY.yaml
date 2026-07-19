@@ -1,0 +1,46 @@
+id: TAX.CONTRACT.CALC-TAX-FOR-DISPLAY
+kind: contract
+title: Single-product display tax calculation — inputs and returned totals.
+status: extracted
+priority: secondary
+terms:
+  - display-tax-calculation
+  - store-scope
+  - product
+  - unit-price
+  - quantity
+  - freight
+  - display-tax-total
+  - display-tax-percentage
+  - display-price-with-tax
+  - vat-inclusive-store
+depends_on: []
+behavior: |
+  Rule: The display tax calculation returns gross-price figures for one product
+    Given a selling store
+    And a single product with a base unit-price
+    And optionally a quantity, defaulting to one when omitted
+    And optionally a shipping amount
+    When display tax is calculated for the product
+    Then a display-tax-total is returned
+    And a display-tax-percentage is returned
+    And a display-price-with-tax is returned
+scenarios:
+  - name: non-vat-store-returns-base-price-and-zero-tax
+    given:
+      store: {vat-inclusive: false}
+      product: taxable
+      base-price: "100.00"
+    expect:
+      display-tax-total: "0.00"
+      display-tax-percentage: "0"
+      display-price-with-tax: "100.00"
+outputs_affected: [display-tax-total, display-tax-percentage, display-price-with-tax]
+observability: direct
+source_fragments: [F-STAX-002, F-STAX-004, F-TAS-003, F-TAS-004, F-TAS-013]
+confidence: derived-from-code
+notes: >
+  The display calculation reports only for a single product and only computes tax for a
+  vat-inclusive-store (see TAX.DISPLAY.VAT-ONLY). When quantity is omitted it defaults to one.
+  Any supplied shipping amount is folded into the taxable base and the returned
+  display-price-with-tax (see TAX.DISPLAY.PRICE-WITH-TAX).

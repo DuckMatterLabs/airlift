@@ -1,0 +1,20 @@
+claim: TAX.EXEMPT.JURISDICTION-INHERITANCE
+history:
+  - commit: be33bfe63ab143d9d4b634b1bccb0ea0ec24cb98
+    date: 2007-04-19
+    summary: >
+      Introduced exemption inheritance: when no exemption is found for the current tax
+      authority, the code follows a TaxAuthorityAssoc of type EXEMPT_INHER to a parent
+      authority and re-checks the party's exemption there. Motivating example in the commit
+      message: a county tax where the customer holds a state-level exemption.
+  - commit: a969f7d8c79e6f6d8e3c2e618a4f908465bbbf1b
+    date: 2007-05-21
+    summary: >
+      Refined the lookup so the parent authority is consulted even when there is no direct
+      EXEMPT_INHER association to the current authority and the current exemption status is not
+      Y, rather than only when such an association exists.
+confidence: inferred
+notes: >
+  Intent (jurisdiction exemption inheritance from parent to child) is stated explicitly in the
+  2007-04-19 commit message; the semantic broadening is stated in the 2007-05-21 message.
+  Marked inferred because the exact fixture data expectations are reconstructed from code.

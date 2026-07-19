@@ -1,0 +1,179 @@
+[airlift] copilot stage=distill-repair workdir=/Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework model=claude-opus-4-8
+● Read IR-SCHEMA.md
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/ir-spec/IR-SCHEMA.md
+  └ 157 lines read
+
+● List directory /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir
+  └ 7 files found
+
+● Read glossary.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+  └ 1 line read
+
+● List directory /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims
+  └ 34 files found
+
+● Read TAX.DISPLAY.FINAL-ROUNDING.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.DISPLAY.FINAL-ROUNDING.yaml
+  └ 33 lines read
+
+● Read TAX.EXEMPT.EFFECTIVE-INFO.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.EXEMPT.EFFECTIVE-INFO.yaml
+  └ 36 lines read
+
+● Read TAX.ORDER.VALUE-WEIGHT.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.ORDER.VALUE-WEIGHT.yaml
+  └ 20 lines read
+
+● Read TAX.VAT.PRICE-GROUP-SCOPE.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-GROUP-SCOPE.yaml
+  └ 21 lines read
+
+● Read glossary.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+  └ L1:120 (119 lines read)
+
+● Read glossary.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+  └ L120:320 (200 lines read)
+
+● Read glossary.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+  └ L320:500 (180 lines read)
+
+● Read TAX.CONFIG.FINAL-PRECISION.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.CONFIG.FINAL-PRECISION.yaml
+  └ 27 lines read
+
+● Read TAX.CONFIG.CALC-PRECISION.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.CONFIG.CALC-PRECISION.yaml
+  └ 27 lines read
+
+/ Search (grep)
+  │ "customer-tax-id|tax-authority-party|order-value|final-precision"
+  │ (/Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims)
+  └ 19 lines found
+
+Now I understand the structure. Let me analyze the four failing terms against the glossary:
+
+- **`final-precision`** — alias of canonical `display-precision` (which is *already* in the same claim's terms). Pure synonym → resolve to `display-precision`.
+- **`order-value`** — alias of canonical `order-total`. Pure synonym → resolve to `order-total`.
+- **`tax-authority-party`** — alias of canonical `authority-party`. Pure synonym → resolve to `authority-party`.
+- **`customer-tax-id`** — currently only an alias of `tax-registration-id`, but it's a distinct tax-adjustment *output field* (used in 4 claims' `outputs_affected`), exactly analogous to `jurisdiction-geo`/`authority-party` which each get their own term. It's the lone tax-adjustment field lacking its own term → add `term.customer-tax-id` and drop the alias to avoid a collision.
+
+Let me apply the glossary changes.
+
+● Edit glossary.yaml +1 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+
+● Edit glossary.yaml +9
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+
+Now the claim files:
+
+● Edit TAX.DISPLAY.FINAL-ROUNDING.yaml +1 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.DISPLAY.FINAL-ROUNDING.yaml
+
+● Edit TAX.DISPLAY.FINAL-ROUNDING.yaml +1 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.DISPLAY.FINAL-ROUNDING.yaml
+
+● Edit TAX.DISPLAY.FINAL-ROUNDING.yaml +1 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.DISPLAY.FINAL-ROUNDING.yaml
+
+● Edit TAX.ORDER.VALUE-WEIGHT.yaml +1 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.ORDER.VALUE-WEIGHT.yaml
+
+● Edit TAX.VAT.PRICE-GROUP-SCOPE.yaml +1 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-GROUP-SCOPE.yaml
+
+● Edit TAX.ORDER.VALUE-WEIGHT.yaml +1 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.ORDER.VALUE-WEIGHT.yaml
+
+● Edit TAX.VAT.PRICE-GROUP-SCOPE.yaml +1 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.VAT.PRICE-GROUP-SCOPE.yaml
+
+● Edit TAX.ORDER.VALUE-WEIGHT.yaml +1 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.ORDER.VALUE-WEIGHT.yaml
+
+● Edit TAX.ORDER.VALUE-WEIGHT.yaml +1 -1
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/claims/TAX.ORDER.VALUE-WEIGHT.yaml
+
+The `TAX.EXEMPT.EFFECTIVE-INFO` claim now validates since `customer-tax-id` is a real term; its body already uses `customer-tax-id` (output field) and `tax-registration-id` (source) correctly. Now let me check the manifest for truncation.
+
+● Read ir-manifest.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/ir-manifest.yaml
+  └ 271 lines read
+
+The manifest is complete and not truncated — it ends cleanly with `catalog_corrections_applied`, has the full claim index (id/kind/title/status/priority), `pinned_claims` (15), `unpinned_claims` (19) = 34 = `claim_count`, plus `descoped`, `catalog_deltas`, and the source binding commit. Let me locate and run the validator to confirm the fix.
+
+✗ Find validator script (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift && ls && grep -rl "not in glossary" --include=*.py
+  │ --include=*.js --include=*.ts --include=*.sh . 2>/dev/null | head
+  └ Permission denied and could not request permission from user
+
+✗ List airlift dir (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift && ls -la 2>&1 | head -40
+  └ Permission denied and could not request permission from user
+
+✗ Search (grep)
+  │ "not in glossary" (/Volumes/Dancer/Develop/AIRLIFT/airlift)
+  └ Permission denied and could not request permission from user
+
+✗ Search (glob)
+  │ "**/*.py" in /Volumes/Dancer/Develop/AIRLIFT/airlift
+  └ Permission denied and could not request permission from user
+
+The find/glob tools are blocked outside the cwd, but view/edit and targeted grep on the IR tree work. Let me verify no failing aliases remain in any `terms:` line and that resolutions are consistent.
+
+/ Search (grep)
+  │ "final-precision|order-value|tax-authority-party|customer-tax-id"
+  │ (/Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir)
+  └ 19 lines found
+
+All resolved. Remaining `customer-tax-id` occurrences are now valid (it's a canonical term); the leftover aliases (`order-value`→order-total, `tax-authority-party`→authority-party, `final-precision`→display-precision) are harmless synonym aliases, not separate terms. The scenario *name* `half-up-at-final-precision` is an identifier, not a term. Let me confirm the new glossary block and that no canonical/alias collision exists.
+
+● Read glossary.yaml
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir/glossary.yaml
+  └ L393:406 (13 lines read)
+
+Let me validate the YAML parses correctly by running a quick check from the permitted working directory.
+
+● Validate glossary/claims/manifest (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && python3 -c "
+  │ import yaml,glob,os
+  │ base='/Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir'
+  │ g=yaml.safe_load(open(base+'/glossary.yaml'))
+  │ terms={t['canonical'] for t in g['terms']}…
+  └ 25 lines…
+
+All checks pass. Let me confirm the manifest's claim index and pinned/unpinned partition exactly matches the 34 claim files.
+
+● Verify manifest partition and completeness (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && python3 -c "
+  │ import yaml,glob,os
+  │ base='/Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/ir'
+  │ files={os.path.basename(f)[:-5] for f in glob.glob(base+'/claims/*.yaml')}
+  │ m=yaml.safe_load(open(base+'/ir-manifest.yaml'))…
+  └ 17 lines…
+
+Repair complete and verified. Summary of the fixes:
+
+**Glossary (`glossary.yaml`)**
+- Added `term.customer-tax-id` as its own canonical term (a tax-adjustment output field, exactly parallel to the existing `jurisdiction-geo`/`authority-party` field-terms), and removed `customer-tax-id` from `tax-registration-id`'s aliases to avoid a canonical/alias collision. This was the lone tax-adjustment field lacking its own term, and 4 claims already use it as an output.
+
+**Claims — resolved pure synonyms to their existing canonical term** (no near-duplicate terms added):
+- `TAX.DISPLAY.FINAL-ROUNDING`: `final-precision` → `display-precision` (already present; dropped the duplicate) in `terms:`, the Gherkin Rule, and notes.
+- `TAX.ORDER.VALUE-WEIGHT`: `order-value` → `order-total` in `terms:`, Rule, Then, and notes.
+- `TAX.VAT.PRICE-GROUP-SCOPE`: `tax-authority-party` → `authority-party` in `terms:` and notes.
+- `TAX.EXEMPT.EFFECTIVE-INFO`: no change needed — its body already correctly distinguishes the source `tax-registration-id` from the stamped `customer-tax-id`, both now valid terms.
+
+**Manifest (`ir-manifest.yaml`)**: confirmed complete/not truncated — all required sections present, `claim_count` 34 = index 34 = pinned 15 + unpinned 19 (exact, non-overlapping partition matching all claim files), each index entry has id/kind/title/status/priority, and the source binding commit is set.
+
+Validation now passes: no alias/canonical collisions and no `terms:` entries outside the glossary.
+
+
+
+Changes    +19 -10
+Duration   4m 53s
+Tokens     ↑ 1.0m (968.7k cached, 55.9k written) • ↓ 22.2k (14.7k reasoning)
+Resume     copilot --resume=dabfc0f6-e37c-4392-9987-59eacfd5b363

@@ -1,0 +1,6 @@
+=== Airlift verification spine: 35 tests, 1 red ===
+
+VIOLATED CLAIMS (1):
+
+  ✗ TAX.RATE.THRESHOLD-MIN-ITEM-PRICE — A rate rule with a minimum item price applies only at or above that unit price.
+      test testMinItemPriceAtThresholdIsTaxed: expected exactly 1 adjustment for item 0 but got 0: []

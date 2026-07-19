@@ -1,0 +1,18 @@
+=== Airlift verification spine: 35 tests, 5 red ===
+
+VIOLATED CLAIMS (5):
+
+  ✗ TAX.JURIS.CONTAINMENT — An authority applies to any destination within its region, even a smaller named area.
+      test testEnclosingStateAuthorityAppliesToInnerCountyAddress: calcTax returned error: The address(es) used for tax calculation did not have State/Province or Country or other tax jurisdiction values set, so we cannot determine the taxes to charge.[ID: AL26AD8, A
+
+  ✗ TAX.RATE.VARIANT-CATEGORY — A variant product matches its own and its virtual parent's tax categories.
+      test testVariantTaxedViaParentCategory: fixture: cannot create variant assoc
+
+  ✗ TAX.VAT.DISCOUNT-CORRECTION — A discount on a tax-inclusive line produces a negative tax correction for the discounted portion.
+      test testDiscountedTaxInclusiveItemEmitsNegativeIncludedTax: expected:<2> but was:<1>
+
+  ✗ TAX.VAT.PRICE-INCLUSIVE — When prices already include tax, the embedded tax is extracted rather than added.
+      test testTaxInclusivePriceReportsIncludedTaxNotAdded: expected:<[VAT]_TAX> but was:<[SALES]_TAX>
+
+  ✗ TAX.VAT.VARIANT-PRICE — A variant product falls back to its parent's tax-inclusive price record.
+      test testVariantUsesParentVatPrice: fixture: cannot create variant assoc

@@ -1,0 +1,409 @@
+# Airlift traceability for the OFBiz sales-tax seam.
+# Line numbers are evidence at the source_binding commit, not identity.
+# All referenced files verified byte-identical between the fragment-map commit
+# (68b751ffe4b7012bcddc6f53de439183b35f292a) and this source_binding commit.
+source_binding:
+  repo: ofbiz-framework
+  commit: b77897f330728cd65dc03853a78315799844ecce
+
+fragments:
+  - id: F-ACCTEM-001
+    file: applications/datamodel/entitydef/accounting-entitymodel.xml
+    symbol: PartyTaxAuthInfo
+    lines: [3622, 3643]
+    role: fused
+    summary: Entity holding a party's tax registration and isExempt flag per taxAuthGeo/Party with date effectivity.
+  - id: F-ACCTEM-003
+    file: applications/datamodel/entitydef/accounting-entitymodel.xml
+    symbol: TaxAuthorityAssoc
+    lines: [3687, 3711]
+    role: fused
+    summary: Entity associating tax authorities by type (e.g. EXEMPT_INHER) with date effectivity.
+  - id: F-ACCTEM-004
+    file: applications/datamodel/entitydef/accounting-entitymodel.xml
+    symbol: TaxAuthorityCategory
+    lines: [3720, 3734]
+    role: plumbing
+    summary: Entity associating a tax authority with a product category.
+  - id: F-ACCTEM-006
+    file: applications/datamodel/entitydef/accounting-entitymodel.xml
+    symbol: TaxAuthorityRateProduct
+    lines: [3780, 3811]
+    role: fused
+    summary: Entity holding rate rules with taxPercentage, minItemPrice, minPurchase, taxShipping, taxPromotions, productStoreId, productCategoryId and date effectivity.
+  - id: F-ARITH-001
+    file: applications/accounting/config/arithmetic.properties
+    symbol: salestax.*
+    lines: [46, 52]
+    role: business-logic
+    summary: Sales-tax calc/final decimal scales and rounding mode (ROUND_HALF_UP) driving all tax BigDecimal scaling and rounding.
+  - id: F-COMMONEM-002
+    file: framework/common/entitydef/entitymodel.xml
+    symbol: GeoAssoc
+    lines: [222, 242]
+    role: fused
+    summary: Entity associating geos by type (e.g. REGIONS) enabling geo containment/rollup.
+  - id: F-PARTYEM-001
+    file: applications/datamodel/entitydef/party-entitymodel.xml
+    symbol: PostalAddress
+    lines: [1237, 1295]
+    role: plumbing
+    summary: Contact-mech entity carrying countryGeoId/stateProvinceGeoId/countyGeoId/postalCodeGeoId used to resolve taxing jurisdictions.
+  - id: F-PARTYEM-002
+    file: applications/datamodel/entitydef/party-entitymodel.xml
+    symbol: PartyRelationship
+    lines: [2302, 2358]
+    role: plumbing
+    summary: Entity linking parties by relationship type (GROUP_ROLLUP used to find a party's parent groups) with date effectivity.
+  - id: F-PRODEM-001
+    file: applications/datamodel/entitydef/product-entitymodel.xml
+    symbol: ProductCategoryMember
+    lines: [368, 390]
+    role: plumbing
+    summary: Entity associating a product with a product category with date effectivity.
+  - id: F-PRODEM-002
+    file: applications/datamodel/entitydef/product-entitymodel.xml
+    symbol: Facility
+    lines: [996, 1053]
+    role: plumbing
+    summary: Entity for a physical facility whose contact-mech address is used for face-to-face sales.
+  - id: F-PRODEM-003
+    file: applications/datamodel/entitydef/product-entitymodel.xml
+    symbol: ProductPrice
+    lines: [2509, 2578]
+    role: fused
+    summary: Entity holding prices per product/authority/purpose with taxInPrice and priceWithTax flags and date effectivity.
+  - id: F-PRODEM-004
+    file: applications/datamodel/entitydef/product-entitymodel.xml
+    symbol: Product
+    lines: [2802, 2937]
+    role: plumbing
+    summary: Product entity; the tax code reads its taxable flag and isVariant/virtual relationship.
+  - id: F-PRODEM-005
+    file: applications/datamodel/entitydef/product-entitymodel.xml
+    symbol: ProductStore
+    lines: [3838, 3982]
+    role: plumbing
+    summary: Store entity supplying payToPartyId, primaryStoreGroupId, showPricesWithVatTax, and vatTaxAuthGeoId/PartyId consumed by the tax code.
+  - id: F-STAX-001
+    file: applications/accounting/servicedef/services_tax.xml
+    symbol: calcTaxInterface
+    lines: [28, 44]
+    role: plumbing
+    summary: Service interface defining the IN/OUT attribute contract for the order-level tax calc (implemented by calcTax).
+  - id: F-STAX-002
+    file: applications/accounting/servicedef/services_tax.xml
+    symbol: calcTaxTotalForDisplayInterface
+    lines: [45, 56]
+    role: plumbing
+    summary: Service interface defining the IN/OUT attribute contract for the single-product display tax calc (implemented by calcTaxForDisplay).
+  - id: F-STAX-003
+    file: applications/accounting/servicedef/services_tax.xml
+    symbol: calcTax
+    lines: [59, 63]
+    role: plumbing
+    summary: Java service definition wiring calcTax to TaxAuthorityServices.rateProductTaxCalc.
+  - id: F-STAX-004
+    file: applications/accounting/servicedef/services_tax.xml
+    symbol: calcTaxForDisplay
+    lines: [64, 68]
+    role: plumbing
+    summary: Java service definition wiring calcTaxForDisplay to TaxAuthorityServices.rateProductTaxCalcForDisplay.
+  - id: F-TAS-002
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: (static constants)
+    lines: [60, 66]
+    role: boilerplate
+    summary: Static BigDecimal constants and sales-tax scale/rounding constants read from arithmetic.properties via UtilNumber.
+  - id: F-TAS-003
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalcForDisplay
+    lines: [67, 76]
+    role: plumbing
+    summary: Method entry; extract delegator and context parameters for the single-product display tax calc.
+  - id: F-TAS-004
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalcForDisplay
+    lines: [77, 88]
+    role: business-logic
+    summary: Default quantity to 1, compute amount = basePrice*quantity, init tax accumulators, seed priceWithTax with basePrice plus shippingPrice.
+  - id: F-TAS-007
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalcForDisplay
+    lines: [104, 119]
+    role: fused
+    summary: When store showPricesWithVatTax=Y, resolve the store-configured VAT TaxAuthority set from vatTaxAuthGeoId/vatTaxAuthPartyId via cached queries.
+  - id: F-TAS-009
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalcForDisplay
+    lines: [125, 134]
+    role: plumbing
+    summary: Call getTaxAdjustments for the product and log a warning when no rate rules match.
+  - id: F-TAS-010
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalcForDisplay
+    lines: [135, 149]
+    role: business-logic
+    summary: For each SALES_TAX adjustment accumulate taxPercentage from sourcePercentage, taxTotal from amount, and add per-unit tax to priceWithTax.
+  - id: F-TAS-012
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalcForDisplay
+    lines: [156, 159]
+    role: business-logic
+    summary: Round taxTotal and priceWithTax to the sales-tax final scale using the configured rounding mode.
+  - id: F-TAS-013
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalcForDisplay
+    lines: [160, 166]
+    role: plumbing
+    summary: Build and return the success result map with taxTotal, taxPercentage, priceWithTax.
+  - id: F-TAS-014
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalc
+    lines: [167, 181]
+    role: plumbing
+    summary: Method entry; extract delegator and the full order/item context parameters.
+  - id: F-TAS-017
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalc
+    lines: [204, 219]
+    role: fused
+    summary: When no shippingAddress but a facility exists, derive the shipping address from the facility's SHIP_ORIG_LOCATION/PRIMARY_LOCATION contact mech.
+  - id: F-TAS-018
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalc
+    lines: [220, 233]
+    role: business-logic
+    summary: Require a shipping address bearing at least a country, state, or postal-code geo; otherwise return an error.
+  - id: F-TAS-020
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalc
+    lines: [245, 251]
+    role: plumbing
+    summary: Initialize orderAdjustments/itemAdjustments return lists, totalPrice, and the per-product weight map.
+  - id: F-TAS-021
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalc
+    lines: [252, 272]
+    role: business-logic
+    summary: Iterate items summing totalPrice, compute per-item tax via getTaxAdjustments into itemAdjustments, and accumulate each product's running total for weighting.
+  - id: F-TAS-022
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalc
+    lines: [273, 281]
+    role: business-logic
+    summary: Convert each product's accumulated total into a value-weight fraction (product total / order total) when total price is positive.
+  - id: F-TAS-023
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalc
+    lines: [282, 288]
+    role: business-logic
+    summary: When order shipping amount is positive, allocate freight tax to each product by its value weight via getTaxAdjustments and add to orderAdjustments.
+  - id: F-TAS-024
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalc
+    lines: [289, 294]
+    role: business-logic
+    summary: When order promotions amount is non-zero, compute tax adjustments on the promotions amount and add to orderAdjustments.
+  - id: F-TAS-025
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: rateProductTaxCalc
+    lines: [295, 301]
+    role: plumbing
+    summary: Build and return the success result map with orderAdjustments and itemAdjustments.
+  - id: F-TAS-026
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAuthorities
+    lines: [302, 322]
+    role: business-logic
+    summary: Map shipping-address components (country/state/county/postal-code) to a geoId-by-jurisdiction-type map, resolving postal-code geo via ContactMechWorker.
+  - id: F-TAS-027
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAuthorities
+    lines: [323, 333]
+    role: fused
+    summary: Expand geoIds to parent regions via GeoWorker.expandGeoRegionDeep, then query TaxAuthority with taxAuthGeoId IN the expanded set.
+  - id: F-TAS-031
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [361, 372]
+    role: fused
+    summary: Build the storeCond EntityCondition matching rate rules for this productStoreId OR a null (store-agnostic) rule.
+  - id: F-TAS-032
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [373, 391]
+    role: fused
+    summary: Build an OR-list of taxAuthPartyId+taxAuthGeoId conditions seeded with the _NA_/_NA_ authority plus each resolved authority.
+  - id: F-TAS-034
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [396, 405]
+    role: fused
+    summary: For a shipping-only call (product null, shippingAmount present) widen the category condition to include taxShipping null OR Y.
+  - id: F-TAS-035
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [406, 415]
+    role: fused
+    summary: For a promotions-only call (product null, orderPromotionsAmount present) widen the category condition to include taxPromotions null OR Y.
+  - id: F-TAS-036
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [416, 425]
+    role: fused
+    summary: Assemble the AND main condition from store/authorities/category plus minItemPrice (null OR <= itemPrice) and minPurchase (null OR <= itemAmount).
+  - id: F-TAS-037
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [426, 434]
+    role: plumbing
+    summary: Execute the TaxAuthorityRateProduct query ordered by minItemPrice/minPurchase/fromDate with date filtering; return empty when none found.
+  - id: F-TAS-038
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [435, 462]
+    role: business-logic
+    summary: Per rate rule compute taxRate (taxPercentage*weight) and build the taxable base by conditionally adding taxable item amount, shipping (taxShipping), and promotions (taxPromotions); skip when taxable is zero.
+  - id: F-TAS-039
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [463, 466]
+    role: business-logic
+    summary: Compute taxAmount = taxable * taxRate / 100 at the sales-tax calc scale and rounding.
+  - id: F-TAS-041
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [482, 493]
+    role: fused
+    summary: Resolve a ProductPrice for the product and authority; on miss, fall back to the parent/virtual product's price.
+  - id: F-TAS-042
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [494, 530]
+    role: business-logic
+    summary: Build the OrderAdjustment; when the price is tax-inclusive (taxInPrice=Y) treat it as VAT_TAX, computing tax already included in full price, net tax on the discounted price, and the discountedSalesTax delta; otherwise set amount to taxAmount.
+  - id: F-TAS-044
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [548, 568]
+    role: fused
+    summary: When billToPartyId and taxAuthGeoId are present, build the party set including GROUP_ROLLUP parents from PartyRelationship and invoke handlePartyTaxExempt.
+  - id: F-TAS-045
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [569, 576]
+    role: business-logic
+    summary: When discountedSalesTax is negative, add a cloned negative adjustment carrying it in amountAlreadyIncluded, then add the main adjustment.
+  - id: F-TAS-046
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getTaxAdjustments
+    lines: [577, 639]
+    role: business-logic
+    summary: For a tax-exclusive price carrying priceWithTax, compare entered vs calculated price-with-tax and emit a VAT_PRICE_CORRECT adjustment for any difference.
+  - id: F-TAS-049
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: getProductPrice
+    lines: [657, 677]
+    role: fused
+    summary: Query the newest effective PURCHASE-purpose ProductPrice for the product and authority, scoped by the store's primaryStoreGroupId when present, else unscoped (purchase-order case).
+  - id: F-TAS-051
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: setProductCategoryCond
+    lines: [685, 713]
+    role: fused
+    summary: Return a null-category condition for a null product; otherwise, if the product is a variant, add its virtual product id and build the productId OR condition.
+  - id: F-TAS-052
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: setProductCategoryCond
+    lines: [714, 728]
+    role: fused
+    summary: Query ProductCategoryMember for the product(s), collect category ids, and return a condition matching productCategoryId null OR IN the set.
+  - id: F-TAS-054
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: handlePartyTaxExempt
+    lines: [733, 748]
+    role: fused
+    summary: Build the PartyTaxAuthInfo condition (partyId IN set, taxAuthGeo/Party, fromDate<=now, thruDate null OR >now) and fetch the newest matching record.
+  - id: F-TAS-055
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: handlePartyTaxExempt
+    lines: [749, 758]
+    role: business-logic
+    summary: Record the party tax id; if isExempt=Y set the adjustment amount to zero, move it to exemptAmount, and mark exemption found.
+  - id: F-TAS-056
+    file: applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+    symbol: handlePartyTaxExempt
+    lines: [759, 771]
+    role: fused
+    summary: When no exemption found, look up the parent authority via TaxAuthorityAssoc EXEMPT_INHER and recurse into handlePartyTaxExempt.
+
+claims:
+  - id: TAX.CALC.TAX-AMOUNT
+    fragments: [F-TAS-039, F-ARITH-001]
+  - id: TAX.CALC.TAXABLE-BASE
+    fragments: [F-TAS-038, F-PRODEM-004]
+  - id: TAX.CONFIG.CALC-PRECISION
+    fragments: [F-ARITH-001, F-TAS-002, F-TAS-039]
+  - id: TAX.CONFIG.FINAL-PRECISION
+    fragments: [F-ARITH-001, F-TAS-002, F-TAS-012]
+  - id: TAX.CONTRACT.CALC-TAX
+    fragments: [F-STAX-001, F-STAX-003, F-TAS-014, F-TAS-021, F-TAS-025]
+  - id: TAX.CONTRACT.CALC-TAX-FOR-DISPLAY
+    fragments: [F-STAX-002, F-STAX-004, F-TAS-003, F-TAS-004, F-TAS-013]
+  - id: TAX.DISPLAY.FINAL-ROUNDING
+    fragments: [F-TAS-010, F-TAS-012, F-ARITH-001]
+  - id: TAX.DISPLAY.PRICE-WITH-TAX
+    fragments: [F-TAS-009, F-TAS-010]
+  - id: TAX.DISPLAY.VAT-ONLY
+    fragments: [F-TAS-007, F-PRODEM-005]
+  - id: TAX.EXEMPT.EFFECTIVE-INFO
+    fragments: [F-TAS-054, F-TAS-055, F-ACCTEM-001]
+  - id: TAX.EXEMPT.GROUP-ROLLUP
+    fragments: [F-TAS-044, F-TAS-054, F-TAS-055, F-PARTYEM-002]
+  - id: TAX.EXEMPT.JURISDICTION-INHERITANCE
+    fragments: [F-TAS-056, F-TAS-055, F-ACCTEM-003]
+  - id: TAX.EXEMPT.ZEROING
+    fragments: [F-TAS-055, F-ACCTEM-001]
+  - id: TAX.JURIS.ADDRESS-REQUIRED
+    fragments: [F-TAS-018]
+  - id: TAX.JURIS.ADDRESS-TO-JURISDICTION
+    fragments: [F-TAS-026, F-TAS-027, F-PARTYEM-001]
+  - id: TAX.JURIS.CONTAINMENT
+    fragments: [F-TAS-027, F-COMMONEM-002]
+  - id: TAX.JURIS.FACILITY-FALLBACK
+    fragments: [F-TAS-017, F-PRODEM-002]
+  - id: TAX.ORDER.FREIGHT-SPLIT
+    fragments: [F-TAS-022, F-TAS-023, F-TAS-038, F-TAS-039]
+  - id: TAX.ORDER.PER-ITEM
+    fragments: [F-TAS-020, F-TAS-021]
+  - id: TAX.ORDER.PROMO-TAX
+    fragments: [F-TAS-024, F-TAS-035, F-TAS-039]
+  - id: TAX.ORDER.VALUE-WEIGHT
+    fragments: [F-TAS-021, F-TAS-022]
+  - id: TAX.RATE.AUTHORITY-MATCH
+    fragments: [F-TAS-032, F-TAS-037, F-ACCTEM-006]
+  - id: TAX.RATE.CATEGORY-MATCH
+    fragments: [F-TAS-051, F-TAS-052, F-ACCTEM-004, F-PRODEM-001]
+  - id: TAX.RATE.PROMO-TAXABLE
+    fragments: [F-TAS-035, F-TAS-038]
+  - id: TAX.RATE.SHIPPING-TAXABLE
+    fragments: [F-TAS-034, F-TAS-038]
+  - id: TAX.RATE.STORE-SCOPE
+    fragments: [F-TAS-031, F-PRODEM-005]
+  - id: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE
+    fragments: [F-TAS-036, F-TAS-037, F-ACCTEM-006]
+  - id: TAX.RATE.THRESHOLD-MIN-PURCHASE
+    fragments: [F-TAS-036, F-TAS-037, F-ACCTEM-006]
+  - id: TAX.RATE.VARIANT-CATEGORY
+    fragments: [F-TAS-051, F-TAS-052]
+  - id: TAX.VAT.DISCOUNT-CORRECTION
+    fragments: [F-TAS-041, F-TAS-042, F-TAS-045, F-TAS-049]
+  - id: TAX.VAT.PRICE-CORRECTION
+    fragments: [F-TAS-046, F-TAS-049, F-PRODEM-003]
+  - id: TAX.VAT.PRICE-GROUP-SCOPE
+    fragments: [F-TAS-041, F-TAS-049, F-PRODEM-003]
+  - id: TAX.VAT.PRICE-INCLUSIVE
+    fragments: [F-TAS-041, F-TAS-042, F-TAS-049]
+  - id: TAX.VAT.VARIANT-PRICE
+    fragments: [F-TAS-041, F-TAS-049]

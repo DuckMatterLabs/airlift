@@ -1,0 +1,36 @@
+id: TAX.EXEMPT.ZEROING
+kind: behavior
+title: A valid exemption zeroes the tax and records the would-be tax as an exempt amount.
+status: extracted
+priority: core
+terms: [purchasing-party, tax-exemption, taxing-jurisdiction, tax-amount, exempt-amount, tax-adjustment]
+depends_on: [TAX.EXEMPT.EFFECTIVE-INFO]
+behavior: |
+  Rule: When the purchasing-party holds a valid tax-exemption for the jurisdiction, its tax is zeroed and recorded
+    Given a purchasing-party with a currently-effective tax-exemption for the jurisdiction
+    When tax is calculated for the order
+    Then the tax-adjustment's tax-amount is zero
+    And the would-have-been tax appears as the exempt-amount
+scenarios:
+  - name: exempt-party-pays-zero
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      rate-rule: {jurisdiction: state, rate-percentage: "6.25"}
+      purchasing-party:
+        billed: true
+        tax-registration: {jurisdiction: state, tax-registration-id: "EX-001", exempt: true, effective: current}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "0", exempt-amount: "6.250", customer-tax-id: "EX-001"}
+outputs_affected: [tax-amount, exempt-amount, customer-tax-id]
+observability: direct
+source_fragments: [F-TAS-055, F-ACCTEM-001]
+confidence: derived-from-code
+notes: >
+  The exemption is checked in the primary (most-local) jurisdiction of the tax line. The
+  would-be tax (100.00*6.25% = 6.250) is preserved as the exempt-amount for audit while the
+  charged tax-amount becomes zero. Provenance-critical.

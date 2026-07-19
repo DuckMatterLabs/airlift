@@ -1,0 +1,316 @@
+# Airlift Stage 3 — Behavior catalog for the sales-tax seam
+# Target: applications/accounting/.../tax/TaxAuthorityServices.java exposed via the
+#         calcTax / calcTaxForDisplay services (servicedef/services_tax.xml).
+# Each behavior is a rule a tax accountant or a merchant configuring store taxes could
+# state and care about. Coverage carried over from stage 2 (coverage-gaps.yaml); where a
+# fragment's stage-2 status reflected execution of the whole block but a specific rule
+# aspect was never asserted (e.g. group rollup, region containment), the honest status of
+# that aspect is recorded and noted.
+
+source_binding:
+  repo: ofbiz-framework
+  commit: 68b751ffe4b7012bcddc6f53de439183b35f292a
+
+areas:
+  - area: JURIS
+    meaning: Deriving the set of applicable taxing jurisdictions from where the goods go (destination address, region containment, or facility for face-to-face sales).
+  - area: RATE
+    meaning: Selecting which configured rate rules apply — by store scope, authority, product category, threshold minima, and shipping/promotion taxability.
+  - area: CALC
+    meaning: Turning a matched rate rule into a tax amount — the taxable base and the rate-times-base arithmetic at the configured precision.
+  - area: EXEMPT
+    meaning: Suppressing tax for a party that holds a valid exemption, including group rollup and jurisdiction-hierarchy inheritance.
+  - area: VAT
+    meaning: Handling tax-inclusive (VAT) prices — reporting included tax, discount corrections, price-with-tax reconciliation, and the price source used.
+  - area: ORDER
+    meaning: Order-level aggregation — taxing each line item, and apportioning freight and promotion tax across items by value.
+  - area: DISPLAY
+    meaning: The display-only variant that reports a single product's price-with-tax for VAT-inclusive stores.
+
+behaviors:
+  # ---- JURIS ----
+  - id: TAX.JURIS.ADDRESS-REQUIRED
+    statement: A tax calculation only proceeds when the destination is identified by at least a country, state, or postal code, and otherwise fails rather than guessing.
+    inputs: [destination shipping address's country/state/county/postal-code identifiers]
+    observable_outcome: The caller receives an error instead of tax lines when the address carries no usable jurisdiction.
+    observability: direct
+    fragments: [F-TAS-018]
+    coverage: covered-incidental
+    priority: core
+
+  - id: TAX.JURIS.ADDRESS-TO-JURISDICTION
+    statement: The taxing jurisdictions are determined from the destination address's country, state, county, and postal code.
+    inputs: [destination address components]
+    observable_outcome: The jurisdiction stamped on each tax line matches the address's location.
+    observability: direct
+    fragments: [F-TAS-026, F-TAS-027]
+    coverage: covered-asserted
+    priority: core
+
+  - id: TAX.JURIS.CONTAINMENT
+    statement: A taxing authority applies to any destination that falls within its region, even when the address names only a smaller area inside that region.
+    inputs: [destination geos, region-containment hierarchy of geographic areas]
+    observable_outcome: A tax line appears for an enclosing authority (e.g. a state or country) whose region contains the address.
+    observability: direct
+    fragments: [F-TAS-027, F-COMMONEM-002]
+    coverage: bare
+    priority: edge
+
+  - id: TAX.JURIS.FACILITY-FALLBACK
+    statement: When no shipping destination is supplied, a face-to-face sale is taxed at the fulfilling facility's own address.
+    inputs: [absence of a shipping address, the fulfilling facility's origin/primary location address]
+    observable_outcome: Tax lines reflect the facility's jurisdiction rather than a customer destination.
+    observability: direct
+    fragments: [F-TAS-017]
+    coverage: bare
+    priority: edge
+
+  # ---- RATE ----
+  - id: TAX.RATE.STORE-SCOPE
+    statement: A rate rule applies only when it targets the selling store or is defined globally for all stores.
+    inputs: [selling store identity, the store scope configured on each rate rule]
+    observable_outcome: A store-specific rule is used for its store; a global rule is used everywhere; other stores' rules are ignored.
+    observability: direct
+    fragments: [F-TAS-031]
+    coverage: covered-incidental
+    priority: edge
+
+  - id: TAX.RATE.AUTHORITY-MATCH
+    statement: The rate rules considered are those for the jurisdictions resolved from the destination plus a default catch-all authority.
+    inputs: [resolved taxing authorities, presence of default-authority rules]
+    observable_outcome: The tax rate and jurisdiction on each line come from a rule tied to a resolved authority (or the default).
+    observability: direct
+    fragments: [F-TAS-032, F-ACCTEM-002]
+    coverage: covered-asserted
+    priority: core
+
+  - id: TAX.RATE.CATEGORY-MATCH
+    statement: A rate rule applies when it is tied to no product category or to a tax category the product belongs to.
+    inputs: [product's tax-category memberships, the category restriction on each rate rule]
+    observable_outcome: Category-restricted rules only tax products in their category; unrestricted rules tax everything.
+    observability: direct
+    fragments: [F-TAS-052, F-PRODEM-001]
+    coverage: bare
+    priority: edge
+
+  - id: TAX.RATE.VARIANT-CATEGORY
+    statement: A variant product is matched against both its own tax categories and those of its virtual parent product.
+    inputs: [variant product, its virtual parent, their tax-category memberships]
+    observable_outcome: A category-restricted rule taxes a variant when the parent product carries the category, even if the variant does not.
+    observability: direct
+    fragments: [F-TAS-051]
+    coverage: covered-incidental
+    priority: edge
+
+  - id: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE
+    statement: A rate rule applies only when the item's unit price is at least the rule's minimum item price.
+    inputs: [item unit price, the minimum-item-price threshold on the rate rule]
+    observable_outcome: Below-threshold items get no tax line from that rule; at-or-above items do.
+    observability: direct
+    fragments: [F-TAS-036, F-ACCTEM-006]
+    coverage: covered-incidental
+    priority: edge
+
+  - id: TAX.RATE.THRESHOLD-MIN-PURCHASE
+    statement: A rate rule applies only when the item's purchase amount is at least the rule's minimum purchase amount.
+    inputs: [item amount, the minimum-purchase threshold on the rate rule]
+    observable_outcome: Below-threshold purchases get no tax line from that rule; at-or-above purchases do.
+    observability: direct
+    fragments: [F-TAS-036, F-ACCTEM-006]
+    coverage: covered-incidental
+    priority: edge
+
+  - id: TAX.RATE.SHIPPING-TAXABLE
+    statement: Freight is taxed only under rate rules that permit taxing shipping.
+    inputs: [order freight amount, the taxable-shipping flag on the rate rule]
+    observable_outcome: Freight tax lines appear only for shipping-taxable rules.
+    observability: direct
+    fragments: [F-TAS-034]
+    coverage: bare
+    priority: edge
+
+  - id: TAX.RATE.PROMO-TAXABLE
+    statement: Promotional discounts are taxed only under rate rules that permit taxing promotions.
+    inputs: [order promotions amount, the taxable-promotions flag on the rate rule]
+    observable_outcome: Promotion tax lines appear only for promotion-taxable rules.
+    observability: direct
+    fragments: [F-TAS-035]
+    coverage: bare
+    priority: edge
+
+  # ---- CALC ----
+  - id: TAX.CALC.TAXABLE-BASE
+    statement: Tax is charged on an item only when the product is flagged taxable, and no tax line is produced when nothing taxable remains.
+    inputs: [product taxable flag, item amount]
+    observable_outcome: Non-taxable products yield no tax line; taxable products are taxed on their amount.
+    observability: direct
+    fragments: [F-TAS-038, F-PRODEM-004]
+    coverage: covered-asserted
+    priority: core
+
+  - id: TAX.CALC.TAX-AMOUNT
+    statement: The tax charged is the taxable amount multiplied by the rate percentage, computed and rounded at the store's configured sales-tax precision.
+    inputs: [taxable amount, rate percentage, configured calculation decimals and rounding mode]
+    observable_outcome: The tax amount and source percentage on each line reflect base*rate at the configured scale (e.g. 6.250 for 6.25% of 100).
+    observability: direct
+    fragments: [F-TAS-039, F-ARITH-001]
+    coverage: covered-asserted
+    priority: core
+
+  # ---- EXEMPT ----
+  - id: TAX.EXEMPT.EFFECTIVE-INFO
+    statement: A party's exemption status is taken from its most recent currently-effective tax registration for the jurisdiction, and that registration id is recorded on the tax line.
+    inputs: [party tax registrations per jurisdiction with effective dates, calculation date]
+    observable_outcome: The customer's tax-registration id appears on the tax line and expired/future registrations are ignored.
+    observability: direct
+    fragments: [F-TAS-054, F-ACCTEM-001]
+    coverage: covered-asserted
+    priority: core
+
+  - id: TAX.EXEMPT.ZEROING
+    statement: When the bill-to party holds a valid exemption for a jurisdiction, tax for that jurisdiction is set to zero and recorded separately as an exempt amount.
+    inputs: [party exemption flag on the effective registration, otherwise-calculated tax amount]
+    observable_outcome: The tax line's amount is zero while the would-be tax appears as the exempt amount.
+    observability: direct
+    fragments: [F-TAS-055, F-ACCTEM-001]
+    coverage: covered-asserted
+    priority: core
+
+  - id: TAX.EXEMPT.GROUP-ROLLUP
+    statement: A party inherits the tax exemptions held by the parent groups it rolls up to.
+    inputs: [bill-to party, its parent-group rollup relationships, the groups' exemption registrations]
+    observable_outcome: A member is charged zero tax when its parent group is exempt, even if the member has no exemption of its own.
+    observability: direct
+    fragments: [F-TAS-044]
+    coverage: bare
+    priority: core
+
+  - id: TAX.EXEMPT.JURISDICTION-INHERITANCE
+    statement: When a party is not exempt at a jurisdiction, its exemption is checked up the parent-jurisdiction hierarchy.
+    inputs: [absence of a direct exemption, parent-authority (exemption-inheritance) associations]
+    observable_outcome: A party exempt at a parent jurisdiction is charged zero tax at a child jurisdiction that inherits exemptions.
+    observability: direct
+    fragments: [F-TAS-056, F-ACCTEM-003]
+    coverage: bare
+    priority: core
+
+  # ---- VAT ----
+  - id: TAX.VAT.PRICE-INCLUSIVE
+    statement: When a product's price already includes tax, the contained tax is reported as already-included rather than added on top of the price.
+    inputs: [tax-inclusive price flag, item price, quantity, rate]
+    observable_outcome: The tax line is a VAT (tax-included) line carrying the already-included tax with no additive amount.
+    observability: direct
+    fragments: [F-TAS-042, F-PRODEM-003]
+    coverage: bare
+    priority: core
+
+  - id: TAX.VAT.DISCOUNT-CORRECTION
+    statement: When a tax-inclusive item is discounted, the drop in included tax versus the undiscounted price is emitted as a negative included-tax adjustment.
+    inputs: [tax-inclusive price, discounted item amount, quantity, rate]
+    observable_outcome: A negative tax-included adjustment appears reflecting the reduced VAT on the discounted price.
+    observability: direct
+    fragments: [F-TAS-045]
+    coverage: bare
+    priority: edge
+
+  - id: TAX.VAT.PRICE-CORRECTION
+    statement: For a tax-exclusive item that also carries an intended price-with-tax, any rounding difference between the entered and calculated price-with-tax is reconciled through a separate price-correction line, leaving the tax itself intact.
+    inputs: [tax-exclusive price, intended price-with-tax, quantity, calculated tax]
+    observable_outcome: A price-correction adjustment appears carrying the difference between entered and calculated tax-inclusive totals.
+    observability: direct
+    fragments: [F-TAS-046]
+    coverage: bare
+    priority: edge
+
+  - id: TAX.VAT.VARIANT-PRICE
+    statement: A variant product uses its virtual parent's tax-inclusive price configuration when it has none of its own.
+    inputs: [variant product, its virtual parent, their per-authority prices]
+    observable_outcome: A variant's VAT treatment follows the parent product's tax-in-price settings.
+    observability: direct
+    fragments: [F-TAS-041]
+    coverage: covered-incidental
+    priority: edge
+
+  - id: TAX.VAT.PRICE-GROUP-SCOPE
+    statement: The tax-inclusive price used is the one for the store's price group, falling back to an unscoped purchase price when the store has no price group.
+    inputs: [store price group, per-authority effective product prices, calculation date]
+    observable_outcome: The VAT price applied reflects the store's price group, or the plain purchase price when none is configured.
+    observability: internal
+    fragments: [F-TAS-049, F-PRODEM-003]
+    coverage: covered-incidental
+    priority: edge
+
+  # ---- ORDER ----
+  - id: TAX.ORDER.PER-ITEM
+    statement: Each order line is taxed individually and returned as its own tax line.
+    inputs: [order line items with price, quantity, and amount]
+    observable_outcome: One tax line is produced per taxable item, keyed to that item.
+    observability: direct
+    fragments: [F-TAS-021]
+    coverage: covered-asserted
+    priority: core
+
+  - id: TAX.ORDER.VALUE-WEIGHT
+    statement: Each product's share of the order is its value expressed as a fraction of the order total.
+    inputs: [per-product accumulated amounts, order total amount]
+    observable_outcome: Visible only through how freight/promotion tax is split — higher-value products carry a larger share.
+    observability: internal
+    fragments: [F-TAS-022]
+    coverage: covered-incidental
+    priority: edge
+
+  - id: TAX.ORDER.FREIGHT-SPLIT
+    statement: Order-level freight tax is apportioned across products by each product's value share of the order.
+    inputs: [order freight amount, per-product value weights]
+    observable_outcome: Order-level freight tax lines appear split proportionally to product value.
+    observability: direct
+    fragments: [F-TAS-023]
+    coverage: bare
+    priority: edge
+
+  - id: TAX.ORDER.PROMO-TAX
+    statement: Order-level promotional amounts are taxed and returned as order-level tax lines.
+    inputs: [order promotions amount, applicable rate rules]
+    observable_outcome: Order-level tax lines appear for the promotions amount.
+    observability: direct
+    fragments: [F-TAS-024]
+    coverage: bare
+    priority: edge
+
+  # ---- DISPLAY ----
+  - id: TAX.DISPLAY.VAT-ONLY
+    statement: Display-time price-with-tax is computed only for stores that show VAT-inclusive prices, using the store's configured VAT authority.
+    inputs: [store VAT-inclusive setting, store's configured VAT authority]
+    observable_outcome: Non-VAT stores return no display tax; VAT stores return tax for the configured authority.
+    observability: direct
+    fragments: [F-TAS-007]
+    coverage: bare
+    priority: secondary
+
+  - id: TAX.DISPLAY.PRICE-WITH-TAX
+    statement: The displayed price-with-tax is the base price (plus any shipping) increased by the per-unit sales tax, with the reported tax total and combined tax percentage summed across applicable rates.
+    inputs: [base price, quantity, optional shipping price, applicable sales-tax rates]
+    observable_outcome: The display service returns a price-with-tax, tax total, and combined tax percentage for a single product.
+    observability: direct
+    fragments: [F-TAS-004, F-TAS-010]
+    coverage: bare
+    priority: secondary
+
+  - id: TAX.DISPLAY.FINAL-ROUNDING
+    statement: The displayed tax total and price-with-tax are rounded to the store's configured display precision.
+    inputs: [accumulated display tax total and price-with-tax, configured final decimals and rounding mode]
+    observable_outcome: The display service's returned amounts are rounded to the display scale.
+    observability: direct
+    fragments: [F-TAS-012, F-ARITH-001]
+    coverage: bare
+    priority: secondary
+
+# Every business-logic and fused fragment above is represented by at least one behavior;
+# no such fragment is excluded. Plumbing/boilerplate fragments (F-TAS-001..003,005,006,008,
+# 009,011,013,014,015,016,019,020,025,028,029,030,033,037,040,043,047,048,050,053,057,
+# F-STAX-001..004, F-ACCTEM-002/004/005/007, F-PARTYEM-001/002, F-PRODEM-001/002/004/005,
+# F-COMMONEM-001, F-ORDEREM-001 where used only as plumbing/output-shape) intentionally
+# generate no behaviors. Note: F-ACCTEM-002, F-PRODEM-001, and F-PRODEM-004 are plumbing
+# schema fragments referenced above only to anchor the authority/category/taxable inputs of
+# the fused rules they participate in.
+excluded: []

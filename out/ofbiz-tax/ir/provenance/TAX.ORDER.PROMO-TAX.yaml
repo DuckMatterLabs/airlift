@@ -1,0 +1,14 @@
+claim: TAX.ORDER.PROMO-TAX
+history:
+  - commit: c6f925619c1e2e1330d0427c998a03bb189d01dd
+    date: 2007-12-25
+    summary: >
+      OFBIZ-225 ("Discussion about the interaction between order total promotions and sales
+      taxes", patch from Amit Shinde) made it possible to include order-level promotions in
+      sales-tax calculation. Promotions are taxed only when the TaxAuthorityRateProduct
+      taxPromotions flag is Y (see TAX.RATE.PROMO-TAXABLE), producing an order-level tax
+      adjustment for the promotions amount.
+confidence: inferred
+notes: >
+  Intent is stated in the commit/JIRA: opt-in taxation of promotions gated by the taxPromotions
+  flag. Marked inferred because the exact worked numbers are reconstructed from code.

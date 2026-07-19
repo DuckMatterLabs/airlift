@@ -1,0 +1,101 @@
+# Airlift Stage 4 — Backfill report for the sales-tax seam.
+# Scope: pin every catalog behavior with coverage=bare AND observability=direct with
+# code-in-hand integration tests, using ONLY the harness-contract fixture DSL.
+# Expected values derived by reading TaxAuthorityServices.java at commit
+# 68b751ffe4b7012bcddc6f53de439183b35f292a; arithmetic.properties: calc.decimals=3,
+# final.decimals=2, rounding=ROUND_HALF_UP.
+
+source_binding:
+  repo: ofbiz-framework
+  commit: 68b751ffe4b7012bcddc6f53de439183b35f292a
+
+pinned:
+  - claim: TAX.JURIS.CONTAINMENT
+    tests: [BackfillTaxTests#testEnclosingAuthorityAppliesToInnerAddress]
+  - claim: TAX.JURIS.FACILITY-FALLBACK
+    tests: [BackfillTaxTests#testFacilityAddressTaxedWhenNoShippingDestination]
+  - claim: TAX.RATE.CATEGORY-MATCH
+    tests:
+      - BackfillTaxTests#testCategoryRestrictedRuleTaxesProductInCategory
+      - BackfillTaxTests#testCategoryRestrictedRuleSkipsProductNotInCategory
+  - claim: TAX.RATE.SHIPPING-TAXABLE
+    tests:
+      - BackfillTaxTests#testFreightTaxedWhenRuleAllowsTaxingShipping
+      - BackfillTaxTests#testFreightNotTaxedWhenRuleForbidsTaxingShipping
+  - claim: TAX.RATE.PROMO-TAXABLE
+    tests:
+      - BackfillTaxTests#testPromotionsTaxedWhenRuleAllowsTaxingPromotions
+      - BackfillTaxTests#testPromotionsNotTaxedWhenRuleForbidsTaxingPromotions
+  - claim: TAX.EXEMPT.GROUP-ROLLUP
+    tests: [BackfillTaxTests#testMemberInheritsParentGroupExemption]
+  - claim: TAX.EXEMPT.JURISDICTION-INHERITANCE
+    tests: [BackfillTaxTests#testExemptionInheritedFromParentJurisdiction]
+  - claim: TAX.VAT.PRICE-INCLUSIVE
+    tests: [BackfillTaxTests#testTaxInclusivePriceReportsIncludedTaxNotAdded]
+  - claim: TAX.VAT.DISCOUNT-CORRECTION
+    tests: [BackfillTaxTests#testDiscountedTaxInclusiveItemEmitsNegativeIncludedTax]
+  - claim: TAX.VAT.PRICE-CORRECTION
+    tests: [BackfillTaxTests#testPriceWithTaxRoundingReconciledByCorrectionLine]
+  - claim: TAX.ORDER.FREIGHT-SPLIT
+    tests: [BackfillTaxTests#testOrderFreightTaxSplitByProductValue]
+  - claim: TAX.ORDER.PROMO-TAX
+    tests: [BackfillTaxTests#testOrderPromotionsProduceOrderLevelTaxLine]
+  - claim: TAX.DISPLAY.VAT-ONLY
+    tests:
+      - BackfillTaxTests#testNonVatStoreReturnsNoDisplayTax
+      - BackfillTaxTests#testVatStoreReturnsTaxForConfiguredAuthority
+  - claim: TAX.DISPLAY.PRICE-WITH-TAX
+    tests: [BackfillTaxTests#testDisplayPriceWithTaxSumsBaseShippingAndRates]
+  - claim: TAX.DISPLAY.FINAL-ROUNDING
+    tests: [BackfillTaxTests#testDisplayAmountsRoundedToFinalScale]
+
+# Behaviors out of scope for this stage (not both bare + direct). Listed for completeness;
+# not "untestable", just not this stage's target (already covered, or non-direct).
+out_of_scope:
+  - claim: TAX.JURIS.ADDRESS-REQUIRED        # coverage=covered-incidental
+  - claim: TAX.JURIS.ADDRESS-TO-JURISDICTION # coverage=covered-asserted
+  - claim: TAX.RATE.STORE-SCOPE              # coverage=covered-incidental
+  - claim: TAX.RATE.AUTHORITY-MATCH          # coverage=covered-asserted
+  - claim: TAX.RATE.VARIANT-CATEGORY         # coverage=covered-incidental
+  - claim: TAX.RATE.THRESHOLD-MIN-ITEM-PRICE # coverage=covered-incidental
+  - claim: TAX.RATE.THRESHOLD-MIN-PURCHASE   # coverage=covered-incidental
+  - claim: TAX.CALC.TAXABLE-BASE             # coverage=covered-asserted
+  - claim: TAX.CALC.TAX-AMOUNT               # coverage=covered-asserted
+  - claim: TAX.EXEMPT.EFFECTIVE-INFO         # coverage=covered-asserted
+  - claim: TAX.EXEMPT.ZEROING                # coverage=covered-asserted
+  - claim: TAX.VAT.VARIANT-PRICE             # coverage=covered-incidental
+  - claim: TAX.ORDER.PER-ITEM                # coverage=covered-asserted
+
+# Behaviors whose observability is not direct: not forced into a test (rule 4).
+untestable:
+  - claim: TAX.VAT.PRICE-GROUP-SCOPE
+    reason: >
+      observability=internal. The price-group vs unscoped-purchase-price selection happens
+      inside getProductPrice and only changes WHICH ProductPrice row feeds the VAT branch;
+      it is not distinguishable at the calcTax/calcTaxForDisplay boundary (the adjustment
+      shape is identical). The catalog already records it as internal. No direct assertion
+      possible via the harness DSL without inspecting internal query selection.
+  - claim: TAX.ORDER.VALUE-WEIGHT
+    reason: >
+      observability=internal. The per-product value weight is an intermediate quantity; it
+      is only observable through its effect on freight/promotion tax splitting, which is
+      pinned directly by TAX.ORDER.FREIGHT-SPLIT
+      (BackfillTaxTests#testOrderFreightTaxSplitByProductValue). No independent direct
+      observable exists at the seam boundary.
+
+harness_gaps: []
+
+catalog_corrections: []
+
+run:
+  command: './gradlew "ofbiz --test component=accounting --test suitename=airliftbackfill" --console=plain'
+  result: green
+  notes: >
+    19 test methods, 0 failures, 0 errors (runtime/logs/test-results/airliftbackfill.xml:
+    tests="19" failures="0" errors="0"). All 15 bare+direct behaviors pinned. One expected
+    value was corrected during iteration (not a catalog change): the display service
+    (rateProductTaxCalcForDisplay) passes shippingPrice as the taxable shipping amount to
+    getTaxAdjustments, so shipping is included in the taxable base — taxTotal for the
+    two-rate display case is 210*(6%+4%)=21.00 and priceWithTax=120.50, not 20.00/120.00.
+    This is consistent with the TAX.DISPLAY.PRICE-WITH-TAX statement ("base price plus any
+    shipping"), so no catalog correction was needed. No production source was modified.

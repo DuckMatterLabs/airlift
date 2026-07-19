@@ -1,0 +1,54 @@
+id: TAX.CONTRACT.CALC-TAX
+kind: contract
+title: Order tax calculation — what the caller supplies and what comes back.
+status: extracted
+priority: core
+terms:
+  - tax-calculation
+  - store-scope
+  - selling-organization
+  - purchasing-party
+  - destination-address
+  - facility
+  - order-line
+  - freight
+  - promotions
+  - tax-adjustment
+  - tax-amount
+  - rate-percentage
+  - jurisdiction-geo
+depends_on: []
+behavior: |
+  Rule: The order tax calculation consumes an order and returns per-line and order-level tax lines
+    Given a selling store or a selling-organization
+    And optionally a purchasing-party being billed
+    And a destination that is either a destination-address or a facility
+    And one or more order-lines each pairing a product with a unit-price and a quantity
+    And optionally an order-level freight amount
+    And optionally an order-level promotions amount
+    When tax is calculated for the order
+    Then a list of tax-adjustments is returned for each order-line, in line order
+    And a list of order-level tax-adjustments is returned for freight and promotions
+    And each tax-adjustment carries a tax-amount, a rate-percentage, and a jurisdiction-geo
+scenarios:
+  - name: single-taxable-line-returns-one-item-tax-line
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      tax-authority: {jurisdiction: state, rate-percentage: "6.25"}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, tax-amount: "6.250", rate-percentage: "6.25", jurisdiction-geo: state}
+      order-adjustments: []
+outputs_affected: [tax-adjustment, tax-amount, rate-percentage, jurisdiction-geo, exempt-amount, included-tax, customer-tax-id]
+observability: direct
+source_fragments: [F-STAX-001, F-STAX-003, F-TAS-014, F-TAS-021, F-TAS-025]
+confidence: derived-from-code
+notes: >
+  This is the seam's primary entry point. Per-line tax-adjustments come back as a list of
+  lists (one list per order-line, in the same order); order-level freight/promotion
+  tax-adjustments come back in a separate list. A calculation with no billed purchasing-party
+  still computes tax but records no exemption or customer-tax-id.

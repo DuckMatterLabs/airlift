@@ -1,0 +1,257 @@
+# Airlift Stage 5 — Domain model + fixture vocabulary for the sales-tax seam.
+# The conceptual entities the claims quantify over, their attributes (with units and
+# enumerations), and — for each — the harness-contract fixture verbs that construct them.
+# Every `Given` in every claim must be expressible via the verbs listed here. Verb names are
+# from harness-contract.md; signatures are documented there (not repeated).
+
+source_binding:
+  repo: ofbiz-framework
+  commit: b77897f330728cd65dc03853a78315799844ecce
+
+units:
+  money: decimal string, currency-agnostic (e.g. "100.00")
+  percentage: decimal string, whole-percent scale (e.g. "6.25" = 6.25 percent)
+  count: decimal string quantity (e.g. "3")
+  geo-id: opaque string identifying a taxing-jurisdiction
+  party-id: opaque string identifying a party
+  boolean: true | false | unset (unset semantics are per-claim)
+
+concepts:
+  - concept: taxing-jurisdiction
+    glossary: term.taxing-jurisdiction
+    attributes:
+      - name: level
+        enum: [country, state, county, postal-code-area]
+      - name: geo-id
+        unit: geo-id
+      - name: contained-in
+        note: optional parent jurisdiction establishing region-containment
+    fixture_verbs:
+      - fx.country()            # -> country geo-id
+      - fx.state(countryGeoId)  # state contained in country
+      - fx.county(stateGeoId)   # county contained in state
+      - fx.containedIn(parentGeoId, childGeoId)  # extra region-containment
+    notes: >
+      Region-containment only extends matching AFTER the destination-address is accepted: the
+      address must itself name a country, a state, or a postal-code-area (see
+      TAX.JURIS.ADDRESS-REQUIRED and the destination-address concept). Given such an address,
+      GeoWorker.expandGeoRegionDeep walks UP the REGIONS hierarchy so an authority for an enclosing
+      region — e.g. a country-level authority above a state-named address — is also matched. A
+      county alone does NOT satisfy the address requirement and cannot license containment on its
+      own; a county named IN ADDITION to a state/country/postal-code-area participates in the same
+      upward expansion but is never the licensing fact. So the containment concept's fixture
+      mapping must keep the address naming a state/country: e.g.
+      fx.address().state(fx.state(fx.country())) with a fx.taxAuthority(country) authority.
+
+  - concept: tax-authority
+    glossary: term.tax-authority
+    attributes:
+      - name: jurisdiction-geo
+        unit: geo-id
+      - name: authority-party
+        unit: party-id
+    fixture_verbs:
+      - fx.taxAuthority(geoId)   # authority governing that geo; .geoId(), .partyId()
+      - fx.globalAuthority()     # the catch-all default-authority
+      - fx.inheritExemption(childAuthority, parentAuthority)  # exemption-inheritance link
+      - fx.glAccountFor(authority, organizationPartyId)       # ledger account -> gl-account-override
+
+  - concept: rate-rule
+    glossary: term.rate-rule
+    attributes:
+      - name: rate-percentage
+        unit: percentage
+      - name: minimum-item-price
+        unit: money
+        note: unset = no floor
+      - name: minimum-purchase
+        unit: money
+        note: unset = no floor
+      - name: shipping-taxable-flag
+        unit: boolean
+      - name: promotions-taxable-flag
+        unit: boolean
+      - name: store-scope
+        note: a store-id, or unset for a global-rule
+      - name: tax-category
+        note: a category-id, or unset for an all-products rule
+      - name: effective-date-range
+        note: from/thru offsets in days from now
+    fixture_verbs:
+      - fx.rate(authority)   # builder: .percent .minItemPrice .minPurchase .taxShipping
+                             #          .taxPromotions .store .category .fromDaysFromNow
+                             #          .thruDaysFromNow .description ; then .create()
+    notes: >
+      Options not called remain UNSET; unset minimum-item-price / minimum-purchase impose no
+      threshold, unset store-scope makes a global-rule, unset tax-category makes an
+      all-products rule.
+
+  - concept: purchasing-party
+    glossary: term.purchasing-party
+    attributes:
+      - name: party-id
+        unit: party-id
+      - name: kind
+        enum: [individual, organization]
+    fixture_verbs:
+      - fx.customer(lastName)      # individual purchasing-party
+      - fx.organization(name)      # organization party (also usable as selling-organization/party-group)
+      - fx.groupRollup(groupPartyId, memberPartyId)  # member rolls up into group
+
+  - concept: tax-registration
+    glossary: term.tax-registration
+    attributes:
+      - name: tax-registration-id
+        note: e.g. "EX-001" -> reported as customer-tax-id
+      - name: exempt
+        unit: boolean
+      - name: effective-date-range
+        note: from/thru offsets in days from now
+      - name: authority
+        note: the tax-authority the registration is with
+    fixture_verbs:
+      - fx.registration(partyId, authority)  # builder: .taxId .exempt .fromDaysFromNow
+                                             #          .thruDaysFromNow ; then .create()
+
+  - concept: selling-store
+    glossary: term.store-scope
+    attributes:
+      - name: store-id
+      - name: selling-organization
+        unit: party-id
+        note: pay-to party; defaults to a fresh organization
+      - name: store-price-group
+        note: default store group when .inDefaultStoreGroup() is called
+      - name: vat-inclusive
+        note: >
+          set via .vatDisplay(authority) -> vat-inclusive-store with configured authority. This
+          governs ONLY the display-price path (calcTaxForDisplay); it does NOT trigger the
+          order-path tax-inclusive extraction, which is driven solely by the product's
+          tax-inclusive catalog price record (see product-price concept and TAX.VAT.PRICE-INCLUSIVE).
+    fixture_verbs:
+      - fx.store()  # builder: .payTo .inDefaultStoreGroup .vatDisplay ; then .create() -> storeId
+
+  - concept: product
+    glossary: term.product
+    attributes:
+      - name: product-id
+      - name: taxable-flag
+        unit: boolean
+        note: taxable(true) / taxable(false) / taxableUnset() (unset treated as taxable)
+      - name: is-variant
+        note: .variantOf(virtualId) makes a variant-product; .virtual() makes a virtual-product
+    fixture_verbs:
+      - fx.product()   # builder: .taxable .taxableUnset .variantOf .virtual ; then .create() -> productId
+      - fx.category()  # -> a tax-category id
+      - fx.inCategory(productId, categoryId)  # membership of product in tax-category
+
+  - concept: product-price
+    glossary: term.tax-inclusive-price
+    attributes:
+      - name: price
+        unit: money
+      - name: price-with-tax
+        unit: money
+      - name: tax-in-price
+        unit: boolean
+      - name: authority
+        note: the tax-authority the price is scoped to
+    fixture_verbs:
+      - fx.price(productId, authority)  # builder: .price .priceWithTax .taxInPrice ; then .create()
+      # tax-inclusive record (the SOLE trigger for order-path VAT extraction / included-tax):
+      #   fx.price(product, authority).price("35.83").taxInPrice(true).create()
+      # tax-exclusive record carrying an intended gross (drives the price-correction line):
+      #   fx.price(product, authority).price("35.83").priceWithTax("43.00").taxInPrice(false).create()
+    notes: >
+      The tax-inclusive branch of the order-tax path (VAT_TAX adjustment / included-tax) is
+      triggered SOLELY by a ProductPrice record resolved for the product — scoped to the matched
+      tax-authority (taxAuthGeoId + taxAuthPartyId, productPricePurposeId "PURCHASE") and, when the
+      store has one, its store-price-group — with taxInPrice = true. It is NOT triggered by the
+      store's VAT-display setting, which governs only the display path (see selling-store
+      vat-inclusive and TAX.DISPLAY.VAT-ONLY). Every tax-inclusive Given must therefore create this
+      record explicitly via the verb chain price(product, authority) ... taxInPrice(true) ...
+      create(), scoped to the same authority whose rate-rule matches; a variant product with no
+      record of its own falls back to its virtual parent's record (TAX.VAT.VARIANT-PRICE).
+
+  - concept: destination-address
+    glossary: term.destination-address
+    attributes:
+      - name: country
+        unit: geo-id
+      - name: state
+        unit: geo-id
+      - name: county
+        unit: geo-id
+      - name: postal-code-area
+        unit: geo-id
+    fixture_verbs:
+      - fx.address()          # builder: .country .state .county .postalCodeGeo (no .create())
+      - fx.facility(address)  # a facility located at that address -> facilityId
+
+  - concept: order-line
+    glossary: term.order-line
+    attributes:
+      - name: product
+      - name: unit-price
+        unit: money
+      - name: quantity
+        unit: count
+      - name: line-amount
+        unit: money
+        note: unit-price x quantity, unless overridden with itemWithAmount
+      - name: line-shipping
+        unit: money
+        note: optional per-line freight
+    fixture_verbs:
+      - .item(productId, unitPrice, quantity)  # on fx.calcTax(); line-amount = price x qty
+      - .itemWithAmount(productId, unitPrice, quantity, lineAmount)
+      - .lineShipping(amount)  # applies to most recent line
+
+  - concept: tax-adjustment
+    glossary: term.tax-adjustment
+    attributes:
+      - name: adjustment-type
+        enum: [sales-tax-line, vat-tax-line, price-correction-line]
+        note: exposed as "SALES_TAX" | "VAT_TAX" | "VAT_PRICE_CORRECT"
+      - name: tax-amount
+        unit: money
+      - name: exempt-amount
+        unit: money
+      - name: included-tax
+        unit: money
+      - name: rate-percentage
+        unit: percentage
+      - name: jurisdiction-geo
+        unit: geo-id
+      - name: authority-party
+        unit: party-id
+      - name: primary-geo
+        unit: geo-id
+      - name: customer-tax-id
+      - name: gl-account-override
+      - name: adjustment-description
+    fixture_verbs: []
+    notes: >
+      Output concept, not constructed by fixtures; observed on the result. Item lines via
+      result.itemAdjustments(i)/single(i); order-level via result.orderAdjustments().
+
+  - concept: tax-calculation-request
+    glossary: term.tax-calculation
+    attributes:
+      - name: selling-store-or-organization
+        note: .store(storeId) or .payTo(partyId)
+      - name: purchasing-party
+        note: .billTo(partyId) (optional)
+      - name: destination
+        note: .shipTo(address) or .atFacility(facilityId)
+      - name: lines
+        note: one or more .item()/.itemWithAmount()
+      - name: order-freight
+        unit: money
+        note: .orderShipping(amount)
+      - name: order-promotions
+        unit: money
+        note: .orderPromotions(amount)
+    fixture_verbs:
+      - fx.calcTax()  # builder; .run() -> TaxCalcResult, or .runExpectingError() -> String
+      - fx.calcTaxForDisplay(storeId, productId, basePrice, quantity, shippingPrice)

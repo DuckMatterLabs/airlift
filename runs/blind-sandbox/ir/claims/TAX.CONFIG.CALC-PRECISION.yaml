@@ -1,0 +1,27 @@
+id: TAX.CONFIG.CALC-PRECISION
+kind: config
+title: Intermediate tax amounts are computed at three decimal places, rounding half up.
+status: extracted
+priority: core
+terms: [calculation-precision, rounding-mode, tax-amount]
+depends_on: []
+behavior: |
+  Rule: Every intermediate tax-amount is computed at the calculation-precision
+    Given the calculation-precision is three decimal places
+    And the rounding-mode is round-half-up
+    When tax is calculated for the order
+    Then each tax-amount is rounded to three decimal places using round-half-up
+scenarios:
+  - name: exact-rate-times-base
+    given: {taxable-amount: "100.00", rate-percentage: "6.25"}
+    expect: {tax-amount: "6.250"}
+  - name: half-up-rounding-at-third-decimal
+    given: {taxable-amount: "10.05", rate-percentage: "7"}
+    expect: {tax-amount: "0.704"}   # 10.05*7/100 = 0.7035 -> half-up at 3dp -> 0.704
+outputs_affected: [tax-amount]
+observability: direct
+source_fragments: [F-ARITH-001, F-TAS-002, F-TAS-039]
+confidence: derived-from-code
+notes: >
+  Values read from the sales-tax calc configuration: three calc decimals, round-half-up.
+  These constants scale every multiply/divide in the item-level tax computation.

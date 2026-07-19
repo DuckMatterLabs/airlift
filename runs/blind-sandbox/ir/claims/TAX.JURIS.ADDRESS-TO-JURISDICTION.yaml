@@ -1,0 +1,33 @@
+id: TAX.JURIS.ADDRESS-TO-JURISDICTION
+kind: behavior
+title: Taxing jurisdictions are derived from the destination address components.
+status: extracted
+priority: core
+terms: [destination-address, country, state, county, postal-code-area, taxing-jurisdiction, tax-authority, jurisdiction-geo, tax-adjustment]
+depends_on: [TAX.RATE.AUTHORITY-MATCH]
+behavior: |
+  Rule: The jurisdiction on each tax line comes from the destination-address location
+    Given a destination-address naming a country and a state
+    And a tax-authority for that state with a rate-rule
+    When tax is calculated for the order
+    Then a tax-adjustment appears whose jurisdiction-geo is that state
+scenarios:
+  - name: state-address-yields-state-jurisdiction
+    given:
+      store: present
+      destination-address: {country: present, state: present}
+      tax-authority: {jurisdiction: state, rate-percentage: "6.25"}
+      order-lines: [{product: taxable, unit-price: "100.00", quantity: "1"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: sales-tax-line, jurisdiction-geo: state, tax-amount: "6.250"}
+outputs_affected: [jurisdiction-geo, primary-geo]
+observability: direct
+source_fragments: [F-TAS-026, F-TAS-027, F-PARTYEM-001]
+confidence: derived-from-code
+notes: >
+  The destination's country, state, county, and postal-code-area are each mapped to a
+  jurisdiction, then matched against configured tax-authorities. Region-containment can add
+  enclosing jurisdictions (see TAX.JURIS.CONTAINMENT).

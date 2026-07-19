@@ -1,0 +1,144 @@
+[airlift] copilot stage=ofbiz-tax-map-a1 workdir=/Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework model=claude-opus-4-8
+I'll start by gathering the essential context: the commit hash and the primary source file.
+
+✗ Check output directory existence (shell)
+  │ ls -la /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ 2>/dev/null; echo "---"; ls -la
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/ 2>/dev/null
+  └ Permission denied and could not request permission from user
+
+● Count lines in primary file (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && wc -l
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ 2 lines…
+
+● Get commit hash and repo dir name (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && git rev-parse HEAD && basename "$(git
+  │ rev-parse --show-toplevel)"
+  └ 3 lines…
+
+● Create output dir (shell)
+  │ mkdir -p /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax && echo ok; ls -la
+  │ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax
+  └ 5 lines…
+
+Now let me read the entire primary source file. It's 772 lines, so I'll read it in chunks.
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L1:130 (130 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L130:300 (171 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L300:470 (171 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L470:640 (171 lines read)
+
+● Read TaxAuthorityServices.java
+  │ applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
+  └ L640:772 (133 lines read)
+
+I have the full primary file. Now let me examine the secondary files: service definitions, config, and relevant entity schema definitions.
+
+● Read arithmetic.properties
+  │ applications/accounting/config/arithmetic.properties
+  └ 52 lines read
+
+● Count lines of secondary files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && wc -l
+  │ applications/accounting/servicedef/services_tax.xml
+  │ applications/accounting/config/arithmetic.properties
+  └ 4 lines…
+
+● Read services_tax.xml
+  │ applications/accounting/servicedef/services_tax.xml
+  └ 228 lines read
+
+Now let me locate the entity definitions. Let me find which entitymodel files contain each relevant entity and their line ranges.
+
+● Locate each entity definition (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && for e in TaxAuthority
+  │ TaxAuthorityRateProduct TaxAuthorityRateType TaxAuthorityAssoc TaxAuthorityGlAccount
+  │ TaxAuthorityCategory PartyTaxAuthInfo PartyRelationship ProductStore Product ProductPrice
+  │ ProductCategoryMember PostalAddress Geo GeoAssoc Facility OrderAdjustment; do
+  │ echo "=== $e ==="…
+  └ 38 lines…
+
+Let me get the exact line ranges for each entity definition.
+
+● Compute entity line ranges (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && python3 - <<'EOF'
+  │ import re
+  │ targets = {
+  │ "applications/datamodel/entitydef/accounting-entitymodel.xml":
+  │ ["TaxAuthority","TaxAuthorityRateProduct","TaxAuthorityRateType","TaxAuthorityAssoc","TaxAutho…
+  └ 44 lines…
+
+I have all the data I need. Let me quickly capture the helper utility file paths for the inventory, then verify a couple of entity ranges' content.
+
+● Read accounting-entitymodel.xml
+  │ applications/datamodel/entitydef/accounting-entitymodel.xml
+  └ L3780:3819 (40 lines read)
+
+● Locate helper util files (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/ofbiz-framework && for c in GeoWorker ContactMechWorker
+  │ ProductWorker UtilNumber; do f=$(grep -rl "class $c" --include=*.java framework applications
+  │ 2>/dev/null | head -1); echo "$c -> $f"; done
+  └ 5 lines…
+
+I have everything needed. Now I'll write the fragment map YAML.
+
+● Create fragment-map.yaml +639
+  └ /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/fragment-map.yaml
+
+Now let me verify: YAML parses and the primary file's fragment ranges give full, gap-free, non-overlapping coverage of lines 1-772.
+
+● Validate YAML and coverage (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax && python3 - <<'EOF'
+  │ import yaml
+  │ d = yaml.safe_load(open("fragment-map.yaml"))
+  │ print("YAML OK. fragments:", len(d["fragments"]), "seams:", len(d["seams"]))
+  │ # coverage check for the primary file…
+  └ 33 lines…
+
+● Install pyyaml and validate (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax && pip install pyyaml -q 2>/dev/null;
+  │ python3 - <<'EOF'
+  │ import yaml
+  │ d = yaml.safe_load(open("fragment-map.yaml"))
+  │ print("YAML OK. fragments:", len(d["fragments"]), "seams:", len(d["seams"]))…
+  └ 23 lines…
+
+● Validate YAML with ruby (shell)
+  │ cd /Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax && ruby -ryaml -e
+  │ 'd=YAML.load_file("fragment-map.yaml"); puts "YAML OK frags=#{d["fragments"].size}
+  │ seams=#{d["seams"].size}"; prim="applications/accounting/src/main/java/org/apache/ofbiz/accoun
+  │ ting/tax/TaxAuthorityServices.java";
+  │ rs=d["fragments"].select{|f|f["file"]==prim}.map{|f|f["lines"]}.sort; cov={}; prev=0; ok=true;…
+  └ 11 lines…
+
+Validation passes. The fragment map is complete and correct.
+
+**Summary**
+
+Wrote `/Volumes/Dancer/Develop/AIRLIFT/airlift/out/ofbiz-tax/fragment-map.yaml` (validated: parses, 79 fragments, 9 seams).
+
+- **Primary file** `TaxAuthorityServices.java` (772 lines): 57 fragments with verified **total coverage** — contiguous, no gaps, no overlaps, ends exactly at line 772.
+- **Secondary files** (contract, config, 5 schema files): 22 fragments covering only the touched parts — the two calc services + interfaces, the `salestax.*` config group, and the 16 entity definitions.
+- **Roles**: 16 business-logic, 20 fused, 37 plumbing, 6 boilerplate. Every `fused` fragment carries a `fused_note`.
+- **Provenance-critical seams** captured as fused: threshold rules as query predicates (`F-TAS-036`, `F-ACCTEM-006`), exemption zeroing / group-rollup / inheritance (`F-TAS-044/055/056`, `F-ACCTEM-001/003`).
+- **9 seams** trace business transactions across layers: contract→Java dispatch, config-driven rounding, geo-containment jurisdiction resolution, rate-rule matching as one fused query, party exemption, VAT-in-price handling, freight/promotion split, and face-to-face facility fallback.
+
+No source was modified; only the single output file was written.
+
+
+
+Changes    +639 -0
+Duration   6m 48s
+Tokens     ↑ 850.4k (762.0k cached, 86.1k written) • ↓ 33.9k (12.8k reasoning)
+Resume     copilot --resume=c99c9f6e-457e-4871-960a-2e10315cfc42

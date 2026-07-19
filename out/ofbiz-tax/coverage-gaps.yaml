@@ -1,0 +1,229 @@
+# Airlift Stage 2 — Test-landscape survey of the sales-tax seam
+# Target: applications/accounting/.../tax/TaxAuthorityServices.java via the calcTax /
+#         calcTaxForDisplay services. Coverage judged for behaviour-carrying fragments
+#         (role: business-logic | fused) in fragment-map.yaml.
+
+search_log:
+  # -- direct references to the seam symbols / contract across all source idioms --
+  - pattern: 'rateProductTaxCalc|calcTaxForDisplay|calcTax\b|TaxAuthorityServices'
+    scope: 'repo-wide, --include java/xml/groovy/ftl, excluding the seam files themselves'
+    hits: 15   # all callers/UI-labels; only accounting tax test dir + order/invoice main code
+  - pattern: 'rateProductTaxCalc'
+    scope: 'applications/*/src/test, applications/*/testdef, framework/*/src/test, framework/*/testdef'
+    hits: 0    # no test names the Java entry point directly
+  - pattern: 'calcTax|calcTaxForDisplay'
+    scope: 'all src/test + testdef trees, excluding the airlift harness'
+    hits: 0    # no native OFBiz test invokes the calcTax service
+  - pattern: 'calcTax|calcTaxForDisplay'
+    scope: 'applications/accounting/src/test (airlift harness included)'
+    hits: 2    # TaxFixture.java (DSL runner) + SmokeTaxTests.java (self-test)
+  - pattern: 'TaxAuthorityServices'
+    scope: 'applications/*/src/test, framework/*/src/test'
+    hits: 0    # no test imports/references the class
+  - pattern: 'SALES_TAX'
+    scope: 'applications/*/src/test, applications/*/testdef'
+    hits: 6    # investigated each — none is produced by the seam (see note below)
+  - pattern: 'tax'
+    scope: 'applications/*/testdef/*.xml (declarative test-suite defs), excluding airlift'
+    hits: 0    # no simple-method / entity-xml test-case exercises tax calc
+  - pattern: 'test-suite / junit-test-suite registration'
+    scope: 'applications/accounting/ofbiz-component.xml + applications/accounting/testdef/*.xml'
+    hits: 9    # 6 native suites + 3 airlift suites (smoke registered; backfill/blind stubbed)
+  - pattern: 'createOrder|checkout|storeOrder|shipTo|shippingContactMech'
+    scope: 'applications/order/src/test/groovy, applications/order/testdef (OrderTests, ShoppingCartTests, QuoteTests)'
+    hits: 0    # no order/checkout test drives a shipping address into the tax engine
+
+# NOTE on the 6 SALES_TAX hits: QuoteTests.groovy:341 asserts a pre-seeded QuoteAdjustment
+# (SALES_TAX) copied by copyQuoteItem from QuoteTestData.xml — never computed by the seam.
+# AutoAcctgAdminTests.groovy uses invoiceItemType 'PINV_SALES_TAX' (GL posting, not calcTax).
+# The remaining hits are seed-data rows in *TestData.xml. None invoke rateProductTaxCalc.
+
+existing_tests:
+  - path: applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/SmokeTaxTests.java
+    kind: JUnit-3 OFBizTestCase (junit-test-suite), registered in applications/accounting/ofbiz-component.xml:69 via testdef/airliftsmoketests.xml
+    touches: [F-STAX-003, F-TAS-014, F-TAS-015, F-TAS-016, F-TAS-018, F-TAS-019, F-TAS-020,
+              F-TAS-021, F-TAS-022, F-TAS-025, F-TAS-026, F-TAS-027, F-TAS-029, F-TAS-030,
+              F-TAS-031, F-TAS-032, F-TAS-033, F-TAS-036, F-TAS-037, F-TAS-038, F-TAS-039,
+              F-TAS-040, F-TAS-041, F-TAS-043, F-TAS-044, F-TAS-049, F-TAS-051, F-TAS-053,
+              F-TAS-054, F-TAS-055, F-ARITH-001, F-ACCTEM-001, F-ACCTEM-002, F-ACCTEM-006,
+              F-ACCTEM-007, F-PARTYEM-001, F-PRODEM-001, F-PRODEM-003, F-PRODEM-004,
+              F-PRODEM-005, F-COMMONEM-001, F-COMMONEM-002, F-ORDEREM-001]
+    observes_outcome: yes
+    evidence: >-
+      testBasicSalesTaxCalculation asserts SALES_TAX type (SmokeTaxTests.java:29),
+      amount 6.250 (line 31), rate 6.25 (line 32), jurisdiction geo == state (line 33);
+      testExemptPartyPaysZero asserts amount 0 (line 55), exemptAmount 10.000 (line 56),
+      customerTaxId 'EX-001' (line 57). Both call fx.calcTax()...run() ->
+      dispatcher.runSync("calcTax", ...) (TaxFixture.java:672) -> rateProductTaxCalc.
+  - path: applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/TaxFixture.java
+    kind: test fixture / DSL (not a test case) — builds seed data and invokes the calcTax service
+    touches: [F-STAX-003]
+    observes_outcome: 'no (support code; assertions live in the test cases)'
+    evidence: 'Calc.run()/runExpectingError() at TaxFixture.java:671-701 invoke the calcTax service.'
+  - path: applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/AirliftTaxTestCase.java
+    kind: abstract JUnit base (assertDecimal / assertNoAdjustments helpers)
+    touches: []
+    observes_outcome: 'no (base class only)'
+    evidence: 'assertDecimal/assertNoAdjustments defined at lines 24-35; no service call.'
+  - path: applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/test/TaxCalcResult.java
+    kind: result wrapper used by assertions (maps OrderAdjustment fields)
+    touches: [F-ORDEREM-001]
+    observes_outcome: 'no (accessor wrapper)'
+    evidence: 'Maps amount/exemptAmount/sourcePercentage/taxAuthGeoId/customerReferenceId (lines 30-66).'
+  - path: applications/accounting/testdef/airliftbackfilltests.xml
+    kind: registered junit-test-suite pointing at ...tax.test.backfill.BackfillTaxTests
+    touches: []
+    observes_outcome: 'no'
+    evidence: 'Class does not exist yet — backfill/ dir is empty (future Airlift stage). Suite loads nothing executable.'
+  - path: applications/accounting/testdef/airliftblindtests.xml
+    kind: registered junit-test-suite pointing at ...tax.test.blind.BlindTaxClaimTests
+    touches: []
+    observes_outcome: 'no'
+    evidence: 'Class does not exist yet — blind/ dir is empty (future Airlift stage). Suite loads nothing executable.'
+
+# Native OFBiz suites examined and found NOT to touch the seam (absence evidence):
+# applications/order/testdef/{OrderTest,ShoppingCartTests,QuoteTests}.xml and their groovy
+# tests, applications/accounting/testdef/{accountingtests,invoicetests,ratetests,...}.xml —
+# none invoke calcTax/rateProductTaxCalc (searches above return 0). The only executable
+# coverage of this seam is the Airlift harness self-test (SmokeTaxTests).
+
+coverage:
+  # ---- rateProductTaxCalcForDisplay path: never invoked (harness only calls calcTax) ----
+  - fragment: F-TAS-004        # accumulator seed (display)
+    status: bare
+    evidence: 'Display entry point calcTaxForDisplay/rateProductTaxCalcForDisplay is never called; harness uses only calcTax (TaxFixture.java:672). Search [calcTaxForDisplay] hits=0 in tests.'
+  - fragment: F-TAS-007        # VAT authority resolution (display)
+    status: bare
+    evidence: 'Display-only branch (showPricesWithVatTax); display path never executed.'
+  - fragment: F-TAS-010        # sum SALES_TAX (display)
+    status: bare
+    evidence: 'Display accumulation loop unreached; no test calls the display service.'
+  - fragment: F-TAS-012        # final rounding (display, uses salestax.final.decimals)
+    status: bare
+    evidence: 'Display final-rounding unreached; salestax.final.decimals never exercised by a test.'
+
+  # ---- rateProductTaxCalc (calcTax) path ----
+  - fragment: F-TAS-017        # facility address fallback
+    status: bare
+    evidence: 'Requires shippingAddress==null && facility!=null (TAS:204). Smoke tests always pass an explicit shipTo address; atFacility() DSL never used.'
+  - fragment: F-TAS-018        # address required guard
+    status: covered-incidental
+    evidence: 'Guard at TAS:220-232 executes and passes (address present) in both tests, but the returnError branch (missing address) is not asserted — no test drives the empty-address case.'
+  - fragment: F-TAS-021        # per-item loop
+    status: covered-asserted
+    evidence: 'Loop TAS:252-272 produces itemAdjustments; result.single(0) adjustment asserted (SmokeTaxTests.java:29,31-33).'
+  - fragment: F-TAS-022        # value weights
+    status: covered-incidental
+    evidence: 'Weight normalisation TAS:273-280 executes, but its only consumer is the shipping split (not exercised); weights never observed by an assertion.'
+  - fragment: F-TAS-023        # shipping tax split
+    status: bare
+    evidence: 'Guarded by orderShippingAmount>0 (TAS:282). No test sets orderShipping(); branch never runs.'
+  - fragment: F-TAS-024        # promotions tax
+    status: bare
+    evidence: 'Guarded by orderPromotionsAmount!=0 (TAS:289). No test sets orderPromotions(); branch never runs.'
+  - fragment: F-TAS-026        # address -> geo map (getTaxAuthorities)
+    status: covered-asserted
+    evidence: 'COUNTRY/STATE geo mapping (TAS:304-314) drives authority resolution; jurisdictionGeo==state asserted (SmokeTaxTests.java:33).'
+  - fragment: F-TAS-027        # geo expansion + TaxAuthority lookup
+    status: covered-asserted
+    evidence: 'TaxAuthority lookup (TAS:328-331) resolves the state authority; asserted via jurisdiction/amount. CAVEAT: deep region containment (GeoWorker.expandGeoRegionDeep over GeoAssoc REGIONS) is not exercised — no containedIn() nesting in any test.'
+  - fragment: F-TAS-031        # store condition
+    status: covered-incidental
+    evidence: 'storeCond built/applied (TAS:362-371) with a real productStoreId, but no test isolates store scoping (matched rule has no store restriction; a null-store rule would match equally). Effect not asserted.'
+  - fragment: F-TAS-032        # authorities condition
+    status: covered-asserted
+    evidence: 'taxAuthoritiesCond (TAS:374-390) selects the rule for the resolved authority; the asserted 6.250 amount depends on this selection (SmokeTaxTests.java:31).'
+  - fragment: F-TAS-034        # shipping taxability widening
+    status: bare
+    evidence: 'Requires product==null && shippingAmount!=null (TAS:396). Only reachable via the order-shipping sub-call (never fired). Bare.'
+  - fragment: F-TAS-035        # promotions taxability widening
+    status: bare
+    evidence: 'Requires product==null && orderPromotionsAmount!=null (TAS:406). Only reachable via the promotions sub-call (never fired). Bare.'
+  - fragment: F-TAS-036        # threshold main condition (minItemPrice / minPurchase)
+    status: covered-incidental
+    evidence: 'minItemPrice/minPurchase predicates are always appended and executed (TAS:418-423) with NULL thresholds on the test rule, so filtering is a no-op. PROVENANCE-CRITICAL threshold rules (minItemPrice()/minPurchase() DSL exist) are never populated, so the threshold behaviour is not asserted.'
+  - fragment: F-TAS-038        # taxable base
+    status: covered-asserted
+    evidence: 'product.taxable=true so taxable=itemAmount (TAS:442-445); the 6.250 amount asserted (SmokeTaxTests.java:31) confirms the taxable base.'
+  - fragment: F-TAS-039        # tax amount
+    status: covered-asserted
+    evidence: 'taxable*taxRate/100 at TAS:464-465; asserted amount 6.250 and rate 6.25 (SmokeTaxTests.java:31-32).'
+  - fragment: F-TAS-041        # product price resolution (VAT dispatch)
+    status: covered-incidental
+    evidence: 'getProductPrice invoked (TAS:486) because product/taxAuth present, but no tax-auth ProductPrice row is seeded so it returns null; the VAT-in-price dispatch is not observed.'
+  - fragment: F-TAS-042        # VAT-in-price extraction
+    status: bare
+    evidence: 'Requires productPrice.taxInPrice=="Y" (TAS:498). No taxInPrice ProductPrice seeded; VAT_TAX branch never runs.'
+  - fragment: F-TAS-044        # exemption entry / group rollup
+    status: covered-asserted
+    evidence: 'billToPartyId present in testExemptPartyPaysZero -> block TAS:550-564 executes, PartyRelationship GROUP_ROLLUP query runs, handlePartyTaxExempt called; exemption outcome asserted (SmokeTaxTests.java:55-56). CAVEAT: the group-rollup rule itself (honoring a GROUP''s exemption for a member) is only executed with an empty relationship list — the rollup inheritance is NOT asserted. This is a provenance-critical behaviour.'
+  - fragment: F-TAS-045        # negative VAT adjustment
+    status: bare
+    evidence: 'Requires discountedSalesTax<0 from the taxInPrice branch (TAS:569); that branch never fires.'
+  - fragment: F-TAS-046        # VAT price correction
+    status: bare
+    evidence: 'Requires productPrice.priceWithTax!=null && taxInPrice!=Y (TAS:577-579). No priceWithTax ProductPrice seeded; VAT_PRICE_CORRECT branch never runs.'
+  - fragment: F-TAS-049        # getProductPrice price query
+    status: covered-incidental
+    evidence: 'Invoked from TAS:486; ProductPrice query (TAS:657-675) executes and returns null (no seeded row). Outcome not asserted.'
+  - fragment: F-TAS-051        # setProductCategoryCond product-id condition
+    status: covered-incidental
+    evidence: 'product!=null path executes (TAS:711-715): ProductCategoryMember query runs (empty), returns the null-category condition. Variant/virtual branch untested; no category effect asserted.'
+  - fragment: F-TAS-052        # category match condition (IN productCategoryIdSet)
+    status: bare
+    evidence: 'Reached only when productCategoryIdSet is non-empty (TAS:723-725). Test products are in no category, so setProductCategoryCond returns early at TAS:721; the IN-clause return is never executed.'
+  - fragment: F-TAS-054        # party tax info lookup
+    status: covered-asserted
+    evidence: 'PartyTaxAuthInfo query (TAS:746-747) returns the exempt registration; customerReferenceId asserted as customerTaxId "EX-001" (SmokeTaxTests.java:57).'
+  - fragment: F-TAS-055        # exemption zeroing
+    status: covered-asserted
+    evidence: 'isExempt=="Y" -> amount 0, exemptAmount=taxAmount (TAS:752-755); both asserted (SmokeTaxTests.java:55-56). PROVENANCE-CRITICAL and pinned.'
+  - fragment: F-TAS-056        # exemption inheritance (parent TaxAuthorityAssoc EXEMPT_INHER)
+    status: bare
+    evidence: 'Block runs only when !foundExemption (TAS:760). In the exempt test foundExemption==true, so the TaxAuthorityAssoc lookup + recursion never executes. PROVENANCE-CRITICAL and untested.'
+
+  # ---- configuration ----
+  - fragment: F-ARITH-001      # salestax.calc.decimals / final.decimals / rounding
+    status: covered-asserted
+    evidence: 'salestax.calc.decimals=3 & rounding are asserted: 100*6.25% renders as 6.250 (SmokeTaxTests.java:30-31). NOTE: salestax.final.decimals is used only on the display path and is not exercised.'
+
+  # ---- entity schema fragments on the control path (fused only) ----
+  - fragment: F-ACCTEM-001     # PartyTaxAuthInfo
+    status: covered-asserted
+    evidence: 'Queried in handlePartyTaxExempt; exempt registration drives the asserted zeroing (SmokeTaxTests.java:55-57).'
+  - fragment: F-ACCTEM-003     # TaxAuthorityAssoc
+    status: bare
+    evidence: 'Only read by exemption inheritance (F-TAS-056), which never executes; no EXEMPT_INHER association is ever created or observed.'
+  - fragment: F-ACCTEM-006     # TaxAuthorityRateProduct
+    status: covered-asserted
+    evidence: 'Rate rows are seeded and queried (TAS:427-428); the resulting rate/amount are asserted (SmokeTaxTests.java:31-32).'
+  - fragment: F-PRODEM-003     # ProductPrice
+    status: covered-incidental
+    evidence: 'Queried by getProductPrice (TAS:657-675) and returns null (no tax-auth price seeded); VAT price behaviour not asserted.'
+  - fragment: F-COMMONEM-002   # GeoAssoc
+    status: covered-incidental
+    evidence: 'Read by GeoWorker.expandGeoRegionDeep during authority resolution (TAS:326), but no REGIONS containment is seeded (no containedIn()); geo-expansion outcome is not asserted.'
+
+summary:
+  bare_count: 15
+  covered_count: 21          # 12 covered-asserted + 9 covered-incidental
+  headline: >-
+    The sales-tax seam has essentially no native OFBiz test coverage: exhaustive searches
+    across every test idiom the repo uses (JUnit/OFBizTestCase suites, Groovy service tests,
+    and declarative testdef/test-suite XML registered in ofbiz-component.xml) return zero
+    hits for calcTax/rateProductTaxCalc/TaxAuthorityServices outside the tax test package, and
+    the order/checkout/quote suites never drive a shipping address into the engine. The ONLY
+    executable coverage is the Airlift harness self-test (SmokeTaxTests, 2 methods) which
+    invokes the real calcTax service and asserts outcomes for exactly two happy paths: a basic
+    single-item sales-tax calc (rate/amount/jurisdiction, plus the salestax.calc.decimals
+    rounding) and party exemption zeroing (amount->0, exemptAmount, customerTaxId). Of the 36
+    behaviour-carrying fragments, 12 are asserted, 9 are merely executed without observation
+    (store/threshold/category conditions, value weights, ProductPrice/GeoAssoc lookups that
+    return empty, the address guard's pass path), and 15 are entirely bare. Critically, the
+    whole rateProductTaxCalcForDisplay/VAT-in-price family is unreached (harness never calls
+    the display service), and among the provenance-critical behaviours the map flags for stage
+    5, only exemption zeroing is truly pinned: group-rollup exemption inheritance (F-TAS-044
+    rollup / F-TAS-056), jurisdiction exemption inheritance via TaxAuthorityAssoc (F-TAS-056,
+    F-ACCTEM-003), and the minItemPrice/minPurchase threshold rules (F-TAS-036) all execute at
+    most incidentally with empty data and are never asserted. Also fully bare: order-level
+    freight-tax splitting (F-TAS-022/023) and promotions taxability (F-TAS-024/035).

@@ -1,0 +1,46 @@
+id: TAX.VAT.PRICE-INCLUSIVE
+kind: behavior
+title: When prices already include tax, the embedded tax is extracted rather than added.
+status: pinned
+priority: core
+terms: [tax-inclusive-price, product, unit-price, line-amount, rate-percentage, included-tax, tax-adjustment, tax-amount, vat-tax-line]
+depends_on: [TAX.CALC.TAX-AMOUNT]
+behavior: |
+  Rule: When the product has a tax-inclusive catalog price in the taxing jurisdiction, the tax embedded in the line-amount is extracted, not added on top
+    Given a product with a catalog price record scoped to the taxing jurisdiction's authority and flagged tax-inclusive
+    When tax is calculated for the order
+    Then a vat-tax-line reports the embedded tax as its included-tax
+    And its tax-amount does not increase the amount the customer pays
+scenarios:
+  - name: extract-vat-from-tax-inclusive-price
+    given:
+      store: {in-default-store-group: true}
+      destination-address: {country: present, state: present}
+      tax-authority: {jurisdiction: state}
+      rate-rule: {jurisdiction: state, rate-percentage: "20"}
+      product-price:
+        product: taxable
+        authority: state
+        price: "35.83"
+        tax-in-price: true
+      order-lines: [{product: taxable, unit-price: "43.00", quantity: "3"}]
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: vat-tax-line, included-tax: "21.51", tax-amount: "0"}
+outputs_affected: [included-tax, tax-amount]
+observability: direct
+source_fragments: [F-TAS-041, F-TAS-042, F-TAS-049]
+confidence: derived-from-code
+notes: >
+  The tax-inclusive path is triggered SOLELY by a ProductPrice record found for the product,
+  scoped to the matched tax-authority (taxAuthGeoId + taxAuthPartyId) and the store group, with
+  taxInPrice = "Y" (F-TAS-041/F-TAS-042 via getProductPrice, F-TAS-049). It is NOT triggered by
+  the store's VAT-display setting (showPricesWithVatTax / vatDisplay), which governs only the
+  separate display calculation (see TAX.DISPLAY.VAT-ONLY). The fixture must therefore create the
+  catalog price explicitly: fx.price(product, authority).price("35.83").taxInPrice(true).create()
+  scoped to the same authority whose rate-rule matches. The embedded tax is computed per unit and
+  then scaled by quantity: with itemPrice 43.00 and rate 20%, per-unit tax = 43.00 - 43.00/1.20 =
+  43.00 - 35.83 = 7.17; included-tax = 7.17 * 3 = 21.51. The charged tax-amount is zero because
+  the tax is already inside the price.

@@ -1,0 +1,48 @@
+id: TAX.VAT.VARIANT-PRICE
+kind: behavior
+title: A variant product falls back to its parent's tax-inclusive price record.
+status: extracted
+priority: edge
+terms: [product, variant-product, virtual-product, tax-inclusive-price, included-tax, vat-tax-line]
+depends_on: [TAX.VAT.PRICE-INCLUSIVE]
+behavior: |
+  Rule: When a variant-product has no tax-inclusive catalog price of its own, its virtual-product's catalog price is used
+    Given a variant-product with no catalog price record of its own
+    And its virtual-product carries a catalog price record in the taxing jurisdiction flagged tax-inclusive
+    When tax is calculated for the order
+    Then the tax is derived from the virtual-product's tax-inclusive catalog price record
+scenarios:
+  - name: variant-uses-parent-vat-price
+    given:
+      store: {in-default-store-group: true}
+      destination-address: {country: present, state: present}
+      tax-authority: {jurisdiction: state}
+      rate-rule: {jurisdiction: state, rate-percentage: "20"}
+      order-lines:
+        - product:
+            variant-of: virtual-product
+            own-price-record: none
+          unit-price: "43.00"
+          quantity: "3"
+      virtual-product:
+        product-price:
+          authority: state
+          price: "35.83"
+          tax-in-price: true
+    expect:
+      item-adjustments:
+        - line: 0
+          adjustments:
+            - {adjustment-type: vat-tax-line, included-tax: "21.51", tax-amount: "0"}
+outputs_affected: [included-tax, tax-amount]
+observability: direct
+source_fragments: [F-TAS-041, F-TAS-049]
+confidence: derived-from-code
+notes: >
+  The tax-inclusive path is still triggered by a ProductPrice record with taxInPrice = "Y" scoped
+  to the matched tax-authority and store group, NOT by any store VAT-display setting. When
+  getProductPrice finds no record for the variant itself, the code looks up the parent (virtual)
+  product via ProductWorker.getParentProduct and calls getProductPrice again for the virtual
+  product (F-TAS-041, F-TAS-049). The virtual product's record must therefore be created scoped to
+  the same authority via fx.price(virtualProduct, authority).price("35.83").taxInPrice(true).create().
+  Numbers mirror TAX.VAT.PRICE-INCLUSIVE.
