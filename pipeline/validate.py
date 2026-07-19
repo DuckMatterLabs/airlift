@@ -4,8 +4,13 @@
 Usage: validate.py <stage> <out_dir> [--repo <repo_root>]
 stages: map | testscape | catalog | backfill | ir
 Exit 0 = valid; exit 1 = violations (printed to stdout, one per line).
+
+Every stage artifact must declare the schema_version it was written against
+(IR-SCHEMA.md section 0); the supported version is the single line in
+ir-spec/VERSION. Validators are extended across versions, never weakened.
 """
 import os
+import subprocess
 import sys
 
 import yaml
@@ -15,6 +20,41 @@ COVERAGE = {"covered-asserted", "covered-incidental", "bare"}
 OBSERVABILITY = {"direct", "indirect", "internal"}
 PRIORITY = {"core", "edge", "secondary"}
 KINDS = {"behavior", "invariant", "domain", "contract", "config"}
+STATUS_ORDER = {"extracted": 0, "pinned": 1, "verified": 2}
+ATTESTATION_TIERS = {"pinned", "verified"}
+ATTESTATION_KEYS = {"tier", "evidence", "sha", "date"}
+
+VERSION_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "..", "ir-spec", "VERSION")
+
+
+def supported_version():
+    with open(VERSION_FILE, encoding="utf-8") as fh:
+        return fh.read().strip()
+
+
+def parse_version(value):
+    major, _, minor = str(value).partition(".")
+    return int(major), int(minor)
+
+
+def check_version(doc, artifact):
+    """schema_version must match the supported major and not exceed the minor."""
+    declared = doc.get("schema_version")
+    supported = supported_version()
+    try:
+        s_major, s_minor = parse_version(supported)
+    except ValueError:
+        return [f"{artifact}: ir-spec/VERSION unparseable: {supported!r} (want major.minor)"]
+    if declared is None:
+        return [f"{artifact}: missing schema_version (schema v{supported} requires it)"]
+    try:
+        d_major, d_minor = parse_version(declared)
+    except ValueError:
+        return [f"{artifact}: unparseable schema_version {declared!r} (want major.minor, e.g. \"{supported}\")"]
+    if d_major != s_major or d_minor > s_minor:
+        return [f"{artifact}: schema_version {declared} not supported by these validators (supported: {supported})"]
+    return []
 
 
 def load(path):
@@ -22,18 +62,43 @@ def load(path):
         return yaml.safe_load(fh)
 
 
-def file_line_count(path):
-    with open(path, encoding="utf-8", errors="replace") as fh:
-        return sum(1 for _ in fh)
+def count_lines(blob):
+    return blob.count(b"\n") + (0 if blob.endswith(b"\n") or not blob else 1)
+
+
+def source_line_count(repo, commit, relpath):
+    """(line count, error) of relpath. Lines are evidence AT the source_binding
+    commit, never a later working tree (IR-SCHEMA.md section 2): when a commit is
+    declared, a failure to read the file at that commit is a violation — there is
+    deliberately NO working-tree fallback. Byte-level counting: legacy sources
+    need not be valid UTF-8."""
+    if commit:
+        try:
+            probe = subprocess.run(["git", "-C", repo, "show", f"{commit}:{relpath}"],
+                                   capture_output=True)
+        except OSError as exc:
+            return None, f"fragment-map: cannot run git in {repo}: {exc}"
+        if probe.returncode != 0:
+            detail = probe.stderr.decode(errors="replace").strip().splitlines()
+            return None, (f"fragment-map: cannot read {relpath} at source_binding.commit "
+                          f"{commit} ({detail[0] if detail else 'git show failed'})")
+        return count_lines(probe.stdout), None
+    path = os.path.join(repo, relpath)
+    if not os.path.exists(path):
+        return None, f"fragment-map: primary file not found in repo: {relpath}"
+    with open(path, "rb") as fh:
+        return count_lines(fh.read()), None
 
 
 def v_map(out_dir, repo):
     errs = []
     doc = load(os.path.join(out_dir, "fragment-map.yaml"))
+    errs += check_version(doc, "fragment-map")
     frags = doc.get("fragments") or []
     if not frags:
-        return ["fragment-map: no fragments"]
-    if not (doc.get("source_binding") or {}).get("commit"):
+        return errs + ["fragment-map: no fragments"]
+    commit = (doc.get("source_binding") or {}).get("commit")
+    if not commit:
         errs.append("fragment-map: missing source_binding.commit")
     ids = set()
     by_file = {}
@@ -57,9 +122,10 @@ def v_map(out_dir, repo):
     if repo and by_file:
         primary = max(by_file, key=lambda f: len(by_file[f]))
         spans = sorted(by_file[primary])
-        path = os.path.join(repo, primary)
-        if os.path.exists(path):
-            total = file_line_count(path)
+        total, err = source_line_count(repo, commit, primary)
+        if err:
+            errs.append(err)
+        else:
             cursor = 1
             for start, end, fid in spans:
                 if start > cursor:
@@ -69,14 +135,13 @@ def v_map(out_dir, repo):
                 cursor = max(cursor, end + 1)
             if cursor <= total:
                 errs.append(f"fragment-map: {primary}: uncovered tail {cursor}-{total}")
-        else:
-            errs.append(f"fragment-map: primary file not found in repo: {primary}")
     return errs
 
 
 def v_testscape(out_dir, repo):
     errs = []
     doc = load(os.path.join(out_dir, "coverage-gaps.yaml"))
+    errs += check_version(doc, "coverage-gaps")
     fmap = load(os.path.join(out_dir, "fragment-map.yaml"))
     known = {fr["id"] for fr in fmap.get("fragments", [])}
     behavior_frags = {fr["id"] for fr in fmap.get("fragments", [])
@@ -100,6 +165,7 @@ def v_testscape(out_dir, repo):
 def v_catalog(out_dir, repo):
     errs = []
     doc = load(os.path.join(out_dir, "behavior-catalog.yaml"))
+    errs += check_version(doc, "behavior-catalog")
     fmap = load(os.path.join(out_dir, "fragment-map.yaml"))
     known = {fr["id"] for fr in fmap.get("fragments", [])}
     behavior_frags = {fr["id"] for fr in fmap.get("fragments", [])
@@ -135,6 +201,7 @@ def v_catalog(out_dir, repo):
 def v_backfill(out_dir, repo):
     errs = []
     doc = load(os.path.join(out_dir, "backfill-report.yaml"))
+    errs += check_version(doc, "backfill-report")
     if (doc.get("run") or {}).get("result") != "green":
         errs.append("backfill-report: run.result is not green")
     if not doc.get("pinned"):
@@ -142,10 +209,39 @@ def v_backfill(out_dir, repo):
     return errs
 
 
+def v_claim_attestations(cid, claim):
+    errs = []
+    status = claim.get("status")
+    if status not in STATUS_ORDER:
+        errs.append(f"ir: {cid}: bad status {status!r} (want one of {sorted(STATUS_ORDER)})")
+        return errs
+    max_tier = None
+    for att in claim.get("attestations") or []:
+        if not isinstance(att, dict):
+            errs.append(f"ir: {cid}: attestation is not a mapping")
+            continue
+        missing = ATTESTATION_KEYS - set(att)
+        if missing:
+            errs.append(f"ir: {cid}: attestation missing {sorted(missing)}")
+        tier = att.get("tier")
+        if tier not in ATTESTATION_TIERS:
+            errs.append(f"ir: {cid}: attestation bad tier {tier!r}")
+        elif max_tier is None or STATUS_ORDER[tier] > STATUS_ORDER[max_tier]:
+            max_tier = tier
+    if max_tier and STATUS_ORDER[status] < STATUS_ORDER[max_tier]:
+        errs.append(f"ir: {cid}: status {status} below attested tier {max_tier}")
+    if status in ATTESTATION_TIERS and (
+            max_tier is None or STATUS_ORDER[max_tier] < STATUS_ORDER[status]):
+        errs.append(f"ir: {cid}: status {status} without a supporting attestation "
+                    f"at tier >= {status} (statuses are moved only by promote.py)")
+    return errs
+
+
 def v_ir(out_dir, repo):
     errs = []
     ir = os.path.join(out_dir, "ir")
     manifest = load(os.path.join(ir, "ir-manifest.yaml"))
+    errs += check_version(manifest, "ir-manifest")
     glossary = load(os.path.join(ir, "glossary.yaml"))
     trace = load(os.path.join(ir, "traceability.yaml"))
     fmap = load(os.path.join(out_dir, "fragment-map.yaml"))
@@ -171,6 +267,8 @@ def v_ir(out_dir, repo):
         body = claim.get("behavior") or ""
         if claim.get("kind") == "behavior" and body and ("Given" not in body or "Then" not in body):
             errs.append(f"ir: {cid}: behavior body lacks Given/Then")
+        if claim.get("observability") is not None and claim.get("observability") not in OBSERVABILITY:
+            errs.append(f"ir: {cid}: bad observability {claim.get('observability')!r}")
         for term in claim.get("terms") or []:
             if term not in terms:
                 errs.append(f"ir: {cid}: term '{term}' not in glossary")
@@ -182,11 +280,17 @@ def v_ir(out_dir, repo):
                 errs.append(f"ir: {cid}: unknown fragment {frag}")
         if cid not in trace_claims:
             errs.append(f"ir: {cid}: missing from traceability.yaml")
+        errs += v_claim_attestations(cid, claim)
+        if cid in index and index[cid].get("status") != claim.get("status"):
+            errs.append(f"ir: {cid}: manifest status {index[cid].get('status')!r} "
+                        f"!= claim file status {claim.get('status')!r}")
     for req in ("domain-model.yaml",):
         if not os.path.exists(os.path.join(ir, req)):
             errs.append(f"ir: missing {req}")
     core = [c for c in index.values() if c.get("priority") == "core"]
     for c in core:
+        if c["id"] not in claim_files:
+            continue
         claim = load(os.path.join(claim_dir, c["id"] + ".yaml"))
         if claim.get("kind") == "behavior" and not claim.get("scenarios"):
             errs.append(f"ir: {c['id']}: core behavior without worked scenario")
