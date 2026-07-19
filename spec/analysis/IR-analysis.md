@@ -1,10 +1,11 @@
 ---
 confidence: analyzed
-related: [spec/analysis/socraticode-analysis.md, spec/analysis/Airlift-reflexive.md, spec/planning/Airlift-goal-4-mcp.md, Understand-Anything]
-sources: [spec/planning/Goal1-handoff.md, tests/out/ofbiz-tax/RUN-REPORT.md, ir-spec/IR-SCHEMA.md, tests/out/ofbiz-tax/ir/, /Volumes/Dancer/Develop/AIRLIFT/Understand-Anything]
+related: [spec/analysis/socraticode-analysis.md, spec/analysis/Airlift-reflexive.md, spec/planning/Airlift-goal-4-mcp.md, spec/drafts/Airlift-article.md, Understand-Anything, Code-Digital-Twin]
+sources: [spec/planning/Goal1-handoff.md, tests/out/ofbiz-tax/RUN-REPORT.md, ir-spec/IR-SCHEMA.md, tests/out/ofbiz-tax/ir/, /Volumes/Dancer/Develop/AIRLIFT/Understand-Anything, spec/sources/DigitalTwin.pdf]
 trajectory: >
   Pitfalls feed reflexive risks R1-R5; MCP section is normative for Goal 4;
-  UA borrowings feed Goals 3 and 5. Revisit after M3 evidence lands.
+  UA borrowings feed Goals 3 and 5; CDT borrowings feed the IR schema (edge
+  vocabulary, fidelity flag) and Goals 2/4. Revisit after M3 evidence lands.
 ---
 
 # Airlift IR — critical analysis and comparison with Understand-Anything
@@ -211,3 +212,109 @@ the LLM's narration; Airlift optimizes for *depth of guarantee* and trusts nothi
 executed. Airlift's open problem is scaling breadth (harness cost, seam selection, glossary
 governance); UA's is that nothing it says is checked. Each one's weakness is the other's core
 competence.
+
+## Comparison with Code Digital Twin (genus and species)
+
+Source: `spec/sources/DigitalTwin.pdf` (Peng & Wang, "Code Digital Twin: A Knowledge
+Infrastructure for AI-Assisted Complex Software Development," arXiv:2503.07967v4 — the manifesto's
+sole reference). Read in full 2026-07-19.
+
+**The relationship: CDT is the genus; Airlift is a species.** The paper independently arrives at
+the same diagnosis (code is the endpoint of evolving trade-offs; tacit knowledge is scattered
+spatially and tangled temporally; task-time context engineering over raw code recovers *what* but
+not *why* — their "unmanaged context entropy" is the manifesto's "photocopying a photocopy") and
+the same architectural move: a persistent knowledge layer atop the codebase that separates
+*long-term knowledge engineering* from *task-time context engineering*. The component mapping is
+nearly one-to-one:
+
+| Code Digital Twin | Airlift |
+|---|---|
+| Code and artifact map (typed code map + traceability anchors) | Fragments/symbols in `traceability.yaml` + source-code symbol linker |
+| Functionality-oriented skeleton (concepts, functionalities, responsibilities) | Claims + closed glossary |
+| Rationale spine (decisions/constraints from commits, issues, discussions) | The Ledger (Goal 2) + ADRs; intent side delegated to Airbase |
+| Typed relationship vocabulary (`operationalized-by`, `justified-by`, …) | `depends_on`, `terms:`, `outputs_affected` (thinner — see borrowing 1) |
+| Twin-RAG (graph-first subgraph retrieval) | Airlift-MCP progressive disclosure (above) |
+| Structured context packages with token budgets | Grounding payloads inside Maestro turns (unbuilt) |
+| Memory writeback via reviewed knowledge updates | KB-as-code: every change a reviewed PR |
+| Human-in-the-loop curation + implicit feedback signals | LLMs propose; validators and humans ratify |
+| Continuous co-evolution driven by change events | Anti-drift spine (CI-enforced, build-breaking) |
+
+**Where the species diverges from the genus — Airlift's three differentiating bets:**
+
+1. **Provable vs. traceable.** CDT's epistemic ceiling is traceability: every claim links to
+   evidence, humans curate, but *nothing executes the twin's knowledge* — a wrong rationale card
+   survives until a human notices. Airlift's defining wager is that claims are warranted by blind
+   tests (E1–E4). The manifesto's "a KB that can be silently wrong is worse than none" is a direct
+   critique of CDT's validation model. Corollary: CDT validates *usefulness* (Hit@k +22%,
+   Recall@k +46% on SWE-Lancer localization; +56.8% over Claude Code on Android app generation via
+   feature maps); Airlift validates *truth* (mutation-red, refactor-green). Complementary, not
+   competing — and neither has yet demonstrated the other's result.
+2. **Inversion vs. mirror.** The digital-twin metaphor commits CDT to code-as-primary forever — a
+   twin reflects and co-evolves, permanently subordinate. Airlift explicitly intends to invert the
+   source of truth and demote the code to a secondary artifact. More ambitious, riskier, and never
+   entertained in the paper.
+3. **The fact/intent split.** CDT folds facts and intent into one twin with one confidence economy
+   (rationale spine ingests commits *and* mailing lists *and* design threads alike). The
+   Airlift/Airbase split keeps provable code-side facts and best-effort human intent in separate
+   KBs bridged by the glossary — because intent has no test suite. The manifesto's no-blur tiering
+   rule names a failure mode CDT's unified hybrid stack is structurally exposed to. Same for the
+   sociology: CDT's trust story (Challenge IX) is human-oversees-AI; the manifesto's indemnity
+   analysis (moral crumple zone, answer-as-clerk, claim-owner accountability, system-of-record
+   mandate) has no counterpart in the paper.
+
+**Validation of the proving ground.** CDT's Challenge XI (realistic evaluation: benchmarks with
+historical evolution, non-functional constraints, longitudinal robustness — not just compiling
+patches) describes almost exactly what Airlift's blind-testgen proving ground already does. Goal 1
+is an existence proof for the paper's own research roadmap. Worth citing when defending the E1–E4
+methodology.
+
+### Things to borrow from CDT (in rough order of value)
+
+1. **Typed relationship vocabulary for the knowledge graph.** CDT's small edge set —
+   `operationalized-by` (concept → functionality), `requires`/`uses`, `decomposes-to`,
+   `depends-on`, `has-responsibility`/`assigned-to`, `constrained-by`, `justified-by` — is a
+   ready-made seed for the "knowledge graph over the IR" above, which currently has only
+   `depends_on` and implicit claim→term edges. `justified-by` in particular is the edge type the
+   Ledger (Goal 2) needs: claim → rationale → commit/PR/ticket. `constrained-by` is a natural home
+   for the bug-compatibility problem (pitfall 3): a claim `constrained-by` a
+   `fidelity: bug-compatible` constraint node is queryable where a `notes:` field is not.
+2. **Structured context packages.** CDT's sharpest operational idea: don't hand an agent raw
+   retrieval — compile a *context package* with an explicit manifest and token budget, ordered by
+   the graph structure (interfaces and constraints first, then implementation, then peripheral
+   evidence), with validation hooks attached (affected tests, invariants, expected failure modes).
+   This is precisely what the Airlift-MCP layers 1–6 should *compile into* when a Maestro turn
+   requests grounding — turning context selection into "a controllable compilation step rather
+   than ad hoc prompt assembly." The "validation hooks in the package" idea composes directly with
+   `verify(claim_ids)`: ship the bound spine tests as part of the context.
+3. **Twin-RAG's graph-first query plan** — entity resolution → version selection → subgraph
+   expansion over typed edges → ranking that privileges responsibility boundaries and
+   constraint-bearing paths. A concrete retrieval algorithm for the MCP index layer, better than
+   embedding-similarity RAG for exactly Airlift's reasons: similarity severs the typed links that
+   carry the meaning.
+4. **Implicit feedback signals as curation input.** Log accept/reject/override events from
+   agent-assisted work (a suggestion rejected, a boundary corrected, a retrieved claim overridden)
+   as typed, provenance-carrying events, and use them to drive confidence calibration and to
+   surface *disagreements as curation tasks with linked evidence rather than silently overwriting
+   prior knowledge*. Cheap to start collecting once the MCP exists; feeds claim-status promotion
+   (optimization 2 above).
+5. **The 11-challenge table as a coverage checklist.** CDT's challenge taxonomy (intrinsic
+   complexity, physical-vs-conceptual, evolutionary path uniqueness, undocumented knowledge loss,
+   socio-technical dependencies; task specification, context gap, non-functional constraints,
+   trust, assistant design, evaluation) is a good periodic audit rubric for MILESTONES.md: which
+   challenges does Airlift address, which does it delegate (socio-technical → Airbase), which does
+   it ignore (non-functional constraints — currently absent from the IR schema entirely, worth a
+   deliberate decision).
+6. **Version anchoring as a first-class field.** CDT anchors every knowledge element to artifact
+   versions (commit, branch, PR). Airlift's traceability points at fragments but the IR's validity
+   window ("verified as of commit X") is implicit in run evidence. Making the anchor explicit per
+   claim is what "derived-from-code answers carry 'verified against source as of commit X'" (the
+   manifesto's tier-2 indemnity promise) needs to actually be true.
+
+**What not to borrow:** the single-twin unification (violates the Airlift/Airbase split), and
+CDT's human-curation-only validation loop (violates invariant 5 — nondeterminism never sits on the
+truth path). CDT's rationale extraction from mailing lists/discussions belongs to Airbase's
+ingestion, not Airlift's.
+
+**One-line verdict:** Code Digital Twin describes the genus — the same anatomy, argued as a
+research agenda with breadth-first evidence; Airlift is a species that adds provability, the
+inversion ambition, and the fact/intent split — and bets the project on them.

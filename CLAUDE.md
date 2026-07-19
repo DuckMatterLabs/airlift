@@ -31,8 +31,8 @@ violated claims. Goal 1 (M1) is complete; roadmap in `spec/planning/MILESTONES.m
 
 Airlift applies its own aspirations to itself: load-bearing design decisions get
 self-ADRs with **falsifiers** (what observation would reopen them), tagged load-bearing
-vs incidental. Changes touching a load-bearing decision update the AADR register
-(`spec/adr/` once M2 materializes it; the seed register is in the reflexive doc §5).
+vs incidental. Changes touching a load-bearing decision update the AADR register in
+`spec/adr/` (materialized 2026-07-19; rules in `spec/adr/README.md`).
 Post-M2, schema changes are versioned deltas — never live renegotiation.
 
 ## Frontmatter (required on every generated MD file)

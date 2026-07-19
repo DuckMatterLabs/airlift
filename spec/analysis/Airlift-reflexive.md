@@ -3,8 +3,10 @@ confidence: analyzed
 related: [spec/planning/Airlift-m2-freeze.md, spec/planning/Airlift-m3-second-target.md, spec/drafts/Airlift-IR.md]
 sources: [spec/drafts/Airlift-IR.md, spec/drafts/Airlift-article.md, ir-spec/IR-SCHEMA.md, tests/out/ofbiz-tax/RUN-REPORT.md, spec/analysis/IR-analysis.md, spec/analysis/socraticode-analysis.md]
 trajectory: >
-  Normative for M2/M3; AADR register materializes as spec/adr/ at M2; risks
-  R1-R5 await falsifier evidence from M3; re-derivation probes due ~M3 and ~M7.
+  Normative for M2/M3; AADR register MATERIALIZED as spec/adr/ 2026-07-19
+  (ahead of M2 schedule) - spec/adr/ is now authoritative for the register,
+  section 5 here remains the historical seed; risks R1-R5 await falsifier
+  evidence from M3; re-derivation probes due ~M3 and ~M7.
 ---
 
 # Airlift on Airlift — the WHYs of our own design, and the local-optimum problem
@@ -202,7 +204,7 @@ these, *by construction* — each intermediate step is worse than both endpoints
   stack), not `verified` (survived multiple pathologies, cross-model, mutation-swept).
   Schema versions should carry exactly this status metadata about themselves.
 
-## 5. The self-ADR register (seed — M2 materializes these as `spec/adr/AADR-NNN.md`)
+## 5. The self-ADR register (seed — MATERIALIZED 2026-07-19 as `spec/adr/`; that register is now authoritative, this table is the historical seed)
 
 | ID | Decision | Tag | Falsifier (reopens it) |
 |---|---|---|---|
