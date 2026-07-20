@@ -1,114 +1,180 @@
-# Airlift — business-logic distillation pipeline
+---
+confidence: analyzed
+related: [spec/drafts/Airlift-article.md, ir-spec/IR-SCHEMA.md, spec/planning/MILESTONES.md]
+sources: [spec/drafts/Airlift-article.md, spec/analysis/IR-analysis.md, tests/out/ofbiz-tax/RUN-REPORT.md, tests/runs/m2-freeze-report.md]
+trajectory: >
+  The human-facing front door. Updated at milestone boundaries; the manifesto
+  (spec/drafts/Airlift-article.md) stays the founding vision, this projects it
+  plus the earned evidence. Superseded section by section as milestones land.
+---
 
-Airlift distills business behavior out of entangled legacy code into a typed, **provable**
-IR: a subagent that has never seen the source must be able to generate tests from the IR
-alone, and those tests must run green against the live code (and red against mutated code).
-Design papers live in `spec/`: `spec/planning/` (milestones + goal specs, incl.
-`MILESTONES.md`), `spec/analysis/` (critical analyses + the reflexive self-ADR doc),
-`spec/drafts/` (the original prose: whitepaper, IR, distillation discussions).
+# Airlift
 
-This repository contains three separable things:
+**Airlift distills the business behavior buried in legacy code into a typed, provable
+knowledge base — and proves it the hard way: an AI agent that has never seen the source
+generates tests from the knowledge base alone, and those tests run green against the
+real system and red against sabotaged copies of it.**
 
-1. the **Airlift IR schema** — target-agnostic;
-2. the **distillation pipeline** — target-agnostic, executed by GitHub Copilot CLI
-   (`copilot -p`) with Anthropic **Opus 4.8** via BYOK (key in `.env`);
-3. the first **target plugin** (`tests/targets/ofbiz-tax/`) — Apache OFBiz sales-tax seam —
-   plus the completed proof run against it.
+Not a wiki. Not documentation. A system of record for *what the code actually does*,
+with an evidence trail for every claim it makes.
 
-> Continuing this work in a new session? Start at **`CLAUDE.md`** (constitution) →
-> `spec/index.md` (map) → `spec/log.md` (session memory) → **`spec/planning/Goal1-handoff.md`**.
-> Full narrative of the completed proof run: **`tests/out/ofbiz-tax/RUN-REPORT.md`**.
+## The problem: code is a position, not a trajectory
 
-## Components
+Source code is the ultimate snapshot of a system — and only a snapshot. The system is
+more than that: it has a history and a direction. Why is the threshold `>=` and not
+`>`? Which behaviors are load-bearing rules and which are accidents nobody dared touch?
+The WHYs evaporate; what remains is archaeology.
 
-### `ir-spec/IR-SCHEMA.md` — the IR (normative)
+This was always painful for humans. For AI agents it is fatal in a quieter way: an
+agent grounded on raw code reconstructs intent by guessing — fluently, plausibly, and
+*differently on every run*. Agents writing new code from existing code is photocopying
+a photocopy; the quality degrades generation by generation.
 
-Typed claim atoms (`behavior | invariant | domain | contract | config`), one YAML file per
-claim: constrained Gherkin bodies over a mandatory glossary, worked numeric scenarios,
-decision tables, stable claim IDs and fragment IDs, `traceability.yaml` binding claims to
-source fragments, per-claim provenance stubs (PR-history), and an architecture stub
-(ADRs + mustache-parameterized pattern library) kept deliberately outside the claims —
-the same claims must survive an architecture swap.
+"So ground the agent with architecture and PM docs." Two problems: **the gap** and
+**the rot**. The PM doc speaks intent ("users shouldn't be notified twice"); the code
+speaks mechanism. Between them there is no shared vocabulary, no links, no intermediate
+structure — the agent bridges the gap by guessing again. And prose docs drift worse
+than code, because nothing executes them and nothing fails when they go stale. A
+knowledge base that can be silently wrong is worse than none: the first time someone
+gets burned, they stop trusting it, and a distrusted KB is dead.
 
-### `pipeline/` — the engine (target-agnostic)
+## The bet: claims you can falsify, not prose you must believe
 
-| File | Role |
-|---|---|
-| `prompts/stage1-map.md` | Map: inventory + classify fragments (business-logic / plumbing / boilerplate / **fused**), total line coverage of the seam's primary file |
-| `prompts/stage2-testscape.md` | Test landscape: what existing tests actually pin (evidence-based, auditable search log) |
-| `prompts/stage3-catalog.md` | Catalog: distinct business behaviors with observability + priority |
-| `prompts/stage4-backfill.md` | Backfill: code-in-hand tests pin every bare direct behavior before distilling |
-| `prompts/stage5-distill.md` | Distill: emit the full IR + in-source fragment annotations + provenance + architecture stub |
-| `prompts/blind-testgen.md` | E1 agent prompt: write tests from IR + harness contract only |
-| `prompts/refactor.md` | E3 agent prompt: behavior-preserving refactor of the seam |
-| `lib.sh` | `run_copilot`: Copilot CLI invocation with Anthropic BYOK (`COPILOT_MODEL=claude-opus-4-8`), tool/path policy, logging |
-| `render.py` | Substitutes `{{PLACEHOLDER}}`s from a target descriptor; fails on unresolved placeholders |
-| `validate.py` | Deterministic structural validators per stage (YAML shape, cross-references, fragment line-coverage, glossary closure, scenario presence on core claims) |
-| `run-pipeline.sh` | Orchestrator: render → run under Copilot → validate; ≤3 attempts per stage with validator output fed back as a repair prompt |
+Airlift extracts behavior into an **intermediate representation (IR)** of typed claim
+atoms — small YAML files, one claim each, with stable IDs:
 
-Prompts contain **zero** target specifics. A target supplies them via its descriptor.
-
-### `tests/targets/ofbiz-tax/` — the first target plugin
-
-| Piece | Role |
-|---|---|
-| `target.env` | Descriptor: repo path, claim namespace, domain persona, test/compile commands, output locations |
-| `seam.md` | Seam brief injected into the generic prompts (entry points, contract files, schema files, provenance-critical behaviors) |
-| `harness/src/...` | Test harness installed into OFBiz: `TaxFixture` (fixture DSL hiding all framework plumbing), `AirliftTaxTestCase` (base + exact-decimal asserts), `TaxCalcResult` (architecture-free result view), `AirliftClaim` (test↔claim binding), `SmokeTaxTests` (harness self-test) |
-| `harness/harness-contract.md` | The ONLY architecture the blind agent sees: test mechanics, fixture verbs, worked example — **no behavior semantics** |
-| `harness/install.sh` / `run-tests.sh` | Idempotent installer; suite runner (`airliftsmoke` / `airliftbackfill` / `airliftblind`) with JUnit-XML verdict parsing |
-| `harness/report-claims.py` | The **verification spine**: failing test → `@AirliftClaim` → claim ID + title ("which claim was violated") |
-| `mutations/mutations.py` | 7 planted, realistic bugs (exemption flip, threshold boundary `≤`→`<`, base-drop, shipping-drop, rollup direction, inheritance cut, audit-trail zeroing); apply/revert against the committed git baseline |
-
-### `tests/exit/` — the proof runners
-
-* `run-e1-blind.sh` — sandboxed Copilot agent (no shell, no web, no repo file access —
-  empirically verified) writes tests from `ir/` + contract; compile-error-only repair loop
-  (never test failures — that would leak behavior); suite adjudicated externally.
-* `run-e2-mutations.sh` — apply each bug → run blind suite → spine report → revert;
-  passes when >half are caught.
-* `run-e3-refactor.sh` — Copilot refactors the seam behavior-preservingly; blind suite must
-  stay green; refactored file + diff archived to `tests/out/ofbiz-tax/e3/`, working copy restored.
-* `run-e4-flip.sh` — flips the tax-exemption rule; passes only if the suite goes red AND
-  the spine names a `TAX.EXEMPT` claim.
-
-### `tests/out/ofbiz-tax/` — products of the completed run
-
-`fragment-map.yaml` (79 fragments, 20 fused seams), `coverage-gaps.yaml` (zero native tests
-touch the seam), `behavior-catalog.yaml` (30 behaviors / 7 areas), `backfill-report.yaml`
-(15 behaviors pinned, 19 tests green), `ir/` (**34 claims, 75 glossary terms**, domain model
-with fixture vocabulary, traceability, provenance, architecture stub), `e3/` (refactor
-artifacts), `RUN-REPORT.md`.
-
-In the OFBiz clone (branch `airlift`): the installed harness, the 19-test backfill suite,
-the 35-test blind suite, and 30 comment-only `// AIRLIFT: F-TAS-NNN` annotations in
-`TaxAuthorityServices.java`.
-
-## Results of the proof run (2026-07-19)
-
-| Exit criterion | Verdict |
-|---|---|
-| E1 — blind IR-only tests green vs real code | **PASSED** 35/35 |
-| E2 — planted bugs caught, claims named | **PASSED** 7/7 |
-| E3 — behavior-preserving refactor stays green | **PASSED** 35/35 |
-| E4 — flipped exemption rule caught and named | **PASSED** (4 TAX.EXEMPT claims named) |
-
-The first blind trial (30/35) exposed 3 claim ambiguities and 1 harness bug; per the method,
-the **claims** were repaired (to match the code, never the tests) and a fresh blind agent
-then reached 35/35 — the blind exit criterion acting as the forcing function that makes the
-IR earn its shape.
-
-## Running
-
-```bash
-./pipeline/run-pipeline.sh tests/targets/ofbiz-tax all      # stages: map testscape catalog backfill distill
-./tests/exit/run-e1-blind.sh && ./tests/exit/run-e2-mutations.sh && ./tests/exit/run-e4-flip.sh && ./tests/exit/run-e3-refactor.sh
+```yaml
+id: TAX.EXEMPT.ZEROING
+kind: behavior            # behavior | invariant | domain | contract | config
+title: A valid exemption zeroes the tax and records the would-be tax as an exempt amount.
+status: verified          # extracted -> pinned -> verified, moved only by evidence
+behavior: |               # constrained Gherkin over a closed glossary — no synonyms,
+  Rule: ...               # no implementation names, exact decimal arithmetic
+scenarios: [...]          # worked numeric examples an agent can transcribe into asserts
+source_fragments: [F-TAS-055]   # binds the claim to code, at a pinned commit
+attestations:             # the evidence: which suite, which commit, when
+  - {tier: verified, evidence: tests/runs/m2-promotion/airliftblind.xml, sha: 1a7d91a2…, date: ...}
 ```
 
-Prerequisites, one-time OFBiz setup, and operational gotchas: see `spec/planning/Goal1-handoff.md` §3–4.
+Three design commitments make this different from documentation:
 
-## Adding a target
+* **A closed glossary as lingua franca.** Every noun in every claim must resolve to a
+  defined term. No synonyms, no colloquial drift — the agent never bridges a
+  vocabulary gap by guessing, because there is no gap.
+* **Determinism on the truth path.** LLMs propose; deterministic validators and humans
+  ratify. Claim statuses (`extracted → pinned → verified`) are moved only by a
+  deterministic tool reading test results — never by a model, never by hand.
+* **Architecture is quarantined.** Claims speak business vocabulary only; the
+  architecture lives in a separate stub. The same claims must survive an architecture
+  swap — that is what makes them *knowledge* rather than a paraphrase of the code.
 
-Create `tests/targets/<name>/` with `target.env`, `seam.md`, a harness honoring the
-harness-contract pattern (fixture DSL + claim binding + suite runner + claim reporter), and
-a mutation kit. No pipeline changes required.
+The sufficiency test is operational, not rhetorical. Four exit criteria, all executed
+against Apache OFBiz's tax-calculation seam (~800 lines of deeply entangled
+seventeen-year-old Java):
+
+| Proof | What it demonstrates | Result |
+|---|---|---|
+| **E1 — blind generation** | A sandboxed agent (no shell, no web, no source access) writes tests from the IR alone; they must pass against the real code | **35/35 green** |
+| **E2 — mutation kill** | 7 realistic planted bugs; the blind suite must catch them and *name the violated claim* | **7/7 caught & named** |
+| **E3 — refactor survival** | A 675-line behavior-preserving refactor; the suite must stay green (claims outlive structure) | **35/35 green** |
+| **E4 — semantic flip** | Flip one business rule; the suite must go red and name exactly the right claims | **4 TAX.EXEMPT claims named** |
+
+The first blind run scored 30/35 — and that is the method working, not failing: the
+five reds exposed three genuinely ambiguous claims and a harness bug. The *claims* were
+repaired (never the tests), and a fresh agent then hit 35/35. The blind agent is the
+forcing function that makes the IR earn its precision.
+
+Since the M2 freeze, the schema is a versioned contract (v1.0) and every claim's status
+carries sha-stamped attestations: of 34 claims, 27 are `verified` (blind-test-proven),
+3 `pinned` (code-in-hand tests), 4 honestly `extracted` — the gaps are visible instead
+of papered over. *Don't trust what you haven't tried to falsify* — Airlift applies that
+to itself, too: every load-bearing design decision is recorded with a **falsifier**
+(the observation that would reopen it) in `spec/adr/`.
+
+## Relation to Code Digital Twin: the genus and a species
+
+Peng & Wang's [Code Digital Twin](https://arxiv.org/abs/2503.07967) independently
+arrives at the same diagnosis (tacit knowledge scattered spatially, tangled temporally;
+task-time context engineering recovers *what* but not *why*) and the same architectural
+move: a persistent, curated knowledge layer atop the codebase. CDT is the genus;
+Airlift is a species that makes three bets the genus doesn't:
+
+1. **Provable, not merely traceable.** CDT's ceiling is traceability — every claim
+   links to evidence, but nothing *executes* the twin's knowledge, so a wrong rationale
+   survives until a human notices. Airlift's claims are warranted by blind tests:
+   mutation-red, refactor-green. CDT validates usefulness; Airlift validates truth.
+2. **Inversion, not a mirror.** A twin reflects and co-evolves, permanently subordinate
+   to the code. Airlift explicitly intends to *invert the source of truth* — demote the
+   codebase to a secondary artifact to unlock free refactoring and truly agentic
+   feature work. More ambitious, riskier, and the reason provability is non-negotiable.
+3. **Facts and intent kept apart.** CDT folds commits, mailing lists, and design
+   threads into one twin with one confidence economy. Airlift is deliberately the
+   **fact half** of a two-KB system: it testifies to what the code provably does and
+   how it got there; its sibling (**Airbase**) captures what people *intend*, bridged
+   by the shared glossary. The split exists because intent has no test suite — and
+   blurring the two tiers once burns the trust both need.
+
+## Why the evidence trail matters: the clerk, not the oracle
+
+The deepest adoption blocker for any AI knowledge system isn't accuracy — it's
+liability. Asking a colleague isn't just information retrieval; it transfers
+responsibility. An AI's answer transfers none, so a 99%-accurate KB loses to a
+90%-accurate human. Organizations solved this long ago for payroll and the general
+ledger: **systems of record**, where citing the system *is* the due diligence.
+
+That is what the attestation machinery is for. Airlift never answers as an oracle
+("the tax is zeroed") — it answers as a clerk reading a signed record ("per claim
+TAX.EXEMPT.ZEROING, `verified`: blind-tested green against commit `1a7d91a2` on
+2026-07-19"). Tiered honestly: a verified claim, a code-derived claim, and an AI
+inference must never wear the same confidence. Answers arrive with a paper trail so
+that relying on them is defensible — trust designed to be *auditable*, so the
+double-check rate can decay with track record.
+
+## How it works
+
+A target-agnostic five-stage pipeline (currently executed by GitHub Copilot CLI +
+Claude Opus 4.8), where every stage's output must survive a deterministic validator —
+failures feed a bounded repair loop, and nothing nondeterministic sits on the truth
+path:
+
+```
+map ──▶ testscape ──▶ catalog ──▶ backfill ──▶ distill ──▶ [blind testgen ⇒ E1–E4 proofs]
+ inventory   what tests    distinct     pin bare      emit claims,
+ + classify  really pin    behaviors    behaviors     glossary, traceability
+ every line  (evidence-    a domain     with code-    — then prove it blind
+ (fused =    based)        expert       in-hand
+ the hard                  would name   tests
+ targets)
+```
+
+Targets are plugins (`tests/targets/<name>/`): a descriptor, a seam brief, a test
+harness with a fixture DSL, and a mutation kit. The pipeline and schema contain zero
+target specifics — that separation is an enforced invariant, not an aspiration.
+
+## Status and roadmap
+
+| Milestone | State |
+|---|---|
+| **M1** — pipeline + IR proven end-to-end on one seam (E1–E4) | ✅ complete |
+| **M2** — schema frozen at v1.0; versioned change process; deterministic status promotion; self-ADR register with falsifiers | ✅ complete |
+| **M3** — second target: real production code; the measurement milestone (cross-model blind generation, full mutation sweep, cost accounting) | next |
+| M4–M9 — PR-history mining (the Ledger), architecture distillation, MCP serving layer, drift spine, glossary federation, org rollout | specified in `spec/planning/` |
+
+v1.0's own attestation status is `pinned`, not `verified` — it survived one seam's full
+proof stack, and M3 exists to try to break it on a second pathology.
+
+## Reading order
+
+* **The vision:** `spec/drafts/Airlift-article.md` — the founding manifesto (two-KB
+  split, glossary, indemnity, adoption).
+* **The IR, and why this shape:** `spec/drafts/Airlift-IR.md` (rationale),
+  `ir-spec/IR-SCHEMA.md` (the frozen v1.0 contract).
+* **The skeptic's tour:** `spec/analysis/IR-analysis.md` (pitfalls + the CDT
+  comparison) and `spec/analysis/Airlift-reflexive.md` (Airlift's own design decisions
+  with falsifiers — the project critiquing itself).
+* **The receipts:** `tests/out/ofbiz-tax/RUN-REPORT.md` (M1 proof-run narrative),
+  `tests/runs/m2-freeze-report.md` (M2 execution evidence).
+* **Working on the repo** (humans and agents): start at `AGENTS.md` / `CLAUDE.md`,
+  then `spec/planning/Goal1-handoff.md` — §3 to run everything, §8 for current
+  operational discipline. The Goal-1 component map lives in
+  `tests/runs/goal1-spike-README.md`.

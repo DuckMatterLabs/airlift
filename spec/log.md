@@ -17,6 +17,29 @@ this log holds pointers, not content. A session that only reads appends nothing.
 
 ---
 
+## 2026-07-19 (g) — Claude session: human-facing root README
+
+**Done**
+
+* Old Goal-1-spike README moved to `tests/runs/goal1-spike-README.md` (frontmatter
+  backfilled; frozen as run-adjacent reference — component map + proof-run summary).
+* New root `README.md` written for humans: the position-not-trajectory problem,
+  the falsifiable-claims bet with the E1–E4 results table, the CDT genus/species
+  framing (provable-vs-traceable, inversion-vs-mirror, fact/intent split), the
+  clerk-not-oracle indemnity story, pipeline overview, status/roadmap, reading order.
+  Sources: manifesto (`drafts/Airlift-article.md`), `analysis/IR-analysis.md` §CDT,
+  M1/M2 evidence.
+
+**Decisions**
+
+* Root README is the human-facing pitch, updated at milestone boundaries; operational
+  truth stays in `Goal1-handoff.md`; the manifesto remains the protected founding
+  prose. (Log (b)'s "README stays at repo root" decision still holds — a README does.)
+
+**Open**
+
+* None new.
+
 ## 2026-07-19 (f) — Claude session: Copilot takeover briefing
 
 **Done**
